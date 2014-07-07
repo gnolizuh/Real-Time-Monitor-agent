@@ -213,9 +213,8 @@ void CMonitorDlg::OnBnClickedButton1()
 
 	static screen_mgr_res_t g_res_type = SCREEN_RES_1x1;
 
-	ScreenMgr::GetInstance()->Flex(ress[g_res_type].width,
-		ress[g_res_type].height,
-		ress[g_res_type].res);
+	ScreenMgr::GetInstance()->Flex(ress[g_res_type].res);
+	ScreenMgr::GetInstance()->Test();
 
 	g_res_type = (screen_mgr_res_t)(( g_res_type + 1 ) % 4);
 }

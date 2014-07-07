@@ -11,7 +11,9 @@ ScreenMgr::ScreenMgr()
 	, horizontal_padding(MININUM_PADDING)
 	, wrapper(NULL)
 	, min_width(MININUM_SCREEN_WIDTH)
+	, orig_width(MININUM_SCREEN_WIDTH)
 	, min_height(NUMINUM_SCREEN_HEIGHT)
+	, orig_height(NUMINUM_SCREEN_HEIGHT)
 	, screen_mgr_res(SCREEN_RES_3x3)
 	, screen_mgr_active(PJ_FALSE)
 {
@@ -90,33 +92,35 @@ void ScreenMgr::Adjest(pj_int32_t &cx, pj_int32_t &cy)
 {
 	PJ_RETURN_IF_FALSE(screen_mgr_active);
 
+	orig_width = cx;
+	orig_height = cy;
 	min_width  = ROUND(cx, num_blocks[GET_FUNC_INDEX(screen_mgr_res)]);
 	min_height = ROUND(cy, num_blocks[GET_FUNC_INDEX(screen_mgr_res)]);
 
 	(this->* flex_func[GET_FUNC_INDEX(screen_mgr_res)])();
 }
 
-void ScreenMgr::Flex(pj_uint32_t width, pj_uint32_t height, screen_mgr_res_t res)
+void ScreenMgr::Flex(screen_mgr_res_t res)
 {
-	if ( this->screen_mgr_res == res &&
-		this->min_width == width &&
-		this->min_height == height )
+	if ( this->screen_mgr_res == res )
 	{
 		return;
 	}
 
 	this->screen_mgr_res = res;
-	this->min_width = width;
-	this->min_height = height;
+
+	pj_uint32_t width = orig_width, height = orig_height;
+	min_width  = ROUND(width, num_blocks[GET_FUNC_INDEX(screen_mgr_res)]);
+	min_height = ROUND(height, num_blocks[GET_FUNC_INDEX(screen_mgr_res)]);
 	
+	HideAll();
+
 	(this->* flex_func[GET_FUNC_INDEX(screen_mgr_res)])();
 }
 
 void ScreenMgr::Flex_1x1()
 {
 	wall[0].Refresh(CRect(0, 0, min_width, min_height));
-	//wall[0].MoveWindow(CRect(0, 0, min_width, min_height));
-	//wall[0].ShowWindow(SW_SHOW);
 }
 
 void ScreenMgr::Flex_2x2()
@@ -134,8 +138,6 @@ void ScreenMgr::Flex_2x2()
 			rect.bottom = rect.top + min_height;
 
 			wall[idx].Refresh(rect);
-			/*wall[idx].MoveWindow(rect);
-			wall[idx].ShowWindow(SW_SHOW);*/
 		}
 	}
 }
@@ -189,5 +191,41 @@ void ScreenMgr::Flex_3x3()
 
 			wall[idx].Refresh(rect);
 		}
+	}
+}
+
+void ScreenMgr::HideAll()
+{
+	for(pj_uint8_t idx = 0; idx < ARRAYSIZE(wall); ++ idx)
+	{
+		wall[idx].Hide();
+	}
+}
+
+void ScreenMgr::Test()
+{
+	pj_uint8_t cnt = 1;
+	switch(screen_mgr_res)
+	{
+		case SCREEN_RES_1x1:
+			cnt = 1;
+			break;
+		case SCREEN_RES_2x2:
+			cnt = 4;
+			//wall[0].Painting();
+			return;
+		case SCREEN_RES_1x5:
+			cnt = 6;
+			//wall[0].Painting();
+			return;
+		case SCREEN_RES_3x3:
+			cnt = 9;
+			wall[8].Painting();
+			break;
+	}
+
+	for(pj_uint8_t idx = 0; idx < cnt; ++ idx)
+	{
+		wall[idx].Painting();
 	}
 }

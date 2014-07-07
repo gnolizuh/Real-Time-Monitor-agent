@@ -43,8 +43,10 @@ public:
 	static ScreenMgr *GetInstance();                                         // Singleton
 	void Prepare(CWnd *);
 	void Prepare(CWnd *, pj_uint32_t, pj_uint32_t, screen_mgr_res_t);
-	void Flex(pj_uint32_t, pj_uint32_t, screen_mgr_res_t);
+	void Flex(screen_mgr_res_t);
 	void Adjest(pj_int32_t &, pj_int32_t &);
+	void HideAll();
+	void Test();
 	pj_status_t Launch();
 	static resolution_t GetDefaultResolution();
 
@@ -60,7 +62,7 @@ private:
 private:
 	Screen wall[9];
 	const CWnd *wrapper;
-	pj_uint32_t min_width, min_height;
+	pj_uint32_t orig_width, orig_height, min_width, min_height;
 	screen_mgr_res_t screen_mgr_res;
 	pj_uint32_t vertical_padding;
 	pj_uint32_t horizontal_padding;
