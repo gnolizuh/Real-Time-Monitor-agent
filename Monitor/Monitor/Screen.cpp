@@ -5,13 +5,6 @@
 BEGIN_MESSAGE_MAP(Screen, CWnd)
 END_MESSAGE_MAP()
 
-const CWnd *Screen::g_wrapper = NULL;
-
-void Screen::SetWrapper(const CWnd *wrapper)
-{
-	g_wrapper = wrapper;
-}
-
 Screen::Screen()
 	: CWnd()
 {
@@ -21,13 +14,26 @@ Screen::~Screen()
 {
 }
 
-void Screen::Prepare(pj_uint32_t width, pj_uint32_t height)
+void Screen::Prepare(const CRect &rect, const CWnd *wrapper, pj_uint32_t idx)
 {
+	this->screen_rect = rect;
+	this->wrapper = wrapper;
+	this->index = idx;
 
+	pj_bool_t ret = this->Create(
+		NULL,
+		NULL,
+		WS_BORDER | WS_VISIBLE | WS_CHILD,
+		rect,
+		(CWnd *)wrapper,
+		idx);
+	pj_assert(ret == PJ_TRUE);
 }
 
-pj_status_t Screen::Launch()
+void Screen::Refresh(const CRect &rect)
 {
-	return PJ_SUCCESS;
-}
+	this->screen_rect = rect;
 
+	this->MoveWindow(rect);
+	this->UpdateWindow();
+}

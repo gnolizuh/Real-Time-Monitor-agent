@@ -62,6 +62,8 @@ BEGIN_MESSAGE_MAP(CMonitorDlg, CDialogEx)
 	ON_WM_SYSCOMMAND()
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
+	ON_WM_SIZE()
+	ON_WM_GETMINMAXINFO()
 	ON_BN_CLICKED(IDC_BUTTON1, &CMonitorDlg::OnBnClickedButton1)
 END_MESSAGE_MAP()
 
@@ -98,13 +100,20 @@ BOOL CMonitorDlg::OnInitDialog()
 	SetIcon(m_hIcon, FALSE);		// 设置小图标
 
 	// TODO: 在此添加额外的初始化代码
-	this->MoveWindow(CRect(0, 0, 600, 600));
-	this->ShowWindow(SW_SHOW);
+	CRect rect;
+	GetClientRect(&rect);
+
+	pj_int32_t width = abs(rect.bottom - rect.top);
+	pj_int32_t height = abs(rect.right - rect.left);
 
 	SDL_Init( SDL_INIT_VIDEO );
 
-	ScreenMgr::GetInstance()->Prepare(this, 100, 100, SCREEN_RES_3x3);
+	ScreenMgr::GetInstance()->Prepare(this);
 	ScreenMgr::GetInstance()->Launch();
+	ScreenMgr::GetInstance()->Adjest(width, height);
+
+	this->MoveWindow(CRect(0, 0, width, height));
+	this->ShowWindow(SW_SHOW);
 
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
 }
@@ -158,6 +167,35 @@ HCURSOR CMonitorDlg::OnQueryDragIcon()
 	return static_cast<HCURSOR>(m_hIcon);
 }
 
+void CMonitorDlg::OnGetMinMaxInfo(MINMAXINFO* lpMMI)
+{
+	pj_assert(lpMMI != NULL);
+	lpMMI->ptMinTrackSize.x = ScreenMgr::GetInstance()->GetDefaultResolution().x;
+	lpMMI->ptMinTrackSize.y = ScreenMgr::GetInstance()->GetDefaultResolution().y;
+
+	CDialog::OnGetMinMaxInfo(lpMMI);
+}
+
+// cx, cy means client area's width and height.
+void CMonitorDlg::OnSize(UINT nType, int cx, int cy)
+{
+	switch(nType)
+	{
+		case SIZE_MAXIMIZED:
+			break;
+		case SIZE_MINIMIZED:
+			break;
+		case SIZE_RESTORED:
+			break;
+		default:
+			break;
+	}
+
+	ScreenMgr::GetInstance()->Adjest( cx, cy );
+
+	CDialog::OnSize(nType, cx, cy);
+}
+
 void CMonitorDlg::OnBnClickedButton1()
 {
 	struct resolution
@@ -167,13 +205,13 @@ void CMonitorDlg::OnBnClickedButton1()
 		screen_mgr_res_t res;
 	} ress[4] = 
 	{
-		{400, 400, SCREEN_RES_ONE},
+		{400, 400, SCREEN_RES_1x1},
 		{200, 200, SCREEN_RES_2x2},
 		{100, 100, SCREEN_RES_1x5},
 		{100, 100, SCREEN_RES_3x3},
 	};
 
-	static screen_mgr_res_t g_res_type = SCREEN_RES_ONE;
+	static screen_mgr_res_t g_res_type = SCREEN_RES_1x1;
 
 	ScreenMgr::GetInstance()->Flex(ress[g_res_type].width,
 		ress[g_res_type].height,

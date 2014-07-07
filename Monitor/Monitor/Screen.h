@@ -9,18 +9,17 @@ class Screen
 public:
 	Screen();
 	virtual ~Screen();
-	void Prepare(pj_uint32_t, pj_uint32_t);
-	pj_status_t Launch();
-	static void SetWrapper(const CWnd *);
+	void Prepare(const CRect &, const CWnd *, pj_uint32_t);
+	void Refresh(const CRect &);
 
 protected:
 	DECLARE_MESSAGE_MAP()
 
 private:
-	pj_uint32_t width, height;
+	CRect screen_rect;
+	const CWnd *wrapper;
+	pj_uint32_t index;
 	SDL_Window *window;
-
-	static const CWnd *g_wrapper;
 };
 
 #endif
