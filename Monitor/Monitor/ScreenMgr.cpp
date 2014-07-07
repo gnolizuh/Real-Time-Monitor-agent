@@ -204,6 +204,8 @@ void ScreenMgr::HideAll()
 
 void ScreenMgr::Test()
 {
+	PJ_RETURN_IF_FALSE(screen_mgr_active);
+
 	pj_uint8_t cnt = 1;
 	switch(screen_mgr_res)
 	{
@@ -212,15 +214,12 @@ void ScreenMgr::Test()
 			break;
 		case SCREEN_RES_2x2:
 			cnt = 4;
-			//wall[0].Painting();
-			return;
+			break;
 		case SCREEN_RES_1x5:
 			cnt = 6;
-			//wall[0].Painting();
-			return;
+			break;
 		case SCREEN_RES_3x3:
 			cnt = 9;
-			wall[8].Painting();
 			break;
 	}
 

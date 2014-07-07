@@ -192,6 +192,7 @@ void CMonitorDlg::OnSize(UINT nType, int cx, int cy)
 	}
 
 	ScreenMgr::GetInstance()->Adjest( cx, cy );
+	ScreenMgr::GetInstance()->Test();
 
 	CDialog::OnSize(nType, cx, cy);
 }
@@ -205,10 +206,10 @@ void CMonitorDlg::OnBnClickedButton1()
 		screen_mgr_res_t res;
 	} ress[4] = 
 	{
-		{400, 400, SCREEN_RES_1x1},
-		{200, 200, SCREEN_RES_2x2},
-		{100, 100, SCREEN_RES_1x5},
-		{100, 100, SCREEN_RES_3x3},
+		{ 400, 400, SCREEN_RES_1x1 },
+		{ 200, 200, SCREEN_RES_2x2 },
+		{ 100, 100, SCREEN_RES_1x5 },
+		{ 100, 100, SCREEN_RES_3x3 },
 	};
 
 	static screen_mgr_res_t g_res_type = SCREEN_RES_1x1;
