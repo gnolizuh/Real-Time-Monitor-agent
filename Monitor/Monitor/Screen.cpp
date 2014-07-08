@@ -43,7 +43,7 @@ void Screen::Prepare(const CRect &rect, const CWnd *wrapper, pj_uint32_t idx)
 	window = SDL_CreateWindowFrom(GetSafeHwnd());
 	pj_assert(window != nullptr);
 
-	render = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+	render = SDL_CreateRenderer(window, -1, SDL_RENDERER_SOFTWARE);
 	pj_assert(render != nullptr);
 
 	texture = SDL_CreateTexture(render, SDL_PIXELFORMAT_IYUV, SDL_TEXTUREACCESS_STREAMING, width, height);
@@ -62,14 +62,8 @@ void Screen::Refresh(const CRect &rect)
 
 	this->screen_rect = rect;
 	int x, y;
-	SDL_GetWindowPosition(window, &x, &y);
-	SDL_SetWindowPosition(window, x + rect.left, y + rect.top);
-	SDL_GetWindowPosition(window, &x, &y);
-	SDL_RestoreWindow(window);
-	SDL_ShowWindow(window);
-	SDL_RaiseWindow(window);
-	/*this->MoveWindow(rect);
-	this->ShowWindow(SW_SHOW);*/
+	this->MoveWindow(rect);
+	this->ShowWindow(SW_SHOW);
 }
 
 void Screen::Hide()
