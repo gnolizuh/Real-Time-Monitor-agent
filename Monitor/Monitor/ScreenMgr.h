@@ -13,7 +13,6 @@
 #define NUMINUM_SCREEN_HEIGHT 144
 #define ROUND(num, fraction) (num) /= (fraction), (num) *= (fraction), (num) / (fraction)
 #define GET_FUNC_INDEX(idx) ((idx) < 0 || (idx) >= SCREEN_RES_END ? SCREEN_RES_END : (idx))
-#define PJ_RETURN_IF_FALSE(exp) if ( !(exp) ) return
 
 typedef enum
 {
@@ -43,10 +42,9 @@ public:
 	static ScreenMgr *GetInstance();                                         // Singleton
 	void Prepare(CWnd *);
 	void Prepare(CWnd *, pj_uint32_t, pj_uint32_t, screen_mgr_res_t);
-	void Flex(screen_mgr_res_t);
+	void Refresh(screen_mgr_res_t);
 	void Adjest(pj_int32_t &, pj_int32_t &);
 	void HideAll();
-	void Test();
 	pj_status_t Launch();
 	static resolution_t GetDefaultResolution();
 
@@ -54,19 +52,19 @@ private:
 	ScreenMgr();
 	virtual ~ScreenMgr();
 
-	void Flex_1x1();
-	void Flex_2x2();
-	void Flex_1x5();
-	void Flex_3x3();
+	void Refresh_1x1();
+	void Refresh_2x2();
+	void Refresh_1x5();
+	void Refresh_3x3();
 
 private:
 	Screen wall[9];
 	const CWnd *wrapper;
-	pj_uint32_t orig_width, orig_height, min_width, min_height;
+	pj_uint32_t last_width, last_height, min_width, min_height;
 	screen_mgr_res_t screen_mgr_res;
 	pj_uint32_t vertical_padding;
 	pj_uint32_t horizontal_padding;
-	vector<screenmgr_func_t> flex_func;
+	vector<screenmgr_func_t> refresh_func;
 	vector<pj_uint32_t> num_blocks;
 	pj_bool_t screen_mgr_active;
 

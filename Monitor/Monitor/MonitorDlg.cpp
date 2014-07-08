@@ -107,6 +107,7 @@ BOOL CMonitorDlg::OnInitDialog()
 	pj_int32_t height = abs(rect.right - rect.left);
 
 	SDL_Init( SDL_INIT_VIDEO );
+	av_register_all();
 
 	ScreenMgr::GetInstance()->Prepare(this);
 	ScreenMgr::GetInstance()->Launch();
@@ -114,6 +115,8 @@ BOOL CMonitorDlg::OnInitDialog()
 
 	this->MoveWindow(CRect(0, 0, width, height));
 	this->ShowWindow(SW_SHOW);
+
+	GetDlgItem(IDC_BUTTON1)->ShowWindow(SW_HIDE);
 
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
 }
@@ -179,20 +182,7 @@ void CMonitorDlg::OnGetMinMaxInfo(MINMAXINFO* lpMMI)
 // cx, cy means client area's width and height.
 void CMonitorDlg::OnSize(UINT nType, int cx, int cy)
 {
-	switch(nType)
-	{
-		case SIZE_MAXIMIZED:
-			break;
-		case SIZE_MINIMIZED:
-			break;
-		case SIZE_RESTORED:
-			break;
-		default:
-			break;
-	}
-
 	ScreenMgr::GetInstance()->Adjest( cx, cy );
-	ScreenMgr::GetInstance()->Test();
 
 	CDialog::OnSize(nType, cx, cy);
 }
@@ -214,8 +204,7 @@ void CMonitorDlg::OnBnClickedButton1()
 
 	static screen_mgr_res_t g_res_type = SCREEN_RES_1x1;
 
-	ScreenMgr::GetInstance()->Flex(ress[g_res_type].res);
-	ScreenMgr::GetInstance()->Test();
+	ScreenMgr::GetInstance()->Refresh(ress[g_res_type].res);
 
 	g_res_type = (screen_mgr_res_t)(( g_res_type + 1 ) % 4);
 }

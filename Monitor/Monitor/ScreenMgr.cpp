@@ -11,19 +11,19 @@ ScreenMgr::ScreenMgr()
 	, horizontal_padding(MININUM_PADDING)
 	, wrapper(NULL)
 	, min_width(MININUM_SCREEN_WIDTH)
-	, orig_width(MININUM_SCREEN_WIDTH)
+	, last_width(MININUM_SCREEN_WIDTH)
 	, min_height(NUMINUM_SCREEN_HEIGHT)
-	, orig_height(NUMINUM_SCREEN_HEIGHT)
+	, last_height(NUMINUM_SCREEN_HEIGHT)
 	, screen_mgr_res(SCREEN_RES_3x3)
 	, screen_mgr_active(PJ_FALSE)
 {
-	flex_func.push_back(&ScreenMgr::Flex_1x1);
+	refresh_func.push_back(&ScreenMgr::Refresh_1x1);
 	num_blocks.push_back(1);
-	flex_func.push_back(&ScreenMgr::Flex_2x2);
+	refresh_func.push_back(&ScreenMgr::Refresh_2x2);
 	num_blocks.push_back(2);
-	flex_func.push_back(&ScreenMgr::Flex_1x5);
+	refresh_func.push_back(&ScreenMgr::Refresh_1x5);
 	num_blocks.push_back(3);
-	flex_func.push_back(&ScreenMgr::Flex_3x3);
+	refresh_func.push_back(&ScreenMgr::Refresh_3x3);
 	num_blocks.push_back(3);
 }
 
@@ -53,20 +53,9 @@ void ScreenMgr::Prepare(CWnd *wrapper)
 {
 	this->wrapper = wrapper;
 
-	const unsigned MAX_COL = 3, MAX_ROW = 3;
-	for ( unsigned col = 0; col < MAX_COL; ++ col )
+	for(pj_uint8_t idx = 0; idx < ARRAYSIZE(wall); ++ idx)
 	{
-		for ( unsigned row = 0; row < MAX_ROW; ++ row )
-		{
-			unsigned idx = col * MAX_COL + row;
-			CRect rect;
-			rect.left  = col * min_width + col * horizontal_padding;
-			rect.top   = row * min_height + row * vertical_padding;
-			rect.right = rect.left + min_width;
-			rect.bottom = rect.top + min_height;
-
-			wall[idx].Prepare(rect,	(CWnd *)wrapper, IDC_WALL_BASE_INDEX + idx);
-		}
+		wall[idx].Prepare(CRect(0, 0, min_width, min_height), (CWnd *)wrapper, IDC_WALL_BASE_INDEX + idx);
 	}
 }
 
@@ -81,7 +70,7 @@ void ScreenMgr::Prepare(CWnd *wrapper, pj_uint32_t width, pj_uint32_t height, sc
 
 pj_status_t ScreenMgr::Launch()
 {
-	(this->* flex_func[GET_FUNC_INDEX(screen_mgr_res)])();
+	(this->* refresh_func[GET_FUNC_INDEX(screen_mgr_res)])();
 
 	screen_mgr_active = PJ_TRUE;
 
@@ -92,38 +81,37 @@ void ScreenMgr::Adjest(pj_int32_t &cx, pj_int32_t &cy)
 {
 	PJ_RETURN_IF_FALSE(screen_mgr_active);
 
-	orig_width = cx;
-	orig_height = cy;
+	// 保存cx, cy
+	last_width = cx;
+	last_height = cy;
 	min_width  = ROUND(cx, num_blocks[GET_FUNC_INDEX(screen_mgr_res)]);
 	min_height = ROUND(cy, num_blocks[GET_FUNC_INDEX(screen_mgr_res)]);
 
-	(this->* flex_func[GET_FUNC_INDEX(screen_mgr_res)])();
+	(this->* refresh_func[GET_FUNC_INDEX(screen_mgr_res)])();
 }
 
-void ScreenMgr::Flex(screen_mgr_res_t res)
+void ScreenMgr::Refresh(screen_mgr_res_t res)
 {
-	if ( this->screen_mgr_res == res )
-	{
-		return;
-	}
+	PJ_RETURN_IF_FALSE(this->screen_mgr_res != res);
 
 	this->screen_mgr_res = res;
 
-	pj_uint32_t width = orig_width, height = orig_height;
-	min_width  = ROUND(width, num_blocks[GET_FUNC_INDEX(screen_mgr_res)]);
-	min_height = ROUND(height, num_blocks[GET_FUNC_INDEX(screen_mgr_res)]);
+	// 沿用上一次的cx,cy. 以免窗口大小被计算后越来越小.
+	pj_uint32_t tmp_width = last_width, tmp_height = last_height;
+	min_width  = ROUND(tmp_width, num_blocks[GET_FUNC_INDEX(screen_mgr_res)]);
+	min_height = ROUND(tmp_height, num_blocks[GET_FUNC_INDEX(screen_mgr_res)]);
 	
 	HideAll();
 
-	(this->* flex_func[GET_FUNC_INDEX(screen_mgr_res)])();
+	(this->* refresh_func[GET_FUNC_INDEX(screen_mgr_res)])();
 }
 
-void ScreenMgr::Flex_1x1()
+void ScreenMgr::Refresh_1x1()
 {
 	wall[0].Refresh(CRect(0, 0, min_width, min_height));
 }
 
-void ScreenMgr::Flex_2x2()
+void ScreenMgr::Refresh_2x2()
 {
 	const unsigned MAX_COL = 2, MAX_ROW = 2;
 	for ( unsigned col = 0; col < MAX_COL; ++ col )
@@ -142,7 +130,7 @@ void ScreenMgr::Flex_2x2()
 	}
 }
 
-void ScreenMgr::Flex_1x5()
+void ScreenMgr::Refresh_1x5()
 {
 	unsigned idx = 0;
 
@@ -175,7 +163,7 @@ void ScreenMgr::Flex_1x5()
 	wall[idx ++].Refresh(CRect(left, top, right, bottom));
 }
 
-void ScreenMgr::Flex_3x3()
+void ScreenMgr::Refresh_3x3()
 {
 	const unsigned MAX_COL = 3, MAX_ROW = 3;
 	for ( unsigned col = 0; col < MAX_COL; ++ col )
@@ -199,32 +187,5 @@ void ScreenMgr::HideAll()
 	for(pj_uint8_t idx = 0; idx < ARRAYSIZE(wall); ++ idx)
 	{
 		wall[idx].Hide();
-	}
-}
-
-void ScreenMgr::Test()
-{
-	PJ_RETURN_IF_FALSE(screen_mgr_active);
-
-	pj_uint8_t cnt = 1;
-	switch(screen_mgr_res)
-	{
-		case SCREEN_RES_1x1:
-			cnt = 1;
-			break;
-		case SCREEN_RES_2x2:
-			cnt = 4;
-			break;
-		case SCREEN_RES_1x5:
-			cnt = 6;
-			break;
-		case SCREEN_RES_3x3:
-			cnt = 9;
-			break;
-	}
-
-	for(pj_uint8_t idx = 0; idx < cnt; ++ idx)
-	{
-		wall[idx].Painting();
 	}
 }

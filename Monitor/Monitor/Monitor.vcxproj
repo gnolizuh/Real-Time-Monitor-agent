@@ -54,13 +54,13 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_WINDOWS;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>D:\Codes\pjproject-build\pjproject-2.2.1\pjlib\include;D:\Codes\pjproject-build\pjproject-2.2.1\pjlib-util\include;D:\Codes\pjproject-build\pjproject-2.2.1\pjnath\include;D:\Codes\pjproject-build\pjproject-2.2.1\pjmedia\include;D:\Codes\pjproject-build\pjproject-2.2.1\pjsip\include;D:\Codes\SDL2\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\Codes\pjproject-build\pjproject-2.2.1\pjlib\include;D:\Codes\pjproject-build\pjproject-2.2.1\pjlib-util\include;D:\Codes\pjproject-build\pjproject-2.2.1\pjnath\include;D:\Codes\pjproject-build\pjproject-2.2.1\pjmedia\include;D:\Codes\pjproject-build\pjproject-2.2.1\pjsip\include;D:\Codes\SDL2\include;D:\Codes\ffmpeg-lib\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>D:\Codes\pjproject-build\pjproject-2.2.1\pjlib\lib;D:\Codes\pjproject-build\pjproject-2.2.1\pjlib-util\lib;D:\Codes\pjproject-build\pjproject-2.2.1\pjnath\lib;D:\Codes\pjproject-build\pjproject-2.2.1\pjmedia\lib;D:\Codes\pjproject-build\pjproject-2.2.1\pjsip\lib;D:\Codes\pjproject-build\pjproject-2.2.1\third_party\lib;D:\Codes\SDL2\lib\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>SDL2.lib;dsound.lib;pjlib-i386-Win32-vc8-Debug.lib;pjlib-util-i386-Win32-vc8-Debug.lib;pjnath-i386-Win32-vc8-Debug.lib;pjmedia-i386-Win32-vc8-Debug.lib;pjmedia-codec-i386-Win32-vc8-Debug.lib;pjmedia-audiodev-i386-Win32-vc8-Debug.lib;pjmedia-videodev-i386-Win32-vc8-Debug.lib;pjsip-core-i386-Win32-vc8-Debug.lib;pjsip-ua-i386-Win32-vc8-Debug.lib;pjsip-simple-i386-Win32-vc8-Debug.lib;pjsua-lib-i386-Win32-vc8-Debug.lib;libgsmcodec-i386-Win32-vc8-Debug.lib;libilbccodec-i386-Win32-vc8-Debug.lib;libportaudio-i386-Win32-vc8-Debug.lib;libresample-i386-Win32-vc8-Debug.lib;libspeex-i386-Win32-vc8-Debug.lib;libsrtp-i386-Win32-vc8-Debug.lib;libg7221codec-i386-Win32-vc8-Debug.lib;libbaseclasses-i386-Win32-vc8-Debug.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>D:\Codes\pjproject-build\pjproject-2.2.1\pjlib\lib;D:\Codes\pjproject-build\pjproject-2.2.1\pjlib-util\lib;D:\Codes\pjproject-build\pjproject-2.2.1\pjnath\lib;D:\Codes\pjproject-build\pjproject-2.2.1\pjmedia\lib;D:\Codes\pjproject-build\pjproject-2.2.1\pjsip\lib;D:\Codes\pjproject-build\pjproject-2.2.1\third_party\lib;D:\Codes\SDL2\lib\x86;D:\Codes\ffmpeg-lib\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>SDL2.lib;pjlib-i386-Win32-vc8-Debug.lib;pjlib-util-i386-Win32-vc8-Debug.lib;pjnath-i386-Win32-vc8-Debug.lib;pjmedia-i386-Win32-vc8-Debug.lib;pjmedia-codec-i386-Win32-vc8-Debug.lib;pjmedia-audiodev-i386-Win32-vc8-Debug.lib;pjmedia-videodev-i386-Win32-vc8-Debug.lib;pjsip-core-i386-Win32-vc8-Debug.lib;pjsip-ua-i386-Win32-vc8-Debug.lib;pjsip-simple-i386-Win32-vc8-Debug.lib;pjsua-lib-i386-Win32-vc8-Debug.lib;libgsmcodec-i386-Win32-vc8-Debug.lib;libilbccodec-i386-Win32-vc8-Debug.lib;libportaudio-i386-Win32-vc8-Debug.lib;libresample-i386-Win32-vc8-Debug.lib;libspeex-i386-Win32-vc8-Debug.lib;libsrtp-i386-Win32-vc8-Debug.lib;libg7221codec-i386-Win32-vc8-Debug.lib;libbaseclasses-i386-Win32-vc8-Debug.lib;avcodec.lib;avformat.lib;avutil.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Midl>
       <MkTypLibCompatible>false</MkTypLibCompatible>
@@ -105,6 +105,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="common.h" />
+    <ClInclude Include="MessageQueue.hpp" />
     <ClInclude Include="Monitor.h" />
     <ClInclude Include="MonitorDlg.h" />
     <ClInclude Include="Resource.h" />
