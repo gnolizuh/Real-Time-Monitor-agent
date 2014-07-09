@@ -1,19 +1,19 @@
 #include "stdafx.h"
 #include "ScreenMgr.h"
 
-ScreenMgr *ScreenMgr::instance = NULL;
+ScreenMgr *ScreenMgr::instance = new ScreenMgr();
 mutex ScreenMgr::g_instance_mutex;
 const resolution_t ScreenMgr::DEFAULT_RESOLUTION = {MININUM_SCREEN_WIDTH * 3 + MININUM_PADDING,
-	NUMINUM_SCREEN_HEIGHT * 3 + MININUM_PADDING};
+	NIMINUM_SCREEN_HEIGHT * 3 + MININUM_PADDING};
 
 ScreenMgr::ScreenMgr()
 	: vertical_padding(MININUM_PADDING)
 	, horizontal_padding(MININUM_PADDING)
-	, wrapper(NULL)
+	, wrapper(nullptr)
 	, min_width(MININUM_SCREEN_WIDTH)
 	, last_width(MININUM_SCREEN_WIDTH)
-	, min_height(NUMINUM_SCREEN_HEIGHT)
-	, last_height(NUMINUM_SCREEN_HEIGHT)
+	, min_height(NIMINUM_SCREEN_HEIGHT)
+	, last_height(NIMINUM_SCREEN_HEIGHT)
 	, screen_mgr_res(SCREEN_RES_3x3)
 	, screen_mgr_active(PJ_FALSE)
 {
@@ -35,12 +35,7 @@ ScreenMgr *ScreenMgr::GetInstance()
 {
 	// Thread safety
 	lock_guard<mutex> internal_lock(g_instance_mutex);
-
-	if (!instance)
-	{
-		instance = new ScreenMgr();
-		pj_assert(instance);
-	}
+	pj_assert(instance);
 	return instance;
 }
 

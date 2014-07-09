@@ -6,6 +6,7 @@
 
 #include "Screen.h"
 #include "ScreenMgr.h"
+#include "SessionMgr.h"
 
 // CMonitorDlg ¶Ô»°¿ò
 class CMonitorDlg : public CDialogEx

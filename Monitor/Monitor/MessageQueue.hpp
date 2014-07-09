@@ -55,7 +55,7 @@ public:
 			msg_proc_list_.erase(it);
 			return t;
 		}
-		return NULL;
+		return nullptr;
 	}
 
 private:

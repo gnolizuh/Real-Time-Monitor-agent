@@ -108,10 +108,14 @@ BOOL CMonitorDlg::OnInitDialog()
 
 	SDL_Init( SDL_INIT_VIDEO );
 	av_register_all();
+	pj_init();
 
 	ScreenMgr::GetInstance()->Prepare(this);
 	ScreenMgr::GetInstance()->Launch();
 	ScreenMgr::GetInstance()->Adjest(width, height);
+
+	SessionMgr::GetInstance()->Prepare(pj_str("192.168.6.38"), 5060u, 12000u);
+	SessionMgr::GetInstance()->Launch();
 
 	this->MoveWindow(CRect(0, 0, width, height));
 	this->ShowWindow(SW_SHOW);

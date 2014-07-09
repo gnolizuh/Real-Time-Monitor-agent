@@ -2,10 +2,14 @@
 #define __MONITOR_SCREEN__
 
 #include <thread>
+#include <mutex>
 #include "common.h"
+#include "SessionMgr.h"
 #include "MessageQueue.hpp"
 
+using std::lock_guard;
 using std::thread;
+using std::mutex;
 
 class Screen
 	: public CWnd
@@ -20,6 +24,7 @@ public:
 
 protected:
 	void WorkThread();
+	afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
 	DECLARE_MESSAGE_MAP()
 
 private:
@@ -29,7 +34,7 @@ private:
 	SDL_Window         *window;       // SDL´°¿Ú
 	SDL_Renderer       *render;       // äÖÈ¾Æ÷
 	SDL_Texture        *texture;      // ÎÆÀí
-	SDL_mutex          *sdl_window_mutex;
+	mutex               win_mutex;
 	sinashow::MessageQueue<int *> msg_queue;
 	thread              msg_thread;
 };

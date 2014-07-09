@@ -21,6 +21,7 @@ extern "C"
 #include <libavutil/mathematics.h>
 }
 
+#define MAXIMAL_SCREEN_NUM    9
 #define PJ_RETURN_VAL_IF_FALSE(exp, val) do { if ( !(exp) ) return val; } while(0)
 #define PJ_RETURN_IF_FALSE(exp) do { if ( !(exp) ) return; } while(0)
 

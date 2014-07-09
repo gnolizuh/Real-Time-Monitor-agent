@@ -8,9 +8,9 @@
 #include "common.h"
 #include "Screen.h"
 
-#define MININUM_PADDING 0
+#define MININUM_PADDING       0
 #define MININUM_SCREEN_WIDTH  176
-#define NUMINUM_SCREEN_HEIGHT 144
+#define NIMINUM_SCREEN_HEIGHT 144
 #define ROUND(num, fraction) (num) /= (fraction), (num) *= (fraction), (num) / (fraction)
 #define GET_FUNC_INDEX(idx) ((idx) < 0 || (idx) >= SCREEN_RES_END ? SCREEN_RES_END : (idx))
 
@@ -49,7 +49,7 @@ public:
 	static resolution_t GetDefaultResolution();
 
 private:
-	ScreenMgr();
+	ScreenMgr();                                                             // Construct by user is forbitten.
 	virtual ~ScreenMgr();
 
 	void Refresh_1x1();
@@ -58,7 +58,7 @@ private:
 	void Refresh_3x3();
 
 private:
-	Screen wall[9];
+	Screen wall[MAXIMAL_SCREEN_NUM];
 	const CWnd *wrapper;
 	pj_uint32_t last_width, last_height, min_width, min_height;
 	screen_mgr_res_t screen_mgr_res;
