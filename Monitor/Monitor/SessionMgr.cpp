@@ -4,13 +4,14 @@
 pj_bool_t SessionMgr::call_report = PJ_TRUE;
 pj_oshandle_t SessionMgr::log_handle;
 mutex SessionMgr::g_instance_mutex;
+pj_bool_t SessionMgr::quit_flag = PJ_FALSE;
 pj_str_t SessionMgr::POOL_NAME = pj_str("monitor_pool");
 pj_str_t SessionMgr::LOG_NAME = pj_str("monitor.log");
 SessionMgr *SessionMgr::instance =  new SessionMgr();
-pjsip_module SessionMgr::siprtp_module = 
+pjsip_module SessionMgr::monitor_module = 
 {
 	NULL, NULL,				                 /* prev, next.		 */
-    { "siprtp_module", 13 },	     	     /* Name.		     */
+    { "monitor_module", 13 },	     	     /* Name.		     */
     -1,					                     /* Id			     */
     PJSIP_MOD_PRIORITY_APPLICATION,          /* Priority	     */
     NULL,									 /* load()		     */
@@ -69,6 +70,10 @@ SessionMgr *SessionMgr::GetInstance()
 }
 
 SessionMgr::SessionMgr()
+	: pool(NULL)
+	, sip_endpt(NULL)
+	, media_endpt(NULL)
+	, sessions(MAXIMAL_SCREEN_NUM)
 {
 }
 
@@ -149,15 +154,15 @@ pj_status_t SessionMgr::Prepare(pj_str_t sip_addr, pj_uint16_t sip_port, pj_uint
 		PJ_ASSERT_RETURN(status == PJ_SUCCESS, 1);
     }
 
-	status = pjsip_endpt_register_module(sip_endpt, &siprtp_module);
+	status = pjsip_endpt_register_module(sip_endpt, &monitor_module);
     PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
 
 	status = pjsip_endpt_register_module(sip_endpt, &logger_module);
     PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
 
-	for(pj_uint8_t idx = 0; idx < ARRAYSIZE(sessions); ++ idx)
+	for(pj_uint8_t idx = 0; idx < sessions.size(); ++ idx)
 	{
-		sessions[idx].index = idx;
+		sessions[idx]->index = idx;
 	}
 
 	status = pjmedia_endpt_create(&caching_pool.factory, NULL, 1, &media_endpt);
@@ -187,9 +192,9 @@ pj_status_t SessionMgr::Prepare(pj_str_t sip_addr, pj_uint16_t sip_port, pj_uint
 		PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
 	}
 
-	for (pj_uint8_t sess_idx = 0; sess_idx < ARRAYSIZE(sessions); ++ sess_idx)
+	for (pj_uint8_t sess_idx = 0; sess_idx < sessions.size(); ++ sess_idx)
 	{
-		sessions[sess_idx].Prepare(sip_endpt, media_endpt, local_addr, media_start_port, sess_idx, siprtp_module.id);
+		sessions[sess_idx]->Prepare(sip_endpt, media_endpt, local_addr, media_start_port, sess_idx, monitor_module.id);
 	}
 
 	return status;
@@ -197,27 +202,25 @@ pj_status_t SessionMgr::Prepare(pj_str_t sip_addr, pj_uint16_t sip_port, pj_uint
 
 void SessionMgr::Launch()
 {
-
+	for (unsigned int i=0; i<ARRAYSIZE(sip_thread); ++i)
+	{
+		pj_thread_create( pool, "monitor", &SessionMgr::SipThread, sip_endpt, 0, 0, &sip_thread[i]);
+    }
 }
 
 pj_status_t SessionMgr::StartSession(const pj_str_t *remote_uri, pj_uint8_t sess_idx)
 {
-	return sessions[sess_idx].Start(&local_uri, remote_uri, siprtp_module.id);
+	return sessions[sess_idx]->Invite(&local_uri, remote_uri, monitor_module.id); 
 }
 
-void SessionMgr::OnTimerStopSession(pj_timer_heap_t *timer_heap, struct pj_timer_entry *entry)
+pj_status_t SessionMgr::StopSession(pj_uint8_t sess_idx)
 {
-	Session *session = static_cast<Session *>(entry->user_data);
-
-    PJ_UNUSED_ARG(timer_heap);
-
-    entry->id = 0;
-    hangup_call(call->index);
+	return sessions[sess_idx]->Hangup();
 }
 
 void SessionMgr::OnStateChanged(pjsip_inv_session *inv, pjsip_event *e)
 {
-	Session *session = static_cast<Session *>(inv->mod_data[siprtp_module.id]);
+	Session *session = static_cast<Session *>(inv->mod_data[monitor_module.id]);
 
     PJ_UNUSED_ARG(e);
 
@@ -228,16 +231,16 @@ void SessionMgr::OnStateChanged(pjsip_inv_session *inv, pjsip_event *e)
 
     if (inv->state == PJSIP_INV_STATE_DISCONNECTED)
 	{
-		session->OnDisconnected();
+		session->OnDisconnected(inv, e);
     }
 	else if (inv->state == PJSIP_INV_STATE_CONFIRMED)
 	{
-		session->OnConfirmed();
+		session->OnConfirmed(inv, e);
     }
 	else if (inv->state == PJSIP_INV_STATE_EARLY ||
 		inv->state == PJSIP_INV_STATE_CONNECTING)
 	{
-		session->OnConnecting();
+		session->OnConnecting(inv, e);
     }
 }
 
@@ -249,6 +252,22 @@ void SessionMgr::OnNewSession(pjsip_inv_session *inv, pjsip_event *e)
     PJ_TODO( HANDLE_FORKING );
 }
 
-void SessionMgr::OnMediaUpdate(pjsip_inv_session *, pj_status_t)
+void SessionMgr::OnMediaUpdate(pjsip_inv_session *inv, pj_status_t status)
 {
+    Session *session = static_cast<Session *>(inv->mod_data[monitor_module.id]);
+	session->UpdateMedia(inv, status);
+}
+
+int SessionMgr::SipThread(void *arg)
+{
+	pjsip_endpoint *sip_endpt = static_cast<pjsip_endpoint *>(arg);
+	pj_assert(sip_endpt != NULL);
+
+	while ( !quit_flag )
+	{
+		pj_time_val timeout = {0, 10};
+		pjsip_endpt_handle_events(sip_endpt, &timeout);
+    }
+
+	return 0;
 }

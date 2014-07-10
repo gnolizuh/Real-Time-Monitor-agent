@@ -4,8 +4,10 @@
 #include <vector>
 #include <thread>
 #include <mutex>
+#include "UtilPacket.h"
 #include "Resource.h"
 #include "common.h"
+#include "SessionMgr.h"
 #include "Screen.h"
 
 #define MININUM_PADDING       0
@@ -32,9 +34,12 @@ typedef struct
 using std::mutex;
 using std::lock_guard;
 using std::vector;
+using sinashow::util_packet_t;
 
 class ScreenMgr;
 typedef void (ScreenMgr::*screenmgr_func_t)();
+
+class Screen;
 
 class ScreenMgr
 {
@@ -46,6 +51,7 @@ public:
 	void Adjest(pj_int32_t &, pj_int32_t &);
 	void HideAll();
 	pj_status_t Launch();
+	void PushScreenPacket(util_packet_t *, pj_uint8_t);
 	static resolution_t GetDefaultResolution();
 
 private:
@@ -58,7 +64,7 @@ private:
 	void Refresh_3x3();
 
 private:
-	Screen wall[MAXIMAL_SCREEN_NUM];
+	vector<Screen *> screens;
 	const CWnd *wrapper;
 	pj_uint32_t last_width, last_height, min_width, min_height;
 	screen_mgr_res_t screen_mgr_res;

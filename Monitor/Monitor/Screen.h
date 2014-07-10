@@ -3,13 +3,16 @@
 
 #include <thread>
 #include <mutex>
-#include "common.h"
-#include "SessionMgr.h"
 #include "MessageQueue.hpp"
+#include "ScreenMgr.h"
+#include "UtilPacket.h"
+#include "common.h"
 
 using std::lock_guard;
 using std::thread;
 using std::mutex;
+using sinashow::MessageQueue;
+using sinashow::util_packet_t;
 
 class Screen
 	: public CWnd
@@ -17,26 +20,32 @@ class Screen
 public:
 	Screen();
 	virtual ~Screen();
-	void Prepare(const CRect &, const CWnd *, pj_uint32_t);
+	void Prepare(const CRect &, const CWnd *, pj_uint32_t, pj_uint32_t);
 	void Refresh(const CRect &);
 	void Hide();
 	void Painting(const SDL_Rect &, const void *, int);
+	void PushPacket(util_packet_t *);
 
 protected:
-	void WorkThread();
+	void MessageQueueThread();
+	void ProcessMessage(util_packet_t *);
+	void ProcessSipMessage(util_packet_t *);
+	void ProcessMediaMessage(util_packet_t *);
 	afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
 	DECLARE_MESSAGE_MAP()
 
 private:
+	pj_uint32_t         call_status;
 	CRect               screen_rect;
 	const CWnd         *wrapper;
-	pj_uint32_t         index;
+	pj_uint32_t         idx;
+	pj_uint32_t         id;
 	SDL_Window         *window;       // SDL´°¿Ú
-	SDL_Renderer       *render;       // äÖÈ¾Æ÷
-	SDL_Texture        *texture;      // ÎÆÀí
+	SDL_Renderer       *render;       // SDLäÖÈ¾Æ÷
+	SDL_Texture        *texture;      // SDLÎÆÀí
 	mutex               win_mutex;
-	sinashow::MessageQueue<int *> msg_queue;
 	thread              msg_thread;
+	MessageQueue<util_packet_t *> msg_queue;
 };
 
 #endif

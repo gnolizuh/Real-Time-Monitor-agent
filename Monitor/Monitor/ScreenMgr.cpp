@@ -48,9 +48,9 @@ void ScreenMgr::Prepare(CWnd *wrapper)
 {
 	this->wrapper = wrapper;
 
-	for(pj_uint8_t idx = 0; idx < ARRAYSIZE(wall); ++ idx)
+	for(pj_uint8_t idx = 0; idx < screens.size(); ++ idx)
 	{
-		wall[idx].Prepare(CRect(0, 0, min_width, min_height), (CWnd *)wrapper, IDC_WALL_BASE_INDEX + idx);
+		screens[idx]->Prepare(CRect(0, 0, min_width, min_height), (CWnd *)wrapper, idx, IDC_WALL_BASE_INDEX + idx);
 	}
 }
 
@@ -70,6 +70,11 @@ pj_status_t ScreenMgr::Launch()
 	screen_mgr_active = PJ_TRUE;
 
 	return PJ_SUCCESS;
+}
+
+void ScreenMgr::PushScreenPacket(util_packet_t *packet, pj_uint8_t idx)
+{
+	screens[idx]->PushPacket(packet);
 }
 
 void ScreenMgr::Adjest(pj_int32_t &cx, pj_int32_t &cy)
@@ -103,7 +108,7 @@ void ScreenMgr::Refresh(screen_mgr_res_t res)
 
 void ScreenMgr::Refresh_1x1()
 {
-	wall[0].Refresh(CRect(0, 0, min_width, min_height));
+	screens[0]->Refresh(CRect(0, 0, min_width, min_height));
 }
 
 void ScreenMgr::Refresh_2x2()
@@ -120,7 +125,7 @@ void ScreenMgr::Refresh_2x2()
 			rect.right = rect.left + min_width;
 			rect.bottom = rect.top + min_height;
 
-			wall[idx].Refresh(rect);
+			screens[idx]->Refresh(rect);
 		}
 	}
 }
@@ -132,30 +137,30 @@ void ScreenMgr::Refresh_1x5()
 	pj_int32_t left = 0, top = 0, right, bottom;
 	right = min_width * 2 + horizontal_padding;
 	bottom = min_height * 2 + vertical_padding;
-	wall[idx ++].Refresh(CRect(left, top, right, bottom));
+	screens[idx ++]->Refresh(CRect(left, top, right, bottom));
 
 	left = right + horizontal_padding;
 	right = left + min_width;
 	bottom = min_height;
-	wall[idx ++].Refresh(CRect(left, top, right, bottom));
+	screens[idx ++]->Refresh(CRect(left, top, right, bottom));
 
 	top = bottom + vertical_padding;
 	bottom = top + min_height;
-	wall[idx ++].Refresh(CRect(left, top, right, bottom));
+	screens[idx ++]->Refresh(CRect(left, top, right, bottom));
 
 	left = 0;
 	right = min_width;
 	top = bottom + vertical_padding;
 	bottom = top + min_height;
-	wall[idx ++].Refresh(CRect(left, top, right, bottom));
+	screens[idx ++]->Refresh(CRect(left, top, right, bottom));
 
 	left = right + horizontal_padding;
 	right = left + min_width;
-	wall[idx ++].Refresh(CRect(left, top, right, bottom));
+	screens[idx ++]->Refresh(CRect(left, top, right, bottom));
 
 	left = right + horizontal_padding;
 	right = left + min_width;
-	wall[idx ++].Refresh(CRect(left, top, right, bottom));
+	screens[idx ++]->Refresh(CRect(left, top, right, bottom));
 }
 
 void ScreenMgr::Refresh_3x3()
@@ -172,15 +177,15 @@ void ScreenMgr::Refresh_3x3()
 			rect.right = rect.left + min_width;
 			rect.bottom = rect.top + min_height;
 
-			wall[idx].Refresh(rect);
+			screens[idx]->Refresh(rect);
 		}
 	}
 }
 
 void ScreenMgr::HideAll()
 {
-	for(pj_uint8_t idx = 0; idx < ARRAYSIZE(wall); ++ idx)
+	for(pj_uint8_t idx = 0; idx < screens.size(); ++ idx)
 	{
-		wall[idx].Hide();
+		screens[idx]->Hide();
 	}
 }

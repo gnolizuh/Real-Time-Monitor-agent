@@ -1,8 +1,21 @@
 #include "stdafx.h"
 #include "Session.h"
 
+struct codec Session::audio_codecs[] = 
+{
+    { 0,  "PCMU", 8000, 64000, 20, "G.711 ULaw" },
+    { 3,  "GSM",  8000, 13200, 20, "GSM" },
+    { 4,  "G723", 8000, 6400,  30, "G.723.1" },
+    { 8,  "PCMA", 8000, 64000, 20, "G.711 ALaw" },
+    { 18, "G729", 8000, 8000,  20, "G.729" },
+};
+
+struct codec Session::video_codecs[] = 
+{
+    { 97,  "H264", 90000, 62208000/* bits-rate */, 6000/* samples per frame */, "H.264/AVC" },
+};
+
 Session::Session()
-	: duration(5)
 {
 }
 
@@ -23,22 +36,23 @@ pj_status_t Session::Prepare( pjsip_endpoint *sip_endpt,
 	this->media_endpt = media_endpt;
 	this->sip_endpt = sip_endpt;
 	this->mod_id = mod_id;
+	this->local_addr = local_addr;
 
 	/* Create transport for each media in the call */
-	for ( pj_uint8_t media_idx = 0; media_idx < PJ_ARRAY_SIZE(medias); ++ media_idx )
+	for ( pj_uint8_t media_idx = 0; media_idx < PJ_ARRAY_SIZE(this->medias); ++ media_idx )
 	{
 	    /* Repeat binding media socket to next port when fails to bind
 	     * to current port number.
 	     */
 	    int retry;
 
-	    medias[media_idx].call_index = call_idx;
-	    medias[media_idx].media_index = media_idx;
+	    this->medias[media_idx].call_index = call_idx;
+	    this->medias[media_idx].media_index = media_idx;
 
 	    status = -1;
 	    for ( retry = 0; retry < 100; ++ retry, media_port += 2 )
 		{
-			struct media_stream *m = &medias[media_idx];
+			struct media_stream *m = &this->medias[media_idx];
 
 			status = pjmedia_transport_udp_create2(media_endpt, 
 				"siprtp",
@@ -60,7 +74,7 @@ void Session::Launch()
 {
 }
 
-pj_status_t Session::Start(const pj_str_t *local_uri, const pj_str_t *remote_uri, pj_int32_t module_id)
+pj_status_t Session::Invite(const pj_str_t *local_uri, const pj_str_t *remote_uri, pj_int32_t module_id)
 {
     pjsip_dialog *dlg;
     pjmedia_sdp_session *sdp = NULL;
@@ -77,7 +91,7 @@ pj_status_t Session::Start(const pj_str_t *local_uri, const pj_str_t *remote_uri
     PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
 
     /* Create SDP */
-    //create_sdp( dlg->pool, call, &sdp);
+    CreateSdp(dlg->pool, &sdp);
 
     /* Create the INVITE session. */
     status = pjsip_inv_create_uac(dlg, sdp, 0, &inv_session);
@@ -110,7 +124,26 @@ pj_status_t Session::Start(const pj_str_t *local_uri, const pj_str_t *remote_uri
     return PJ_SUCCESS;
 }
 
-void Session::Stop()
+pj_status_t Session::Hangup()
+{
+	pjsip_tx_data *tdata;
+	pj_status_t status;
+
+    if (inv_session == NULL)
+	{
+		return -1;
+	}
+
+    status = pjsip_inv_end_session(inv_session, 603, NULL, &tdata);
+    if (status==PJ_SUCCESS && tdata!=NULL)
+	{
+		pjsip_inv_send_msg(inv_session, tdata);
+	}
+
+	return status;
+}
+
+pj_status_t Session::Stop()
 {
 	for ( int idx = 0; idx < ARRAYSIZE(medias); ++ idx )
 	{
@@ -119,48 +152,38 @@ void Session::Stop()
 		{
 			media->active = PJ_FALSE;
 
-			if (media->thread)
-			{
-				media->thread_quit_flag = 1;
-				pj_thread_join(media->thread);
-				pj_thread_destroy(media->thread);
-				media->thread = NULL;
-				media->thread_quit_flag = 0;
-			}
-
 			pjmedia_transport_detach(media->transport, media);
 		}
 	}
+
+	return PJ_SUCCESS;
 }
 
-void Session::Hangup()
+void Session::OnConnecting(pjsip_inv_session *inv, pjsip_event *e)
 {
-	pjsip_tx_data *tdata;
-    pj_status_t status;
-
-    if (inv_session == NULL)
+	if (response_time.sec == 0)
 	{
-		return;
+	    pj_gettimeofday(&response_time);
 	}
 
-    status = pjsip_inv_end_session(app.call[index].inv, 603, NULL, &tdata);
-    if (status==PJ_SUCCESS && tdata!=NULL)
-	{
-		pjsip_inv_send_msg(app.call[index].inv, tdata);
-	}
+	util_packet_t *packet = new util_packet_t();
+	packet->type = sinashow::UTIL_PACKET_SIP;
+	packet->buf = new pj_uint8_t();
+	packet->buflen = sizeof(pj_uint8_t);
+	*((pj_uint8_t *)packet->buf) = sinashow::UTIL_SIP_PACKET_CONNECTING;
+
+	ScreenMgr::GetInstance()->PushScreenPacket(packet, index);
 }
 
-void Session::OnConnecting()
-{
-}
-
-void Session::OnConfirmed()
+void Session::OnConfirmed(pjsip_inv_session *inv, pjsip_event *e)
 {
 	pj_time_val t;
 
 	pj_gettimeofday(&connect_time);
 	if (response_time.sec == 0)
+	{
 	    response_time = connect_time;
+	}
 
 	t = connect_time;
 	PJ_TIME_VAL_SUB(t, start_time);
@@ -168,27 +191,18 @@ void Session::OnConfirmed()
 	PJ_LOG(3,(THIS_FILE, "Call #%d connected in %d ms", index,
 		  PJ_TIME_VAL_MSEC(t)));
 
-	if (duration != 0)
-	{
-	    d_timer.id = 1;
-	    d_timer.user_data = this;
-	    d_timer.cb = &timer_disconnect_call;
+	util_packet_t *packet = new util_packet_t();
+	packet->type = sinashow::UTIL_PACKET_SIP;
+	packet->buf = new pj_uint8_t();
+	packet->buflen = sizeof(pj_uint8_t);
+	*((pj_uint8_t *)packet->buf) = sinashow::UTIL_SIP_PACKET_CONNECTED;
 
-	    t.sec = duration;
-	    t.msec = 0;
-
-	    pjsip_endpt_schedule_timer(sip_endpt, &d_timer, &t);
-	}
+	ScreenMgr::GetInstance()->PushScreenPacket(packet, index);
 }
 
-void Session::OnDisconnected()
+void Session::OnDisconnected(pjsip_inv_session *inv, pjsip_event *e)
 {
 	pj_time_val null_time = {0, 0};
-
-	if (d_timer.id != 0) {
-	    pjsip_endpt_cancel_timer(sip_endpt, &d_timer);
-	    d_timer.id = 0;
-	}
 
 	PJ_LOG(3,(THIS_FILE, "Call #%d disconnected. Reason=%d (%.*s)",
 		  index,
@@ -199,17 +213,301 @@ void Session::OnDisconnected()
     PJ_LOG(3,(THIS_FILE, "Call #%d statistics:", index));
     Statistic();
 
-	this->inv_session = NULL;
-	inv_session->mod_data[this->mod_id] = NULL;
+	inv_session = NULL;
+	inv->mod_data[mod_id] = NULL;
 
 	Stop();
 
 	start_time = null_time;
 	response_time = null_time;
 	connect_time = null_time;
+
+	util_packet_t *packet = new util_packet_t();
+	packet->type = sinashow::UTIL_PACKET_SIP;
+	packet->buf = new pj_uint8_t();
+	packet->buflen = sizeof(pj_uint8_t);
+	*((pj_uint8_t *)packet->buf) = sinashow::UTIL_SIP_PACKET_DISCONNECTED;
+
+	ScreenMgr::GetInstance()->PushScreenPacket(packet, index);
 }
 
-const char *Session::good_number(char *buf, pj_int32_t val)
+void Session::OnTimerStopSession(pj_timer_heap_t *timer_heap, struct pj_timer_entry *entry)
+{
+	Session *session = static_cast<Session *>(entry->user_data);
+
+    PJ_UNUSED_ARG(timer_heap);
+
+    entry->id = 0;
+	session->Hangup();
+}
+
+void Session::OnRxRtp(void *user_data, void *pkt, pj_ssize_t size)
+{
+	struct media_stream *strm;
+    pj_status_t status;
+    const pjmedia_rtp_hdr *hdr;
+    const void *payload;
+    unsigned payload_len;
+
+    strm = (struct media_stream *)user_data;
+
+    /* Discard packet if media is inactive */
+    if (!strm->active)
+	return;
+
+    /* Check for errors */
+	PJ_RETURN_IF_FALSE(size >= 0);
+
+    /* Decode RTP packet. */
+    status = pjmedia_rtp_decode_rtp(&strm->in_sess, 
+				    pkt, (int)size, 
+				    &hdr, &payload, &payload_len);
+	PJ_RETURN_IF_FALSE(status == PJ_SUCCESS);
+
+    //PJ_LOG(4,(THIS_FILE, "Rx seq=%d", pj_ntohs(hdr->seq)));
+
+    /* Update the RTCP session. */
+    pjmedia_rtcp_rx_rtp(&strm->rtcp, pj_ntohs(hdr->seq),
+			pj_ntohl(hdr->ts), payload_len);
+
+    /* Update RTP session */
+    pjmedia_rtp_session_update(&strm->in_sess, hdr, NULL);
+}
+
+void Session::OnRxRtcp(void *user_data, void *pkt, pj_ssize_t size)
+{
+	struct media_stream *strm;
+
+    strm = (struct media_stream *)user_data;
+
+    /* Discard packet if media is inactive */
+    if (!strm->active)
+	return;
+
+    /* Check for errors */
+    PJ_RETURN_IF_FALSE(size >= 0);
+
+    /* Update RTCP session */
+    pjmedia_rtcp_rx_rtcp(&strm->rtcp, pkt, size);
+}
+
+void Session::UpdateMedia(pjsip_inv_session *inv, pj_status_t status)
+{
+	pj_pool_t *pool;
+    struct media_stream *audio, *video;
+    const pjmedia_sdp_session *local_sdp, *remote_sdp;
+    struct codec *aud_codec_desc = NULL, *vid_codec_desc = NULL;
+    unsigned i;
+
+	pool = inv->dlg->pool;
+    audio = &medias[0];
+	video = &medias[1];
+
+    /* If this is a mid-call media update, then destroy existing media */
+	audio->active = PJ_FALSE;
+	pjmedia_transport_detach(audio->transport, audio);
+
+	video->active = PJ_FALSE;
+	pjmedia_transport_detach(video->transport, video);
+
+    /* Do nothing if media negotiation has failed */
+    PJ_RETURN_IF_FALSE(status == PJ_SUCCESS);
+    
+    /* Capture stream definition from the SDP */
+    pjmedia_sdp_neg_get_active_local(inv->neg, &local_sdp);
+    pjmedia_sdp_neg_get_active_remote(inv->neg, &remote_sdp);
+
+    status = pjmedia_stream_info_from_sdp(&audio->ai, inv->pool, media_endpt,
+					  local_sdp, remote_sdp, 0);
+	PJ_RETURN_IF_FALSE(status == PJ_SUCCESS);
+
+	status = pjmedia_vid_stream_info_from_sdp(&video->vi, inv->pool, media_endpt, local_sdp, remote_sdp, 1);
+	PJ_RETURN_IF_FALSE(status == PJ_SUCCESS);
+
+	/* Find the codec description in codec array */
+	for (i=0; i<PJ_ARRAY_SIZE(audio_codecs); ++i)
+	{
+		if (audio_codecs[i].pt == audio->ai.fmt.pt)
+		{
+			aud_codec_desc = &audio_codecs[i];
+			break;
+		}
+	}
+
+	if (aud_codec_desc == NULL)
+	{
+		PJ_LOG(3, (THIS_FILE, "Error: Invalid audio codec payload type"));
+		return;
+	}
+
+	/* Find the codec description in codec array */
+	for (i=0; i<PJ_ARRAY_SIZE(video_codecs); ++i)
+	{
+		if (video_codecs[i].pt == video->vi.codec_info.pt) {
+		vid_codec_desc = &video_codecs[i];
+		break;
+		}
+	}
+
+	if (vid_codec_desc == NULL) {
+		PJ_LOG(3, (THIS_FILE, "Error: Invalid video codec payload type"));
+		return;
+	}
+
+    audio->clock_rate = audio->ai.fmt.clock_rate;
+    audio->samples_per_frame = audio->clock_rate * aud_codec_desc->ptime / 1000;
+    audio->bytes_per_frame = aud_codec_desc->bit_rate * aud_codec_desc->ptime / 1000 / 8;
+
+	// Support video; set incoming call fps and bps
+	pjmedia_ratio ifps = video->vi.codec_param->dec_fmt.det.vid.fps;
+	video->clock_rate = video->vi.codec_info.clock_rate;
+	video->samples_per_frame = video->clock_rate / (ifps.num / ifps.denum);
+	video->bytes_per_frame = vid_codec_desc->bit_rate / (ifps.num / ifps.denum) / 8;
+
+    pjmedia_rtp_session_init(&audio->out_sess, audio->ai.tx_pt, 
+			     pj_rand());
+    pjmedia_rtp_session_init(&audio->in_sess, audio->ai.fmt.pt, 0);
+    pjmedia_rtcp_init(&audio->rtcp, "audio_rtcp", audio->clock_rate, 
+		      audio->samples_per_frame, 0);
+
+	pjmedia_rtp_session_init(&video->out_sess, video->vi.tx_pt, pj_rand());
+	pjmedia_rtp_session_init(&video->in_sess, video->vi.rx_pt, 0);
+	pjmedia_rtcp_init(&video->rtcp, "video_rtcp", video->clock_rate, video->samples_per_frame, 0);
+
+    /* Attach media to transport */
+    status = pjmedia_transport_attach(audio->transport, audio, 
+				      &audio->ai.rem_addr, 
+				      &audio->ai.rem_rtcp, 
+				      sizeof(pj_sockaddr_in),
+				      &OnRxRtp,
+				      &OnRxRtcp);
+	PJ_RETURN_IF_FALSE(status == PJ_SUCCESS);
+
+	/* Attach media to transport */
+	status = pjmedia_transport_attach(video->transport, video, 
+						&video->vi.rem_addr, 
+						&video->vi.rem_rtcp, 
+						sizeof(pj_sockaddr_in),
+						&OnRxRtp,
+						&OnRxRtcp);
+	PJ_RETURN_IF_FALSE(status == PJ_SUCCESS);
+
+	audio->active = PJ_TRUE;
+	video->active = PJ_TRUE;
+}
+
+pj_status_t Session::CreateSdp( pj_pool_t *pool, pjmedia_sdp_session **p_sdp)
+{
+	pj_time_val tv;
+    pjmedia_sdp_session *sdp;
+    pjmedia_sdp_media *m;
+    pjmedia_sdp_attr *attr;
+    pjmedia_transport_info tpinfo;
+    struct media_stream *audio = &medias[0];
+	struct media_stream *video = &medias[1];
+
+    PJ_ASSERT_RETURN(pool && p_sdp, PJ_EINVAL);
+
+    /* Get transport info */
+    pjmedia_transport_info_init(&tpinfo);
+    pjmedia_transport_get_info(audio->transport, &tpinfo);
+
+    /* Create and initialize basic SDP session */
+    sdp = (pjmedia_sdp_session *)pj_pool_zalloc (pool, sizeof(pjmedia_sdp_session));
+
+    pj_gettimeofday(&tv);
+    sdp->origin.user = pj_str("pjsip-siprtp");
+    sdp->origin.version = sdp->origin.id = tv.sec + 2208988800UL;
+    sdp->origin.net_type = pj_str("IN");
+    sdp->origin.addr_type = pj_str("IP4");
+    sdp->origin.addr = *pj_gethostname();
+    sdp->name = pj_str("pjsip");
+
+    /* Since we only support one media stream at present, put the
+     * SDP connection line in the session level.
+     */
+    sdp->conn = (pjmedia_sdp_conn *)pj_pool_zalloc (pool, sizeof(pjmedia_sdp_conn));
+    sdp->conn->net_type = pj_str("IN");
+    sdp->conn->addr_type = pj_str("IP4");
+    sdp->conn->addr = local_addr;
+
+    /* SDP time and attributes. */
+    sdp->time.start = sdp->time.stop = 0;
+    sdp->attr_count = 0;
+
+    /* Create media stream 0: */
+    sdp->media_count = 2;
+    m = (pjmedia_sdp_media *)pj_pool_zalloc (pool, sizeof(pjmedia_sdp_media));
+    sdp->media[0] = m;
+
+    /* Standard media info: */
+    m->desc.media = pj_str("audio");
+    m->desc.port = pj_ntohs(tpinfo.sock_info.rtp_addr_name.ipv4.sin_port);
+    m->desc.port_count = 1;
+    m->desc.transport = pj_str("RTP/AVP");
+
+    /* Add format and rtpmap for each codec. */
+    m->desc.fmt_count = 1;
+    m->attr_count = 0;
+
+	// audio rtpmap
+	pjmedia_sdp_rtpmap rtpmap;
+	char ptstr[10];
+
+	sprintf(ptstr, "%d", audio_codecs[0].pt);
+	pj_strdup2(pool, &m->desc.fmt[0], ptstr);
+	rtpmap.pt = m->desc.fmt[0];
+	rtpmap.clock_rate = audio_codecs[0].clock_rate;
+	rtpmap.enc_name = pj_str(audio_codecs[0].name);
+	rtpmap.param.slen = 0;
+
+	pjmedia_sdp_rtpmap_to_attr(pool, &rtpmap, &attr);
+	m->attr[m->attr_count++] = attr;
+
+    /* Add sendrecv attribute. */
+    attr = (pjmedia_sdp_attr *)pj_pool_zalloc(pool, sizeof(pjmedia_sdp_attr));
+    attr->name = pj_str("sendrecv");
+    m->attr[m->attr_count++] = attr;
+
+	// Video media-attr
+	pjmedia_transport_info_init(&tpinfo);
+    pjmedia_transport_get_info(video->transport, &tpinfo);
+
+	m = (pjmedia_sdp_media *)pj_pool_zalloc (pool, sizeof(pjmedia_sdp_media));
+    sdp->media[1] = m;
+
+	/* Standard media info: */
+    m->desc.media = pj_str("video");
+    m->desc.port = pj_ntohs(tpinfo.sock_info.rtp_addr_name.ipv4.sin_port);
+    m->desc.port_count = 1;
+    m->desc.transport = pj_str("RTP/AVP");
+
+    /* Add format and rtpmap for each codec. */
+    m->desc.fmt_count = 1;
+    m->attr_count = 0;
+
+	sprintf(ptstr, "%d", video_codecs[0].pt);
+	pj_strdup2(pool, &m->desc.fmt[0], ptstr);
+	rtpmap.pt = m->desc.fmt[0];
+	rtpmap.clock_rate = video_codecs[0].clock_rate;
+	rtpmap.enc_name = pj_str(video_codecs[0].name);
+	rtpmap.param.slen = 0;
+
+	pjmedia_sdp_rtpmap_to_attr(pool, &rtpmap, &attr);
+	m->attr[m->attr_count++] = attr;
+
+    /* Add sendrecv attribute. */
+    attr = (pjmedia_sdp_attr *)pj_pool_zalloc(pool, sizeof(pjmedia_sdp_attr));
+    attr->name = pj_str("sendrecv");
+    m->attr[m->attr_count++] = attr;
+
+    /* Done */
+    *p_sdp = sdp;
+
+    return PJ_SUCCESS;
+}
+
+const char *Session::GoodNumber(char *buf, pj_int32_t val)
 {
     if (val < 1000)
 	{
@@ -217,15 +515,11 @@ const char *Session::good_number(char *buf, pj_int32_t val)
     }
 	else if(val < 1000000)
 	{
-		pj_ansi_sprintf(buf, "%d.%02dK", 
-				val / 1000,
-				(val % 1000) / 100);
+		pj_ansi_sprintf(buf, "%d.%02dK", val / 1000, (val % 1000) / 100);
     }
 	else
 	{
-		pj_ansi_sprintf(buf, "%d.%02dM", 
-				val / 1000000,
-				(val % 1000000) / 10000);
+		pj_ansi_sprintf(buf, "%d.%02dM", val / 1000000, (val % 1000000) / 10000);
     }
 
     return buf;
@@ -326,8 +620,8 @@ void Session::Statistic()
 		audio->ai.fmt.encoding_name.ptr,
 		audio->clock_rate,
 		audio->samples_per_frame * 1000 / audio->clock_rate,
-		good_number(bps, audio->bytes_per_frame * audio->clock_rate / audio->samples_per_frame),
-		good_number(ipbps, (audio->bytes_per_frame+32) * audio->clock_rate / audio->samples_per_frame)));
+		GoodNumber(bps, audio->bytes_per_frame * audio->clock_rate / audio->samples_per_frame),
+		GoodNumber(ipbps, (audio->bytes_per_frame+32) * audio->clock_rate / audio->samples_per_frame)));
 
     if (audio->rtcp.stat.rx.update_cnt == 0)
 	strcpy(last_update, "never");
@@ -349,9 +643,9 @@ void Session::Statistic()
 	   "                 loss period: %7.3f %7.3f %7.3f %7.3f%s\n"
 	   "                 jitter     : %7.3f %7.3f %7.3f %7.3f%s",
 	   last_update,
-	   good_number(packets, audio->rtcp.stat.rx.pkt),
-	   good_number(bytes, audio->rtcp.stat.rx.bytes),
-	   good_number(ipbytes, audio->rtcp.stat.rx.bytes + audio->rtcp.stat.rx.pkt * 32),
+	   GoodNumber(packets, audio->rtcp.stat.rx.pkt),
+	   GoodNumber(bytes, audio->rtcp.stat.rx.bytes),
+	   GoodNumber(ipbytes, audio->rtcp.stat.rx.bytes + audio->rtcp.stat.rx.pkt * 32),
 	   "",
 	   audio->rtcp.stat.rx.loss,
 	   audio->rtcp.stat.rx.loss * 100.0 / (audio->rtcp.stat.rx.pkt + audio->rtcp.stat.rx.loss),
@@ -393,9 +687,9 @@ void Session::Statistic()
 	   "                 loss period: %7.3f %7.3f %7.3f %7.3f%s\n"
 	   "                 jitter     : %7.3f %7.3f %7.3f %7.3f%s",
 	   last_update,
-	   good_number(packets, audio->rtcp.stat.tx.pkt),
-	   good_number(bytes, audio->rtcp.stat.tx.bytes),
-	   good_number(ipbytes, audio->rtcp.stat.tx.bytes + audio->rtcp.stat.tx.pkt * 32),
+	   GoodNumber(packets, audio->rtcp.stat.tx.pkt),
+	   GoodNumber(bytes, audio->rtcp.stat.tx.bytes),
+	   GoodNumber(ipbytes, audio->rtcp.stat.tx.bytes + audio->rtcp.stat.tx.pkt * 32),
 	   "",
 	   audio->rtcp.stat.tx.loss,
 	   audio->rtcp.stat.tx.loss * 100.0 / (audio->rtcp.stat.tx.pkt + audio->rtcp.stat.tx.loss),

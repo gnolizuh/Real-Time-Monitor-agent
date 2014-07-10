@@ -1,0 +1,1875 @@
+14:40:20.259 sip_endpoint.c  Creating endpoint instance...
+14:40:20.294          pjlib  select() I/O Queue created (0036E4D0)
+14:40:20.311 sip_endpoint.c  Module "mod-msg-print" registered
+14:40:20.326 sip_transport.  Transport manager created.
+14:40:20.379    udp00374B30  SIP UDP transport started, published address is 192.168.6.38:5060
+14:40:20.501 c:\users\admin  SIP UDP listening on 192.168.6.38:5060
+14:40:20.519 sip_endpoint.c  Module "mod-tsx-layer" registered
+14:40:20.542 sip_endpoint.c  Module "mod-stateful-util" registered
+14:40:20.559 sip_endpoint.c  Module "mod-ua" registered
+14:40:20.576 sip_endpoint.c  Module "mod-100rel" registered
+14:40:20.592 sip_endpoint.c  Module "mod-invite" registered
+14:40:20.609 sip_endpoint.c  Module "monitor_modul" registered
+14:40:20.630 sip_endpoint.c  Module "logger_module" registered
+14:40:20.683     wmme_dev.c  WMME found 3 devices:
+14:40:20.710     wmme_dev.c   dev_id 0: Wave mapper  (in=2, out=2)
+14:40:20.930     wmme_dev.c   dev_id 1: Âó¿Ë·ç (Realtek High Definition  (in=2, out=0)
+14:40:21.128     wmme_dev.c   dev_id 2: ÑïÉùÆ÷ (Realtek High Definition  (in=0, out=2)
+14:40:21.196     wmme_dev.c  WMME initialized
+14:40:21.217          pjlib  select() I/O Queue created (0038AC3C)
+14:40:21.344    dshow_dev.c  DShow has 1 devices:
+14:40:21.367    dshow_dev.c   dev_id 0: PC Camera (capture)
+14:40:21.396 colorbar_dev.c  Colorbar video src initialized with 1 device(s):
+14:40:21.433 colorbar_dev.c   0: Colorbar generator
+14:40:21.460      sdl_dev.c  SDL 2.0 initialized
+14:40:21.738         siprtp !Remote RTP address switched to 192.168.4.108:4000
+14:40:21.762         siprtp  Remote RTCP address switched to predicted address 192.168.4.108:4001
+14:40:23.307    dlg003E516C !UAC dialog created
+14:40:23.331    dlg003E516C  Module mod-invite added as dialog usage, data=003E64D0
+14:40:23.352    dlg003E516C  .Session count inc to 2 by mod-invite
+14:40:23.372    dlg003E516C  Module mod-100rel added as dialog usage, data=003E7A74
+14:40:23.394    dlg003E516C  100rel module attached
+14:40:23.414    inv003E516C  UAC invite session created for dialog dlg003E516C
+14:40:23.435       endpoint  Request msg INVITE/cseq=18468 (tdta003E7C00) created.
+14:40:23.456    inv003E516C  .Sending Request msg INVITE/cseq=18468 (tdta003E7C00)
+14:40:23.477    dlg003E516C  ..Sending Request msg INVITE/cseq=18468 (tdta003E7C00)
+14:40:23.503    tsx003E9C84  ...Transaction created for Request msg INVITE/cseq=18467 (tdta003E7C00)
+14:40:23.518    tsx003E9C84  ..Sending Request msg INVITE/cseq=18467 (tdta003E7C00) in state Null
+14:40:23.539  sip_resolve.c  ...Target '192.168.4.108:5060' type=Unspecified resolved to '192.168.4.108:5060' type=UDP (UDP transport)
+14:40:23.560    tsx003E9C84  ...State changed from Null to Calling, event=TX_MSG
+14:40:23.561 sip_endpoint.c !Processing incoming message: Response msg 200/INVITE/cseq=18467 (rdata00377164)
+14:40:23.581    dlg003E516C !....Transaction tsx003E9C84 state changed to Calling
+14:40:23.602    tsx003E9C84 !.Incoming Response msg 200/INVITE/cseq=18467 (rdata00377164) in state Calling
+14:40:23.643    tsx003E9C84  ..State changed from Calling to Terminated, event=RX_MSG
+14:40:23.664    dlg003E516C  ...Received Response msg 200/INVITE/cseq=18467 (rdata00377164)
+14:40:23.685    dlg003E516C  ....Route-set updated
+14:40:23.705    dlg003E516C  ....Route-set frozen
+14:40:23.727    dlg003E516C  ...Transaction tsx003E9C84 state changed to Terminated
+14:40:23.752    inv003E516C  ....Got SDP answer in Response msg 200/INVITE/cseq=18467 (rdata00377164)
+14:40:23.768    inv003E516C  ....SDP negotiation done, status=0
+14:40:23.789          rtp.c  ....pjmedia_rtp_session_init: ses=00338534, default_pt=0, ssrc=0x4ae13d6c
+14:40:23.810          rtp.c  ....pjmedia_rtp_session_init: ses=00338564, default_pt=0, ssrc=0x0
+14:40:23.830          rtp.c  ....pjmedia_rtp_session_init: ses=003389D4, default_pt=97, ssrc=0x5af141bb
+14:40:23.851          rtp.c  ....pjmedia_rtp_session_init: ses=00338A04, default_pt=97, ssrc=0x0
+14:40:23.862         siprtp !Remote RTP address switched to 192.168.4.108:4004
+14:40:23.893         siprtp  Remote RTCP address switched to predicted address 192.168.4.108:4005
+14:40:23.905         siprtp !....SO_RCVBUF set to 65536
+14:40:23.923         siprtp  ....SO_SNDBUF set to 65536
+14:40:23.938         siprtp  ....SO_RCVBUF set to 65536
+14:40:23.956         siprtp  ....SO_SNDBUF set to 65536
+14:40:23.977    inv003E516C  ....Received Response msg 200/INVITE/cseq=18467 (rdata00377164), sending ACK
+14:40:23.990       endpoint  ....Request msg ACK/cseq=18467 (tdta003ED760) created.
+14:40:24.005    dlg003E516C  .....Sending Request msg ACK/cseq=18467 (tdta003ED760)
+14:40:24.023  sip_resolve.c  .....Target '192.168.4.108:5060' type=Unspecified resolved to '192.168.4.108:5060' type=UDP (UDP transport)
+14:40:24.039 c:\users\admin  ....Call #7 connected in 604 ms
+14:40:24.056    tsx003E9C84  Timeout timer event
+14:40:24.077    tsx003E9C84  .State changed from Terminated to Destroyed, event=TIMER
+14:40:24.090    tsx003E9C84  Transaction destroyed!
+14:40:34.057       endpoint  .Request msg BYE/cseq=18469 (tdta003F2D38) created.
+14:40:34.088    inv003E516C  .Sending Request msg BYE/cseq=18469 (tdta003F2D38)
+14:40:34.103    dlg003E516C  ..Sending Request msg BYE/cseq=18469 (tdta003F2D38)
+14:40:34.121    tsx003F3DDC  ...Transaction created for Request msg BYE/cseq=18468 (tdta003F2D38)
+14:40:34.136    tsx003F3DDC  ..Sending Request msg BYE/cseq=18468 (tdta003F2D38) in state Null
+14:40:34.154  sip_resolve.c  ...Target '192.168.4.108:5060' type=Unspecified resolved to '192.168.4.108:5060' type=UDP (UDP transport)
+14:40:34.170    tsx003F3DDC  ...State changed from Null to Calling, event=TX_MSG
+14:40:34.188    dlg003E516C  ....Transaction tsx003F3DDC state changed to Calling
+14:40:34.203 sip_endpoint.c  Processing incoming message: Response msg 200/BYE/cseq=18468 (rdata00377164)
+14:40:34.221    tsx003F3DDC  .Incoming Response msg 200/BYE/cseq=18468 (rdata00377164) in state Calling
+14:40:34.242    tsx003F3DDC  ..State changed from Calling to Completed, event=RX_MSG
+14:40:34.263    dlg003E516C  ...Received Response msg 200/BYE/cseq=18468 (rdata00377164)
+14:40:34.278    dlg003E516C  ...Transaction tsx003F3DDC state changed to Completed
+14:40:34.296 c:\users\admin  ....Call #7 disconnected. Reason=603 (Decline)
+14:40:34.311 c:\users\admin  ....Call #7 statistics:
+Call #7: DISCONNCTD [duration: 00:00:10.290]
+   To: sip:192.168.4.108;tag=3cd93472-fa4f-448d-a569-095e58ef9457
+   Signaling quality: got 1st response in -1727929078 ms, connected after: 604 ms
+   Stream #0: audio PCMU@8000Hz, 20ms/frame, 8.00KB/s (9.06KB/s +IP hdr)
+              RX stat last update: never
+                 total 510 packets 81.06KB received (97.09KB +IP hdr)
+                 pkt loss=0 (0.0%), dup=0 (0.0%), reorder=0 (0.0%)
+                       (msec)    min     avg     max     last
+                 loss period:   0.000   0.000   0.000   0.000
+                 jitter     :   0.000   0.037   0.375   0.000
+              TX stat last update: 00h:00m:04.992s ago
+                 total 0 packets 0B sent (0B +IP hdr)
+                 pkt loss=0 (-1.$%), dup=0 (-1.$%), reorder=0 (-1.$%)
+                       (msec)    min     avg     max     last
+                 loss period:   0.000   0.000   0.000   0.000
+                 jitter     :   0.000   0.000   0.000   0.000
+             RTT delay      :   0.000   0.000   0.000   0.000
+
+14:40:34.459   tdta003ED760  ....Destroying txdata Request msg ACK/cseq=18467 (tdta003ED760)
+14:40:34.479   tdta003E7C00  ....Destroying txdata Request msg INVITE/cseq=18467 (tdta003E7C00)
+14:40:34.494    dlg003E516C  .....Session count dec to 1 by mod-invite
+14:40:39.242    tsx003F3DDC  Timeout timer event
+14:40:39.257    tsx003F3DDC  .State changed from Completed to Terminated, event=TIMER
+14:40:39.278    dlg003E516C  ..Transaction tsx003F3DDC state changed to Terminated
+14:40:39.299    dlg003E516C  ...Dialog destroyed
+14:40:39.324    tsx003F3DDC  Timeout timer event
+14:40:39.340    tsx003F3DDC  .State changed from Terminated to Destroyed, event=TIMER
+14:40:39.356   tdta003F2D38  ..Destroying txdata Request msg BYE/cseq=18468 (tdta003F2D38)
+14:40:39.374    tsx003F3DDC  Transaction destroyed!
+14:53:07.200 sip_endpoint.c  Creating endpoint instance...
+14:53:07.217          pjlib  select() I/O Queue created (004DE4D0)
+14:53:07.232 sip_endpoint.c  Module "mod-msg-print" registered
+14:53:07.250 sip_transport.  Transport manager created.
+14:53:07.287    udp004E4B30  SIP UDP transport started, published address is 192.168.6.38:5060
+14:53:07.300 c:\users\admin  SIP UDP listening on 192.168.6.38:5060
+14:53:07.315 sip_endpoint.c  Module "mod-tsx-layer" registered
+14:53:07.333 sip_endpoint.c  Module "mod-stateful-util" registered
+14:53:07.349 sip_endpoint.c  Module "mod-ua" registered
+14:53:07.367 sip_endpoint.c  Module "mod-100rel" registered
+14:53:07.382 sip_endpoint.c  Module "mod-invite" registered
+14:53:07.400 sip_endpoint.c  Module "monitor_modul" registered
+14:53:07.415 sip_endpoint.c  Module "logger_module" registered
+14:53:07.469     wmme_dev.c  WMME found 3 devices:
+14:53:07.482     wmme_dev.c   dev_id 0: Wave mapper  (in=2, out=2)
+14:53:07.500     wmme_dev.c   dev_id 1: Âó¿Ë·ç (Realtek High Definition  (in=2, out=0)
+14:53:07.515     wmme_dev.c   dev_id 2: ÑïÉùÆ÷ (Realtek High Definition  (in=0, out=2)
+14:53:07.533     wmme_dev.c  WMME initialized
+14:53:07.549          pjlib  select() I/O Queue created (004FAC3C)
+14:53:07.635    dshow_dev.c  DShow has 1 devices:
+14:53:07.648    dshow_dev.c   dev_id 0: PC Camera (capture)
+14:53:07.666 colorbar_dev.c  Colorbar video src initialized with 1 device(s):
+14:53:07.681 colorbar_dev.c   0: Colorbar generator
+14:53:07.700      sdl_dev.c  SDL 2.0 initialized
+14:53:08.067         siprtp !Remote RTP address switched to 192.168.4.108:4000
+14:53:08.091         siprtp  Remote RTCP address switched to predicted address 192.168.4.108:4001
+14:53:08.237    dlg0055518C !UAC dialog created
+14:53:08.256    dlg0055518C  Module mod-invite added as dialog usage, data=005564F0
+14:53:08.274    dlg0055518C  .Session count inc to 2 by mod-invite
+14:53:08.289    dlg0055518C  Module mod-100rel added as dialog usage, data=00557A94
+14:53:08.307    dlg0055518C  100rel module attached
+14:53:08.322    inv0055518C  UAC invite session created for dialog dlg0055518C
+14:53:08.341       endpoint  Request msg INVITE/cseq=18468 (tdta00557C20) created.
+14:53:08.357    inv0055518C  .Sending Request msg INVITE/cseq=18468 (tdta00557C20)
+14:53:08.374    dlg0055518C  ..Sending Request msg INVITE/cseq=18468 (tdta00557C20)
+14:53:08.389    tsx00559CA4  ...Transaction created for Request msg INVITE/cseq=18467 (tdta00557C20)
+14:53:08.407    tsx00559CA4  ..Sending Request msg INVITE/cseq=18467 (tdta00557C20) in state Null
+14:53:08.426  sip_resolve.c  ...Target '192.168.4.108:5060' type=Unspecified resolved to '192.168.4.108:5060' type=UDP (UDP transport)
+14:53:08.441    tsx00559CA4  ...State changed from Null to Calling, event=TX_MSG
+14:53:08.452 sip_endpoint.c !Processing incoming message: Response msg 200/INVITE/cseq=18467 (rdata004E7164)
+14:53:08.456    dlg0055518C !....Transaction tsx00559CA4 state changed to Calling
+14:53:08.474    tsx00559CA4 !.Incoming Response msg 200/INVITE/cseq=18467 (rdata004E7164) in state Calling
+14:53:08.507    tsx00559CA4  ..State changed from Calling to Terminated, event=RX_MSG
+14:53:08.536    dlg0055518C  ...Received Response msg 200/INVITE/cseq=18467 (rdata004E7164)
+14:53:08.556    dlg0055518C  ....Route-set updated
+14:53:08.586    dlg0055518C  ....Route-set frozen
+14:53:08.625    dlg0055518C  ...Transaction tsx00559CA4 state changed to Terminated
+14:53:08.669    inv0055518C  ....Got SDP answer in Response msg 200/INVITE/cseq=18467 (rdata004E7164)
+14:53:08.699    inv0055518C  ....SDP negotiation done, status=0
+14:53:08.725          rtp.c  ....pjmedia_rtp_session_init: ses=004A8ED4, default_pt=0, ssrc=0x4ae13d6c
+14:53:08.890          rtp.c  ....pjmedia_rtp_session_init: ses=004A8F04, default_pt=0, ssrc=0x0
+14:53:08.964          rtp.c  ....pjmedia_rtp_session_init: ses=004A9374, default_pt=97, ssrc=0x5af141bb
+14:53:09.014          rtp.c  ....pjmedia_rtp_session_init: ses=004A93A4, default_pt=97, ssrc=0x0
+14:53:09.040         siprtp  ....SO_RCVBUF set to 65536
+14:53:09.080         siprtp  ....SO_SNDBUF set to 65536
+14:53:09.106         siprtp  ....SO_RCVBUF set to 65536
+14:53:09.121         siprtp  ....SO_SNDBUF set to 65536
+14:53:09.140    inv0055518C  ....Received Response msg 200/INVITE/cseq=18467 (rdata004E7164), sending ACK
+14:53:09.155       endpoint  ....Request msg ACK/cseq=18467 (tdta0055D780) created.
+14:53:09.173    dlg0055518C  .....Sending Request msg ACK/cseq=18467 (tdta0055D780)
+14:53:09.188  sip_resolve.c  .....Target '192.168.4.108:5060' type=Unspecified resolved to '192.168.4.108:5060' type=UDP (UDP transport)
+14:53:09.206 c:\users\admin  ....Call #8 connected in 866 ms
+14:53:09.221 sip_endpoint.c  Processing incoming message: Response msg 200/INVITE/cseq=18467 (rdata004E7164)
+14:53:09.238    dlg0055518C  .Received Response msg 200/INVITE/cseq=18467 (rdata004E7164)
+14:53:09.267    inv0055518C  ..Received Response msg 200/INVITE/cseq=18467 (rdata004E7164), sending ACK
+14:53:09.280    dlg0055518C  ...Sending Request msg ACK/cseq=18467 (tdta0055D780)
+14:53:09.298       endpoint  ...Request msg ACK/cseq=18467 (tdta0055D780): skipping target resolution because address is already set
+14:53:09.313    tsx00559CA4  Timeout timer event
+14:53:09.331    tsx00559CA4  .State changed from Terminated to Destroyed, event=TIMER
+14:53:09.346    tsx00559CA4  Transaction destroyed!
+14:53:19.222       endpoint  .Request msg BYE/cseq=18469 (tdta00560740) created.
+14:53:19.236    inv0055518C  .Sending Request msg BYE/cseq=18469 (tdta00560740)
+14:53:19.254    dlg0055518C  ..Sending Request msg BYE/cseq=18469 (tdta00560740)
+14:53:19.279    tsx005617E4  ...Transaction created for Request msg BYE/cseq=18468 (tdta00560740)
+14:53:19.294    tsx005617E4  ..Sending Request msg BYE/cseq=18468 (tdta00560740) in state Null
+14:53:19.312  sip_resolve.c  ...Target '192.168.4.108:5060' type=Unspecified resolved to '192.168.4.108:5060' type=UDP (UDP transport)
+14:53:19.337    tsx005617E4  ...State changed from Null to Calling, event=TX_MSG
+14:53:19.362    dlg0055518C  ....Transaction tsx005617E4 state changed to Calling
+14:53:19.378 sip_endpoint.c  Processing incoming message: Response msg 200/BYE/cseq=18468 (rdata004E7164)
+14:53:19.404    tsx005617E4  .Incoming Response msg 200/BYE/cseq=18468 (rdata004E7164) in state Calling
+14:53:19.419    tsx005617E4  ..State changed from Calling to Completed, event=RX_MSG
+14:53:19.437    dlg0055518C  ...Received Response msg 200/BYE/cseq=18468 (rdata004E7164)
+14:53:19.452    dlg0055518C  ...Transaction tsx005617E4 state changed to Completed
+14:53:19.471 c:\users\admin  ....Call #8 disconnected. Reason=603 (Decline)
+14:53:19.486 c:\users\admin  ....Call #8 statistics:
+Call #8: DISCONNCTD [duration: 00:00:10.306]
+Remote RTP address switched to 192.168.4.108:4000
+   To: sip:192.168.4.108;tag=24b43175-8be6-4758-ad9b-5d849c9c8c23
+   Signaling quality: got 1st response in -1728693983 ms, connected after: 866 ms
+   Stream #0: audio PCMU@8000Hz, 20ms/frame, 8.00KB/s (9.06KB/s +IP hdr)
+              RX stat last update: never
+                 total 514 packets 82.02KB received (98.06KB +IP hdr)
+                 pkt loss=0 (0.0%), dup=0 (0.0%), reorder=1 (0.2%)
+                       (msec)    min     avg     max     last
+                 loss period:   0.000   0.000   0.000   0.000
+                 jitter     :  -0.001   0.121   1.125   0.000
+              TX stat last update: 00h:00m:04.080s ago
+                 total 0 packets 0B sent (0B +IP hdr)
+                 pkt loss=0 (-1.$%), dup=0 (-1.$%), reorder=0 (-1.$%)
+                       (msec)    min     avg     max     last
+                 loss period:   0.000   0.000   0.000   0.000
+                 jitter     :   0.000   0.000   0.000   0.000
+             RTT delay      :   0.000   0.000   0.000   0.000
+
+14:53:53.916   tdta0055D780  ....Destroying txdata Request msg ACK/cseq=18467 (tdta0055D780)
+14:53:53.925         siprtp !Remote RTCP address switched to 192.168.4.108:4001
+14:53:53.951   tdta00557C20 !....Destroying txdata Request msg INVITE/cseq=18467 (tdta00557C20)
+14:53:53.984    dlg0055518C  .....Session count dec to 1 by mod-invite
+14:53:53.999    tsx005617E4  Timeout timer event
+14:53:54.017    tsx005617E4  .State changed from Completed to Terminated, event=TIMER
+14:53:54.042    dlg0055518C  ..Transaction tsx005617E4 state changed to Terminated
+14:53:54.057    dlg0055518C  ...Dialog destroyed
+14:53:54.086    tsx005617E4  Timeout timer event
+14:53:54.099    tsx005617E4  .State changed from Terminated to Destroyed, event=TIMER
+14:53:54.117   tdta00560740  ..Destroying txdata Request msg BYE/cseq=18468 (tdta00560740)
+14:53:54.132    tsx005617E4  Transaction destroyed!
+14:59:05.344 sip_endpoint.c  Creating endpoint instance...
+14:59:05.367          pjlib  select() I/O Queue created (004AE4D8)
+14:59:05.390 sip_endpoint.c  Module "mod-msg-print" registered
+14:59:05.410 sip_transport.  Transport manager created.
+14:59:05.444    udp004B5D60  SIP UDP transport started, published address is 192.168.6.38:5060
+14:59:05.459 c:\users\admin  SIP UDP listening on 192.168.6.38:5060
+14:59:05.474 sip_endpoint.c  Module "mod-tsx-layer" registered
+14:59:05.493 sip_endpoint.c  Module "mod-stateful-util" registered
+14:59:05.516 sip_endpoint.c  Module "mod-ua" registered
+14:59:05.534 sip_endpoint.c  Module "mod-100rel" registered
+14:59:05.549 sip_endpoint.c  Module "mod-invite" registered
+14:59:05.567 sip_endpoint.c  Module "monitor_modul" registered
+14:59:05.583 sip_endpoint.c  Module "logger_module" registered
+14:59:05.642     wmme_dev.c  WMME found 3 devices:
+14:59:05.658     wmme_dev.c   dev_id 0: Wave mapper  (in=2, out=2)
+14:59:05.676     wmme_dev.c   dev_id 1: Âó¿Ë·ç (Realtek High Definition  (in=2, out=0)
+14:59:05.691     wmme_dev.c   dev_id 2: ÑïÉùÆ÷ (Realtek High Definition  (in=0, out=2)
+14:59:05.709     wmme_dev.c  WMME initialized
+14:59:05.724          pjlib  select() I/O Queue created (004CACAC)
+14:59:05.846    dshow_dev.c  DShow has 1 devices:
+14:59:05.874    dshow_dev.c   dev_id 0: PC Camera (capture)
+14:59:05.892 colorbar_dev.c  Colorbar video src initialized with 1 device(s):
+14:59:05.907 colorbar_dev.c   0: Colorbar generator
+14:59:05.927      sdl_dev.c  SDL 2.0 initialized
+14:59:06.243         siprtp !Remote RTP address switched to 192.168.4.108:4000
+14:59:06.265         siprtp  Remote RTCP address switched to predicted address 192.168.4.108:4001
+14:59:21.941    dlg0052824C !UAC dialog created
+14:59:21.979    dlg0052824C  Module mod-invite added as dialog usage, data=00528CB8
+14:59:21.990    dlg0052824C  .Session count inc to 2 by mod-invite
+14:59:22.008    dlg0052824C  Module mod-100rel added as dialog usage, data=0052A4DC
+14:59:22.026    dlg0052824C  100rel module attached
+14:59:22.042    inv0052824C  UAC invite session created for dialog dlg0052824C
+14:59:22.065       endpoint  Request msg INVITE/cseq=18468 (tdta0052A668) created.
+14:59:22.083    inv0052824C  .Sending Request msg INVITE/cseq=18468 (tdta0052A668)
+14:59:22.098    dlg0052824C  ..Sending Request msg INVITE/cseq=18468 (tdta0052A668)
+14:59:22.117    tsx0052C6EC  ...Transaction created for Request msg INVITE/cseq=18467 (tdta0052A668)
+14:59:22.132    tsx0052C6EC  ..Sending Request msg INVITE/cseq=18467 (tdta0052A668) in state Null
+14:59:22.150  sip_resolve.c  ...Target '192.168.4.108:5060' type=Unspecified resolved to '192.168.4.108:5060' type=UDP (UDP transport)
+14:59:22.174    tsx0052C6EC  ...State changed from Null to Calling, event=TX_MSG
+14:59:22.175 sip_endpoint.c !Processing incoming message: Response msg 200/INVITE/cseq=18467 (rdata004B7184)
+14:59:22.192    dlg0052824C !....Transaction tsx0052C6EC state changed to Calling
+14:59:22.207    tsx0052C6EC !.Incoming Response msg 200/INVITE/cseq=18467 (rdata004B7184) in state Calling
+14:59:22.225    tsx0052C6EC  ..State changed from Calling to Terminated, event=RX_MSG
+14:59:22.240    dlg0052824C  ...Received Response msg 200/INVITE/cseq=18467 (rdata004B7184)
+14:59:22.258    dlg0052824C  ....Route-set updated
+14:59:22.273    dlg0052824C  ....Route-set frozen
+14:59:22.300    dlg0052824C  ...Transaction tsx0052C6EC state changed to Terminated
+14:59:22.315    inv0052824C  ....Got SDP answer in Response msg 200/INVITE/cseq=18467 (rdata004B7184)
+14:59:22.333    inv0052824C  ....SDP negotiation done, status=0
+14:59:22.348          rtp.c  ....pjmedia_rtp_session_init: ses=00476854, default_pt=0, ssrc=0x4ae13d6c
+14:59:22.368          rtp.c  ....pjmedia_rtp_session_init: ses=00476884, default_pt=0, ssrc=0x0
+14:59:22.391          rtp.c  ....pjmedia_rtp_session_init: ses=00476CF4, default_pt=97, ssrc=0x5af141bb
+14:59:22.408          rtp.c  ....pjmedia_rtp_session_init: ses=00476D24, default_pt=97, ssrc=0x0
+14:59:22.423         siprtp  ....SO_RCVBUF set to 65536
+14:59:22.441         siprtp  ....SO_SNDBUF set to 65536
+14:59:22.457         siprtp  ....SO_RCVBUF set to 65536
+14:59:22.475         siprtp  ....SO_SNDBUF set to 65536
+14:59:22.490    inv0052824C  ....Received Response msg 200/INVITE/cseq=18467 (rdata004B7184), sending ACK
+14:59:22.516       endpoint  ....Request msg ACK/cseq=18467 (tdta005311E0) created.
+14:59:22.531    dlg0052824C  .....Sending Request msg ACK/cseq=18467 (tdta005311E0)
+14:59:22.549  sip_resolve.c  .....Target '192.168.4.108:5060' type=Unspecified resolved to '192.168.4.108:5060' type=UDP (UDP transport)
+14:59:22.565 c:\users\admin  ....Call #4 connected in 500 ms
+14:59:22.583    tsx0052C6EC  Timeout timer event
+14:59:22.598    tsx0052C6EC  .State changed from Terminated to Destroyed, event=TIMER
+14:59:22.624    tsx0052C6EC  Transaction destroyed!
+14:59:29.165    dlg0052C804 !UAC dialog created
+14:59:29.185    dlg0052C804  Module mod-invite added as dialog usage, data=00534AB0
+14:59:29.200    dlg0052C804  .Session count inc to 2 by mod-invite
+14:59:29.226    dlg0052C804  Module mod-100rel added as dialog usage, data=005362D4
+14:59:29.242    dlg0052C804  100rel module attached
+14:59:29.268    inv0052C804  UAC invite session created for dialog dlg0052C804
+14:59:29.283       endpoint  Request msg INVITE/cseq=26501 (tdta00536460) created.
+14:59:29.301    inv0052C804  .Sending Request msg INVITE/cseq=26501 (tdta00536460)
+14:59:29.316    dlg0052C804  ..Sending Request msg INVITE/cseq=26501 (tdta00536460)
+14:59:29.343    tsx005384E4  ...Transaction created for Request msg INVITE/cseq=26500 (tdta00536460)
+14:59:29.358    tsx005384E4  ..Sending Request msg INVITE/cseq=26500 (tdta00536460) in state Null
+14:59:29.376  sip_resolve.c  ...Target '192.168.4.108:5060' type=Unspecified resolved to '192.168.4.108:5060' type=UDP (UDP transport)
+14:59:29.392    tsx005384E4  ...State changed from Null to Calling, event=TX_MSG
+14:59:29.393 sip_endpoint.c !Processing incoming message: Response msg 200/INVITE/cseq=26500 (rdata004B7184)
+14:59:29.425    tsx005384E4 !.Incoming Response msg 200/INVITE/cseq=26500 (rdata004B7184) in state Calling
+14:59:29.409    dlg0052C804 !....Transaction tsx005384E4 state changed to Calling
+14:59:29.466    tsx005384E4  ..State changed from Calling to Terminated, event=RX_MSG
+14:59:29.484    dlg0052C804  ...Received Response msg 200/INVITE/cseq=26500 (rdata004B7184)
+14:59:29.500    dlg0052C804  ....Route-set updated
+14:59:29.518    dlg0052C804  ....Route-set frozen
+14:59:29.533    dlg0052C804  ...Transaction tsx005384E4 state changed to Terminated
+14:59:29.551    inv0052C804  ....Got SDP answer in Response msg 200/INVITE/cseq=26500 (rdata004B7184)
+14:59:29.566    inv0052C804  ....SDP negotiation done, status=0
+14:59:29.584          rtp.c  ....pjmedia_rtp_session_init: ses=00475EB4, default_pt=0, ssrc=0x124305e
+14:59:29.599          rtp.c  ....pjmedia_rtp_session_init: ses=00475EE4, default_pt=0, ssrc=0x0
+14:59:29.618          rtp.c  ....pjmedia_rtp_session_init: ses=00476354, default_pt=97, ssrc=0x39b32d12
+14:59:29.633          rtp.c  ....pjmedia_rtp_session_init: ses=00476384, default_pt=97, ssrc=0x0
+14:59:29.651         siprtp  ....SO_RCVBUF set to 65536
+14:59:29.674         siprtp  ....SO_SNDBUF set to 65536
+14:59:29.692         siprtp  ....SO_RCVBUF set to 65536
+14:59:29.708         siprtp  ....SO_SNDBUF set to 65536
+14:59:29.726    inv0052C804  ....Received Response msg 200/INVITE/cseq=26500 (rdata004B7184), sending ACK
+14:59:29.741       endpoint  ....Request msg ACK/cseq=26500 (tdta0053BFC0) created.
+14:59:29.763    dlg0052C804  .....Sending Request msg ACK/cseq=26500 (tdta0053BFC0)
+14:59:29.773  sip_resolve.c  .....Target '192.168.4.108:5060' type=Unspecified resolved to '192.168.4.108:5060' type=UDP (UDP transport)
+14:59:29.801 c:\users\admin  ....Call #3 connected in 518 ms
+14:59:29.815    tsx005384E4  Timeout timer event
+14:59:29.834    tsx005384E4  .State changed from Terminated to Destroyed, event=TIMER
+14:59:29.848    tsx005384E4  Transaction destroyed!
+14:59:32.584       endpoint  .Request msg BYE/cseq=18469 (tdta0053EF80) created.
+14:59:32.622    inv0052824C  .Sending Request msg BYE/cseq=18469 (tdta0053EF80)
+14:59:32.637    dlg0052824C  ..Sending Request msg BYE/cseq=18469 (tdta0053EF80)
+14:59:32.656    tsx005384E4  ...Transaction created for Request msg BYE/cseq=18468 (tdta0053EF80)
+14:59:32.670    tsx005384E4  ..Sending Request msg BYE/cseq=18468 (tdta0053EF80) in state Null
+14:59:32.689  sip_resolve.c  ...Target '192.168.4.108:5060' type=Unspecified resolved to '192.168.4.108:5060' type=UDP (UDP transport)
+14:59:32.704    tsx005384E4  ...State changed from Null to Calling, event=TX_MSG
+14:59:32.739    dlg0052824C  ....Transaction tsx005384E4 state changed to Calling
+14:59:32.773 sip_endpoint.c  Processing incoming message: Response msg 200/BYE/cseq=18468 (rdata004B7184)
+14:59:32.799    tsx005384E4  .Incoming Response msg 200/BYE/cseq=18468 (rdata004B7184) in state Calling
+14:59:32.828    tsx005384E4  ..State changed from Calling to Completed, event=RX_MSG
+14:59:32.847    dlg0052824C  ...Received Response msg 200/BYE/cseq=18468 (rdata004B7184)
+14:59:32.862    dlg0052824C  ...Transaction tsx005384E4 state changed to Completed
+14:59:32.880 c:\users\admin  ....Call #4 disconnected. Reason=603 (Decline)
+14:59:32.895 c:\users\admin  ....Call #4 statistics:
+Call #4: DISCONNCTD [duration: 00:00:10.349]
+   To: sip:192.168.4.108;tag=a4d76d50-4480-4c26-a6a1-bb2cb5be3e15
+   Signaling quality: got 1st response in -1729067708 ms, connected after: 500 ms
+   Stream #0: audio PCMU@8000Hz, 20ms/frame, 8.00KB/s (9.06KB/s +IP hdr)
+              RX stat last update: never
+                 total 511 packets 81.07KB received (98.01KB +IP hdr)
+                 pkt loss=0 (0.0%), dup=0 (0.0%), reorder=0 (0.0%)
+                       (msec)    min     avg     max     last
+                 loss period:   0.000   0.000   0.000   0.000
+                 jitter     :   0.000  16.743 146.875  13.625
+              TX stat last update: 00h:00m:03.845s ago
+                 total 0 packets 0B sent (0B +IP hdr)
+                 pkt loss=0 (-1.$%), dup=0 (-1.$%), reorder=0 (-1.$%)
+                       (msec)    min     avg     max     last
+                 loss period:   0.000   0.000   0.000   0.000
+                 jitter     :   0.000   0.000   0.000   0.000
+             RTT delay      :   0.000   0.000   0.000   0.000
+
+14:59:33.045   tdta005311E0  ....Destroying txdata Request msg ACK/cseq=18467 (tdta005311E0)
+14:59:33.064   tdta0052A668  ....Destroying txdata Request msg INVITE/cseq=18467 (tdta0052A668)
+14:59:33.078    dlg0052824C  .....Session count dec to 1 by mod-invite
+14:59:37.829    tsx005384E4  Timeout timer event
+14:59:37.867    tsx005384E4  .State changed from Completed to Terminated, event=TIMER
+14:59:37.881    dlg0052824C  ..Transaction tsx005384E4 state changed to Terminated
+14:59:37.900    dlg0052824C  ...Dialog destroyed
+14:59:37.924    tsx005384E4  Timeout timer event
+14:59:37.941    tsx005384E4  .State changed from Terminated to Destroyed, event=TIMER
+14:59:37.956   tdta0053EF80  ..Destroying txdata Request msg BYE/cseq=18468 (tdta0053EF80)
+14:59:37.975    tsx005384E4  Transaction destroyed!
+14:59:39.815       endpoint  .Request msg BYE/cseq=26502 (tdta0052B408) created.
+14:59:39.851    inv0052C804  .Sending Request msg BYE/cseq=26502 (tdta0052B408)
+14:59:39.862    dlg0052C804  ..Sending Request msg BYE/cseq=26502 (tdta0052B408)
+14:59:39.881    tsx005384E4  ...Transaction created for Request msg BYE/cseq=26501 (tdta0052B408)
+14:59:39.895    tsx005384E4  ..Sending Request msg BYE/cseq=26501 (tdta0052B408) in state Null
+14:59:39.914  sip_resolve.c  ...Target '192.168.4.108:5060' type=Unspecified resolved to '192.168.4.108:5060' type=UDP (UDP transport)
+14:59:39.929    tsx005384E4  ...State changed from Null to Calling, event=TX_MSG
+14:59:39.948    dlg0052C804  ....Transaction tsx005384E4 state changed to Calling
+14:59:39.962 sip_endpoint.c  Processing incoming message: Response msg 200/BYE/cseq=26501 (rdata004B7184)
+14:59:39.981    tsx005384E4  .Incoming Response msg 200/BYE/cseq=26501 (rdata004B7184) in state Calling
+14:59:40.004    tsx005384E4  ..State changed from Calling to Completed, event=RX_MSG
+14:59:40.022    dlg0052C804  ...Received Response msg 200/BYE/cseq=26501 (rdata004B7184)
+14:59:40.037    dlg0052C804  ...Transaction tsx005384E4 state changed to Completed
+14:59:40.056 c:\users\admin  ....Call #3 disconnected. Reason=603 (Decline)
+14:59:40.070 c:\users\admin  ....Call #3 statistics:
+Call #3: DISCONNCTD [duration: 00:00:10.288]
+   To: sip:192.168.4.108;tag=af08e800-f07a-4de6-aaeb-d8acb3ad0b67
+   Signaling quality: got 1st response in -1729074926 ms, connected after: 518 ms
+   Stream #0: audio PCMU@8000Hz, 20ms/frame, 8.00KB/s (9.06KB/s +IP hdr)
+              RX stat last update: never
+                 total 52 packets 8.03KB received (9.09KB +IP hdr)
+                 pkt loss=0 (0.0%), dup=0 (0.0%), reorder=0 (0.0%)
+                       (msec)    min     avg     max     last
+                 loss period:   0.000   0.000   0.000   0.000
+                 jitter     :   0.000   0.000   0.000   0.000
+              TX stat last update: never
+                 total 0 packets 0B sent (0B +IP hdr)
+                 pkt loss=0 (-1.$%), dup=0 (-1.$%), reorder=0 (-1.$%)
+                       (msec)    min     avg     max     last
+                 loss period:   0.000   0.000   0.000   0.000
+                 jitter     :   0.000   0.000   0.000   0.000
+             RTT delay      :   0.000   0.000   0.000   0.000
+
+14:59:40.195   tdta0053BFC0  ....Destroying txdata Request msg ACK/cseq=26500 (tdta0053BFC0)
+14:59:40.214   tdta00536460  ....Destroying txdata Request msg INVITE/cseq=26500 (tdta00536460)
+14:59:40.228    dlg0052C804  .....Session count dec to 1 by mod-invite
+14:59:44.322    dlg0052824C !UAC dialog created
+14:59:44.358    dlg0052824C  Module mod-invite added as dialog usage, data=00525248
+14:59:44.377    dlg0052824C  .Session count inc to 2 by mod-invite
+14:59:44.391    dlg0052824C  Module mod-100rel added as dialog usage, data=0052A4CC
+14:59:44.410    dlg0052824C  100rel module attached
+14:59:44.425    inv0052824C  UAC invite session created for dialog dlg0052824C
+14:59:44.444       endpoint  Request msg INVITE/cseq=15725 (tdta00536460) created.
+14:59:44.458    inv0052824C  .Sending Request msg INVITE/cseq=15725 (tdta00536460)
+14:59:44.477    dlg0052824C  ..Sending Request msg INVITE/cseq=15725 (tdta00536460)
+14:59:44.491    tsx00538F64  ...Transaction created for Request msg INVITE/cseq=15724 (tdta00536460)
+14:59:44.510    tsx00538F64  ..Sending Request msg INVITE/cseq=15724 (tdta00536460) in state Null
+14:59:44.525  sip_resolve.c  ...Target '192.168.4.108:5060' type=Unspecified resolved to '192.168.4.108:5060' type=UDP (UDP transport)
+14:59:44.544    tsx00538F64  ...State changed from Null to Calling, event=TX_MSG
+14:59:44.558    dlg0052824C !....Transaction tsx00538F64 state changed to Calling
+14:59:44.545 sip_endpoint.c !Processing incoming message: Response msg 200/INVITE/cseq=15724 (rdata004B7184)
+14:59:44.591    tsx00538F64 !.Incoming Response msg 200/INVITE/cseq=15724 (rdata004B7184) in state Calling
+14:59:44.610    tsx00538F64  ..State changed from Calling to Terminated, event=RX_MSG
+14:59:44.624    dlg0052824C  ...Received Response msg 200/INVITE/cseq=15724 (rdata004B7184)
+14:59:44.643    dlg0052824C  ....Route-set updated
+14:59:44.658    dlg0052824C  ....Route-set frozen
+14:59:44.677    dlg0052824C  ...Transaction tsx00538F64 state changed to Terminated
+14:59:44.691    inv0052824C  ....Got SDP answer in Response msg 200/INVITE/cseq=15724 (rdata004B7184)
+14:59:44.712    inv0052824C  ....SDP negotiation done, status=0
+14:59:44.845         siprtp !Remote RTP address switched to 192.168.4.108:4004
+14:59:44.879          rtp.c !....pjmedia_rtp_session_init: ses=004741D4, default_pt=0, ssrc=0x45091238
+14:59:44.928         siprtp !Remote RTCP address switched to predicted address 192.168.4.108:4005
+14:59:44.949          rtp.c !....pjmedia_rtp_session_init: ses=00474204, default_pt=0, ssrc=0x0
+14:59:44.968          rtp.c  ....pjmedia_rtp_session_init: ses=00474674, default_pt=97, ssrc=0x7f967ff5
+14:59:44.991          rtp.c  ....pjmedia_rtp_session_init: ses=004746A4, default_pt=97, ssrc=0x0
+14:59:45.010         siprtp  ....SO_RCVBUF set to 65536
+14:59:45.032         siprtp  ....SO_SNDBUF set to 65536
+14:59:45.060         siprtp  ....SO_RCVBUF set to 65536
+14:59:45.092         siprtp  ....SO_SNDBUF set to 65536
+14:59:45.144    inv0052824C  ....Received Response msg 200/INVITE/cseq=15724 (rdata004B7184), sending ACK
+14:59:45.185       endpoint  ....Request msg ACK/cseq=15724 (tdta00539980) created.
+14:59:45.229    dlg0052824C  .....Sending Request msg ACK/cseq=15724 (tdta00539980)
+14:59:45.280  sip_resolve.c  .....Target '192.168.4.108:5060' type=Unspecified resolved to '192.168.4.108:5060' type=UDP (UDP transport)
+14:59:45.322 c:\users\admin  ....Call #0 connected in 878 ms
+14:59:45.365 sip_endpoint.c  Processing incoming message: Response msg 200/INVITE/cseq=15724 (rdata004B7184)
+14:59:45.435    dlg0052824C  .Received Response msg 200/INVITE/cseq=15724 (rdata004B7184)
+14:59:45.481    inv0052824C  ..Received Response msg 200/INVITE/cseq=15724 (rdata004B7184), sending ACK
+14:59:45.526    dlg0052824C  ...Sending Request msg ACK/cseq=15724 (tdta00539980)
+14:59:45.551       endpoint  ...Request msg ACK/cseq=15724 (tdta00539980): skipping target resolution because address is already set
+14:59:45.565    tsx005384E4  Timeout timer event
+14:59:45.584    tsx005384E4  .State changed from Completed to Terminated, event=TIMER
+14:59:45.598    dlg0052C804  ..Transaction tsx005384E4 state changed to Terminated
+14:59:45.617    dlg0052C804  ...Dialog destroyed
+14:59:45.640    tsx00538F64  Timeout timer event
+14:59:45.659    tsx00538F64  .State changed from Terminated to Destroyed, event=TIMER
+14:59:45.673    tsx00538F64  Transaction destroyed!
+14:59:45.699    tsx005384E4  Timeout timer event
+14:59:45.725    tsx005384E4  .State changed from Terminated to Destroyed, event=TIMER
+14:59:45.740   tdta0052B408  ..Destroying txdata Request msg BYE/cseq=26501 (tdta0052B408)
+14:59:45.759    tsx005384E4  Transaction destroyed!
+14:59:48.642    dlg0052B46C !UAC dialog created
+14:59:48.678    dlg0052B46C  Module mod-invite added as dialog usage, data=00533C98
+14:59:48.697    dlg0052B46C  .Session count inc to 2 by mod-invite
+14:59:48.713    dlg0052B46C  Module mod-100rel added as dialog usage, data=00538DB4
+14:59:48.800    dlg0052B46C  100rel module attached
+14:59:48.853    inv0052B46C  UAC invite session created for dialog dlg0052B46C
+14:59:48.872       endpoint  Request msg INVITE/cseq=29359 (tdta0053A9C0) created.
+14:59:48.886    inv0052B46C  .Sending Request msg INVITE/cseq=29359 (tdta0053A9C0)
+14:59:48.905    dlg0052B46C  ..Sending Request msg INVITE/cseq=29359 (tdta0053A9C0)
+14:59:48.920    tsx00538FA4  ...Transaction created for Request msg INVITE/cseq=29358 (tdta0053A9C0)
+14:59:48.938    tsx00538FA4  ..Sending Request msg INVITE/cseq=29358 (tdta0053A9C0) in state Null
+14:59:48.953  sip_resolve.c  ...Target '192.168.4.108:5060' type=Unspecified resolved to '192.168.4.108:5060' type=UDP (UDP transport)
+14:59:48.972    tsx00538FA4  ...State changed from Null to Calling, event=TX_MSG
+14:59:48.973 sip_endpoint.c !Processing incoming message: Response msg 200/INVITE/cseq=29358 (rdata004B7184)
+14:59:48.986    dlg0052B46C !....Transaction tsx00538FA4 state changed to Calling
+14:59:49.005    tsx00538FA4 !.Incoming Response msg 200/INVITE/cseq=29358 (rdata004B7184) in state Calling
+14:59:49.038    tsx00538FA4  ..State changed from Calling to Terminated, event=RX_MSG
+14:59:49.053    dlg0052B46C  ...Received Response msg 200/INVITE/cseq=29358 (rdata004B7184)
+14:59:49.080    dlg0052B46C  ....Route-set updated
+14:59:49.094    dlg0052B46C  ....Route-set frozen
+14:59:49.113    dlg0052B46C  ...Transaction tsx00538FA4 state changed to Terminated
+14:59:49.128    inv0052B46C  ....Got SDP answer in Response msg 200/INVITE/cseq=29358 (rdata004B7184)
+14:59:49.147    inv0052B46C  ....SDP negotiation done, status=0
+14:59:49.161          rtp.c  ....pjmedia_rtp_session_init: ses=004741D4, default_pt=0, ssrc=0x120759a
+14:59:49.188          rtp.c  ....pjmedia_rtp_session_init: ses=00474204, default_pt=0, ssrc=0x0
+14:59:49.211          rtp.c  ....pjmedia_rtp_session_init: ses=00474674, default_pt=97, ssrc=0x3e121a49
+14:59:49.230          rtp.c  ....pjmedia_rtp_session_init: ses=004746A4, default_pt=97, ssrc=0x0
+14:59:49.252         siprtp  ....SO_RCVBUF set to 65536
+14:59:49.271         siprtp  ....SO_SNDBUF set to 65536
+14:59:49.286         siprtp  ....SO_RCVBUF set to 65536
+14:59:49.305         siprtp  ....SO_SNDBUF set to 65536
+14:59:49.319    inv0052B46C  ....Received Response msg 200/INVITE/cseq=29358 (rdata004B7184), sending ACK
+14:59:49.338       endpoint  ....Request msg ACK/cseq=29358 (tdta0053DF40) created.
+14:59:49.352    dlg0052B46C  .....Sending Request msg ACK/cseq=29358 (tdta0053DF40)
+14:59:49.371  sip_resolve.c  .....Target '192.168.4.108:5060' type=Unspecified resolved to '192.168.4.108:5060' type=UDP (UDP transport)
+14:59:49.386 c:\users\admin  ....Call #0 connected in 514 ms
+15:00:48.090 sip_endpoint.c  Creating endpoint instance...
+15:00:48.134          pjlib  select() I/O Queue created (006AE4D8)
+15:00:48.148 sip_endpoint.c  Module "mod-msg-print" registered
+15:00:48.167 sip_transport.  Transport manager created.
+15:00:48.210    udp006B5D60  SIP UDP transport started, published address is 192.168.6.38:5060
+15:00:48.225 c:\users\admin  SIP UDP listening on 192.168.6.38:5060
+15:00:48.239 sip_endpoint.c  Module "mod-tsx-layer" registered
+15:00:48.257 sip_endpoint.c  Module "mod-stateful-util" registered
+15:00:48.273 sip_endpoint.c  Module "mod-ua" registered
+15:00:48.292 sip_endpoint.c  Module "mod-100rel" registered
+15:00:48.306 sip_endpoint.c  Module "mod-invite" registered
+15:00:48.325 sip_endpoint.c  Module "monitor_modul" registered
+15:00:48.339 sip_endpoint.c  Module "logger_module" registered
+15:00:48.406     wmme_dev.c  WMME found 3 devices:
+15:00:48.433     wmme_dev.c   dev_id 0: Wave mapper  (in=2, out=2)
+15:00:48.456     wmme_dev.c   dev_id 1: Âó¿Ë·ç (Realtek High Definition  (in=2, out=0)
+15:00:48.475     wmme_dev.c   dev_id 2: ÑïÉùÆ÷ (Realtek High Definition  (in=0, out=2)
+15:00:48.489     wmme_dev.c  WMME initialized
+15:00:48.508          pjlib  select() I/O Queue created (006CACAC)
+15:00:48.613    dshow_dev.c  DShow has 1 devices:
+15:00:48.641    dshow_dev.c   dev_id 0: PC Camera (capture)
+15:00:48.656 colorbar_dev.c  Colorbar video src initialized with 1 device(s):
+15:00:48.674 colorbar_dev.c   0: Colorbar generator
+15:00:48.698      sdl_dev.c  SDL 2.0 initialized
+15:00:49.024         siprtp !Remote RTP address switched to 192.168.4.108:4008
+15:00:49.047         siprtp  Remote RTCP address switched to predicted address 192.168.4.108:4009
+15:00:49.074         siprtp  Remote RTP address switched to 192.168.4.108:4000
+15:00:49.097         siprtp  Remote RTCP address switched to predicted address 192.168.4.108:4001
+15:00:49.474    dlg007251CC !UAC dialog created
+15:00:49.488    dlg007251CC  Module mod-invite added as dialog usage, data=00726530
+15:00:49.507    dlg007251CC  .Session count inc to 2 by mod-invite
+15:00:49.529    dlg007251CC  Module mod-100rel added as dialog usage, data=00727AD4
+15:00:49.557    dlg007251CC  100rel module attached
+15:00:49.571    inv007251CC  UAC invite session created for dialog dlg007251CC
+15:00:49.590       endpoint  Request msg INVITE/cseq=18468 (tdta00727C60) created.
+15:00:49.613    inv007251CC  .Sending Request msg INVITE/cseq=18468 (tdta00727C60)
+15:00:49.632    dlg007251CC  ..Sending Request msg INVITE/cseq=18468 (tdta00727C60)
+15:00:49.646    tsx00729CE4  ...Transaction created for Request msg INVITE/cseq=18467 (tdta00727C60)
+15:00:49.672    tsx00729CE4  ..Sending Request msg INVITE/cseq=18467 (tdta00727C60) in state Null
+15:00:49.691  sip_resolve.c  ...Target '192.168.4.108:5060' type=Unspecified resolved to '192.168.4.108:5060' type=UDP (UDP transport)
+15:00:49.707    tsx00729CE4  ...State changed from Null to Calling, event=TX_MSG
+15:00:49.709 sip_endpoint.c !Processing incoming message: Response msg 200/INVITE/cseq=18467 (rdata006B7184)
+15:00:49.724    dlg007251CC !....Transaction tsx00729CE4 state changed to Calling
+15:00:49.740    tsx00729CE4 !.Incoming Response msg 200/INVITE/cseq=18467 (rdata006B7184) in state Calling
+15:00:49.780    tsx00729CE4  ..State changed from Calling to Terminated, event=RX_MSG
+15:00:49.799    dlg007251CC  ...Received Response msg 200/INVITE/cseq=18467 (rdata006B7184)
+15:00:49.815    dlg007251CC  ....Route-set updated
+15:00:49.832    dlg007251CC  ....Route-set frozen
+15:00:49.848    dlg007251CC  ...Transaction tsx00729CE4 state changed to Terminated
+15:00:49.866    inv007251CC  ....Got SDP answer in Response msg 200/INVITE/cseq=18467 (rdata006B7184)
+15:00:49.888    inv007251CC  ....SDP negotiation done, status=0
+15:00:49.907          rtp.c  ....pjmedia_rtp_session_init: ses=006741D4, default_pt=0, ssrc=0x4ae13d6c
+15:00:49.923          rtp.c  ....pjmedia_rtp_session_init: ses=00674204, default_pt=0, ssrc=0x0
+15:00:49.941          rtp.c  ....pjmedia_rtp_session_init: ses=00674674, default_pt=97, ssrc=0x5af141bb
+15:00:49.956          rtp.c  ....pjmedia_rtp_session_init: ses=006746A4, default_pt=97, ssrc=0x0
+15:00:49.974         siprtp  ....SO_RCVBUF set to 65536
+15:00:49.990         siprtp  ....SO_SNDBUF set to 65536
+15:00:50.022         siprtp  ....SO_RCVBUF set to 65536
+15:00:50.041         siprtp  ....SO_SNDBUF set to 65536
+15:00:50.056    inv007251CC  ....Received Response msg 200/INVITE/cseq=18467 (rdata006B7184), sending ACK
+15:00:50.074       endpoint  ....Request msg ACK/cseq=18467 (tdta007308D0) created.
+15:00:50.089    dlg007251CC  .....Sending Request msg ACK/cseq=18467 (tdta007308D0)
+15:00:50.107  sip_resolve.c  .....Target '192.168.4.108:5060' type=Unspecified resolved to '192.168.4.108:5060' type=UDP (UDP transport)
+15:00:50.130 c:\users\admin  ....Call #0 connected in 540 ms
+15:00:50.149    tsx00729CE4  Timeout timer event
+15:00:50.164    tsx00729CE4  .State changed from Terminated to Destroyed, event=TIMER
+15:00:50.182    tsx00729CE4  Transaction destroyed!
+15:00:51.785    dlg00729CE4 !UAC dialog created
+15:00:51.822    dlg00729CE4  Module mod-invite added as dialog usage, data=0072DA50
+15:00:51.844    dlg00729CE4  .Session count inc to 2 by mod-invite
+15:00:51.863    dlg00729CE4  Module mod-100rel added as dialog usage, data=0441319C
+15:00:51.879    dlg00729CE4  100rel module attached
+15:00:51.897    inv00729CE4  UAC invite session created for dialog dlg00729CE4
+15:00:51.913       endpoint  Request msg INVITE/cseq=26501 (tdta04413328) created.
+15:00:51.930    inv00729CE4  .Sending Request msg INVITE/cseq=26501 (tdta04413328)
+15:00:51.946    dlg00729CE4  ..Sending Request msg INVITE/cseq=26501 (tdta04413328)
+15:00:51.971    tsx044153AC  ...Transaction created for Request msg INVITE/cseq=26500 (tdta04413328)
+15:00:51.988    tsx044153AC  ..Sending Request msg INVITE/cseq=26500 (tdta04413328) in state Null
+15:00:52.004  sip_resolve.c  ...Target '192.168.4.108:5060' type=Unspecified resolved to '192.168.4.108:5060' type=UDP (UDP transport)
+15:00:52.038    tsx044153AC  ...State changed from Null to Calling, event=TX_MSG
+15:00:52.039 sip_endpoint.c !Processing incoming message: Response msg 200/INVITE/cseq=26500 (rdata006B7184)
+15:00:52.063    dlg00729CE4 !....Transaction tsx044153AC state changed to Calling
+15:00:52.086    tsx044153AC !.Incoming Response msg 200/INVITE/cseq=26500 (rdata006B7184) in state Calling
+15:00:52.121    tsx044153AC  ..State changed from Calling to Terminated, event=RX_MSG
+15:00:52.138    dlg00729CE4  ...Received Response msg 200/INVITE/cseq=26500 (rdata006B7184)
+15:00:52.154    dlg00729CE4  ....Route-set updated
+15:00:52.171    dlg00729CE4  ....Route-set frozen
+15:00:52.203    dlg00729CE4  ...Transaction tsx044153AC state changed to Terminated
+15:00:52.226    inv00729CE4  ....Got SDP answer in Response msg 200/INVITE/cseq=26500 (rdata006B7184)
+15:00:52.246    inv00729CE4  ....SDP negotiation done, status=0
+15:00:52.276          rtp.c  ....pjmedia_rtp_session_init: ses=006741D4, default_pt=0, ssrc=0x124305e
+15:00:52.295          rtp.c  ....pjmedia_rtp_session_init: ses=00674204, default_pt=0, ssrc=0x0
+15:00:52.318          rtp.c  ....pjmedia_rtp_session_init: ses=00674674, default_pt=97, ssrc=0x39b32d12
+15:00:52.344          rtp.c  ....pjmedia_rtp_session_init: ses=006746A4, default_pt=97, ssrc=0x0
+15:00:52.367         siprtp  ....SO_RCVBUF set to 65536
+15:00:52.387         siprtp  ....SO_SNDBUF set to 65536
+15:00:52.409         siprtp  ....SO_RCVBUF set to 65536
+15:00:52.428         siprtp  ....SO_SNDBUF set to 65536
+15:00:52.459    inv00729CE4  ....Received Response msg 200/INVITE/cseq=26500 (rdata006B7184), sending ACK
+15:00:52.479       endpoint  ....Request msg ACK/cseq=26500 (tdta04418E88) created.
+15:00:52.503    dlg00729CE4  .....Sending Request msg ACK/cseq=26500 (tdta04418E88)
+15:00:52.526  sip_resolve.c  .....Target '192.168.4.108:5060' type=Unspecified resolved to '192.168.4.108:5060' type=UDP (UDP transport)
+15:00:52.545 c:\users\admin  ....Call #0 connected in 633 ms
+15:01:35.447 sip_endpoint.c  Creating endpoint instance...
+15:01:35.467          pjlib  select() I/O Queue created (0067E4D8)
+15:01:35.500 sip_endpoint.c  Module "mod-msg-print" registered
+15:01:35.522 sip_transport.  Transport manager created.
+15:01:35.571    udp00685D60  SIP UDP transport started, published address is 192.168.6.38:5060
+15:01:35.589 c:\users\admin  SIP UDP listening on 192.168.6.38:5060
+15:01:35.608 sip_endpoint.c  Module "mod-tsx-layer" registered
+15:01:35.630 sip_endpoint.c  Module "mod-stateful-util" registered
+15:01:35.657 sip_endpoint.c  Module "mod-ua" registered
+15:01:35.680 sip_endpoint.c  Module "mod-100rel" registered
+15:01:35.700 sip_endpoint.c  Module "mod-invite" registered
+15:01:35.722 sip_endpoint.c  Module "monitor_modul" registered
+15:01:35.741 sip_endpoint.c  Module "logger_module" registered
+15:01:35.800     wmme_dev.c  WMME found 3 devices:
+15:01:35.823     wmme_dev.c   dev_id 0: Wave mapper  (in=2, out=2)
+15:01:35.847     wmme_dev.c   dev_id 1: Âó¿Ë·ç (Realtek High Definition  (in=2, out=0)
+15:01:35.866     wmme_dev.c   dev_id 2: ÑïÉùÆ÷ (Realtek High Definition  (in=0, out=2)
+15:01:35.888     wmme_dev.c  WMME initialized
+15:01:35.908          pjlib  select() I/O Queue created (0069ACAC)
+15:01:35.993    dshow_dev.c  DShow has 1 devices:
+15:01:36.023    dshow_dev.c   dev_id 0: PC Camera (capture)
+15:01:36.046 colorbar_dev.c  Colorbar video src initialized with 1 device(s):
+15:01:36.074 colorbar_dev.c   0: Colorbar generator
+15:01:36.097      sdl_dev.c  SDL 2.0 initialized
+15:01:36.430         siprtp !Remote RTP address switched to 192.168.4.108:4004
+15:01:36.457         siprtp  Remote RTCP address switched to predicted address 192.168.4.108:4005
+15:01:36.480         siprtp  Remote RTP address switched to 192.168.4.108:4000
+15:01:36.499         siprtp  Remote RTCP address switched to predicted address 192.168.4.108:4001
+15:01:38.591         siprtp  Remote RTCP address switched to 192.168.4.108:4017
+15:01:39.537    dlg006F518C !UAC dialog created
+15:01:39.587    dlg006F518C  Module mod-invite added as dialog usage, data=006F64F0
+15:01:39.609    dlg006F518C  .Session count inc to 2 by mod-invite
+15:01:39.628    dlg006F518C  Module mod-100rel added as dialog usage, data=006F7A94
+15:01:39.651    dlg006F518C  100rel module attached
+15:01:39.670    inv006F518C  UAC invite session created for dialog dlg006F518C
+15:01:39.692       endpoint  Request msg INVITE/cseq=18468 (tdta006F7C20) created.
+15:01:39.720    inv006F518C  .Sending Request msg INVITE/cseq=18468 (tdta006F7C20)
+15:01:39.742    dlg006F518C  ..Sending Request msg INVITE/cseq=18468 (tdta006F7C20)
+15:01:39.762    tsx006F9CA4  ...Transaction created for Request msg INVITE/cseq=18467 (tdta006F7C20)
+15:01:39.784    tsx006F9CA4  ..Sending Request msg INVITE/cseq=18467 (tdta006F7C20) in state Null
+15:01:39.803  sip_resolve.c  ...Target '192.168.4.108:5060' type=Unspecified resolved to '192.168.4.108:5060' type=UDP (UDP transport)
+15:01:39.823    tsx006F9CA4  ...State changed from Null to Calling, event=TX_MSG
+15:01:39.824 sip_endpoint.c !Processing incoming message: Response msg 500/INVITE/cseq=18467 (rdata00687184)
+15:01:39.853    dlg006F518C !....Transaction tsx006F9CA4 state changed to Calling
+15:01:39.873    tsx006F9CA4 !.Incoming Response msg 500/INVITE/cseq=18467 (rdata00687184) in state Calling
+15:01:39.915       endpoint  ..Request msg ACK/cseq=18467 (tdta006FD548) created.
+15:01:39.940    tsx006F9CA4  ..State changed from Calling to Completed, event=RX_MSG
+15:01:39.956    dlg006F518C  ...Received Response msg 500/INVITE/cseq=18467 (rdata00687184)
+15:01:39.986    dlg006F518C  ...Transaction tsx006F9CA4 state changed to Completed
+15:03:31.700 sip_endpoint.c  Creating endpoint instance...
+15:03:31.721          pjlib  select() I/O Queue created (0097E3A0)
+15:03:31.743 sip_endpoint.c  Module "mod-msg-print" registered
+15:03:31.764 sip_transport.  Transport manager created.
+15:03:31.803    udp009857B0  SIP UDP transport started, published address is 192.168.6.38:5060
+15:03:31.829 c:\users\admin  SIP UDP listening on 192.168.6.38:5060
+15:03:31.851 sip_endpoint.c  Module "mod-tsx-layer" registered
+15:03:31.871 sip_endpoint.c  Module "mod-stateful-util" registered
+15:03:31.893 sip_endpoint.c  Module "mod-ua" registered
+15:03:31.913 sip_endpoint.c  Module "mod-100rel" registered
+15:03:31.934 sip_endpoint.c  Module "mod-invite" registered
+15:03:31.954 sip_endpoint.c  Module "monitor_modul" registered
+15:03:31.976 sip_endpoint.c  Module "logger_module" registered
+15:03:32.021     wmme_dev.c  WMME found 3 devices:
+15:03:32.043     wmme_dev.c   dev_id 0: Wave mapper  (in=2, out=2)
+15:03:32.062     wmme_dev.c   dev_id 1: Âó¿Ë·ç (Realtek High Definition  (in=2, out=0)
+15:03:32.084     wmme_dev.c   dev_id 2: ÑïÉùÆ÷ (Realtek High Definition  (in=0, out=2)
+15:03:32.104     wmme_dev.c  WMME initialized
+15:03:32.126          pjlib  select() I/O Queue created (0099AB6C)
+15:03:32.214    dshow_dev.c  DShow has 1 devices:
+15:03:32.234    dshow_dev.c   dev_id 0: PC Camera (capture)
+15:03:32.254 colorbar_dev.c  Colorbar video src initialized with 1 device(s):
+15:03:32.276 colorbar_dev.c   0: Colorbar generator
+15:03:32.297      sdl_dev.c  SDL 2.0 initialized
+15:03:32.646         siprtp !Remote RTP address switched to 192.168.4.108:4004
+15:03:32.662         siprtp  Remote RTCP address switched to predicted address 192.168.4.108:4005
+15:03:32.684         siprtp  Remote RTP address switched to 192.168.4.108:4000
+15:03:32.703         siprtp  Remote RTCP address switched to predicted address 192.168.4.108:4001
+15:03:36.974    dlg009F503C !UAC dialog created
+15:03:37.151    dlg009F503C  Module mod-invite added as dialog usage, data=009F63A0
+15:03:37.170    dlg009F503C  .Session count inc to 2 by mod-invite
+15:03:37.190    dlg009F503C  Module mod-100rel added as dialog usage, data=009F7944
+15:03:37.212    dlg009F503C  100rel module attached
+15:03:37.232    inv009F503C  UAC invite session created for dialog dlg009F503C
+15:03:37.258       endpoint  Request msg INVITE/cseq=18468 (tdta009F7AD0) created.
+15:03:37.273    inv009F503C  .Sending Request msg INVITE/cseq=18468 (tdta009F7AD0)
+15:03:37.295    dlg009F503C  ..Sending Request msg INVITE/cseq=18468 (tdta009F7AD0)
+15:03:37.315    tsx009F9B54  ...Transaction created for Request msg INVITE/cseq=18467 (tdta009F7AD0)
+15:03:37.337    tsx009F9B54  ..Sending Request msg INVITE/cseq=18467 (tdta009F7AD0) in state Null
+15:03:37.357  sip_resolve.c  ...Target '192.168.4.108:5060' type=Unspecified resolved to '192.168.4.108:5060' type=UDP (UDP transport)
+15:03:37.383    tsx009F9B54  ...State changed from Null to Calling, event=TX_MSG
+15:03:37.384 sip_endpoint.c !Processing incoming message: Response msg 500/INVITE/cseq=18467 (rdata0098700C)
+15:03:37.398    dlg009F503C !....Transaction tsx009F9B54 state changed to Calling
+15:03:37.420    tsx009F9B54 !.Incoming Response msg 500/INVITE/cseq=18467 (rdata0098700C) in state Calling
+15:03:37.461       endpoint  ..Request msg ACK/cseq=18467 (tdta009FC4F0) created.
+15:03:37.481    tsx009F9B54  ..State changed from Calling to Completed, event=RX_MSG
+15:03:37.508    dlg009F503C  ...Received Response msg 500/INVITE/cseq=18467 (rdata0098700C)
+15:03:37.523    dlg009F503C  ...Transaction tsx009F9B54 state changed to Completed
+15:03:37.545 c:\users\admin  ....Call #1 disconnected. Reason=500 (Too many calls)
+15:03:37.565 c:\users\admin  ....Call #1 statistics:
+Call #1: DISCONNCTD [duration: -568602:-47:-56.-963]
+   To: sip:192.168.4.108
+   Signaling quality: got 1st response in -1729322901 ms, connected after: -1729322901 ms
+15:03:45.777 sip_endpoint.c  Creating endpoint instance...
+15:03:45.814          pjlib  select() I/O Queue created (007EE3A0)
+15:03:45.835 sip_endpoint.c  Module "mod-msg-print" registered
+15:03:45.857 sip_transport.  Transport manager created.
+15:03:45.896    udp007F57B0  SIP UDP transport started, published address is 192.168.6.38:5060
+15:03:45.914 c:\users\admin  SIP UDP listening on 192.168.6.38:5060
+15:03:45.935 sip_endpoint.c  Module "mod-tsx-layer" registered
+15:03:45.955 sip_endpoint.c  Module "mod-stateful-util" registered
+15:03:45.977 sip_endpoint.c  Module "mod-ua" registered
+15:03:45.997 sip_endpoint.c  Module "mod-100rel" registered
+15:03:46.018 sip_endpoint.c  Module "mod-invite" registered
+15:03:46.038 sip_endpoint.c  Module "monitor_modul" registered
+15:03:46.060 sip_endpoint.c  Module "logger_module" registered
+15:03:46.116     wmme_dev.c  WMME found 3 devices:
+15:03:46.135     wmme_dev.c   dev_id 0: Wave mapper  (in=2, out=2)
+15:03:46.155     wmme_dev.c   dev_id 1: Âó¿Ë·ç (Realtek High Definition  (in=2, out=0)
+15:03:46.177     wmme_dev.c   dev_id 2: ÑïÉùÆ÷ (Realtek High Definition  (in=0, out=2)
+15:03:46.197     wmme_dev.c  WMME initialized
+15:03:46.219          pjlib  select() I/O Queue created (0080AB6C)
+15:03:46.325    dshow_dev.c  DShow has 1 devices:
+15:03:46.347    dshow_dev.c   dev_id 0: PC Camera (capture)
+15:03:46.371 colorbar_dev.c  Colorbar video src initialized with 1 device(s):
+15:03:46.392 colorbar_dev.c   0: Colorbar generator
+15:03:46.449      sdl_dev.c  SDL 2.0 initialized
+15:03:46.739         siprtp !Remote RTP address switched to 192.168.4.108:4016
+15:03:46.861         siprtp  Remote RTCP address switched to predicted address 192.168.4.108:4017
+15:03:46.884         siprtp  Remote RTP address switched to 192.168.4.108:4000
+15:03:46.904         siprtp  Remote RTCP address switched to predicted address 192.168.4.108:4001
+15:03:48.273    dlg0086503C !UAC dialog created
+15:03:48.317    dlg0086503C  Module mod-invite added as dialog usage, data=008663A0
+15:03:48.337    dlg0086503C  .Session count inc to 2 by mod-invite
+15:03:48.359    dlg0086503C  Module mod-100rel added as dialog usage, data=00867944
+15:03:48.378    dlg0086503C  100rel module attached
+15:03:48.400    inv0086503C  UAC invite session created for dialog dlg0086503C
+15:03:48.420       endpoint  Request msg INVITE/cseq=18468 (tdta00867AD0) created.
+15:03:48.442    inv0086503C  .Sending Request msg INVITE/cseq=18468 (tdta00867AD0)
+15:03:48.462    dlg0086503C  ..Sending Request msg INVITE/cseq=18468 (tdta00867AD0)
+15:03:48.483    tsx00869B54  ...Transaction created for Request msg INVITE/cseq=18467 (tdta00867AD0)
+15:03:48.503    tsx00869B54  ..Sending Request msg INVITE/cseq=18467 (tdta00867AD0) in state Null
+15:03:48.525  sip_resolve.c  ...Target '192.168.4.108:5060' type=Unspecified resolved to '192.168.4.108:5060' type=UDP (UDP transport)
+15:03:48.545    tsx00869B54  ...State changed from Null to Calling, event=TX_MSG
+15:03:48.546 sip_endpoint.c !Processing incoming message: Response msg 500/INVITE/cseq=18467 (rdata007F700C)
+15:03:48.567    dlg0086503C !....Transaction tsx00869B54 state changed to Calling
+15:03:48.587    tsx00869B54 !.Incoming Response msg 500/INVITE/cseq=18467 (rdata007F700C) in state Calling
+15:03:48.608       endpoint  ..Request msg ACK/cseq=18467 (tdta0086C4F0) created.
+15:03:48.628    tsx00869B54  ..State changed from Calling to Completed, event=RX_MSG
+15:03:48.650    dlg0086503C  ...Received Response msg 500/INVITE/cseq=18467 (rdata007F700C)
+15:03:48.670    dlg0086503C  ...Transaction tsx00869B54 state changed to Completed
+15:03:48.691 c:\users\admin  ....Call #7 disconnected. Reason=500 (Too many calls)
+15:03:48.714 c:\users\admin  ....Call #7 statistics:
+Call #7: DISCONNCTD [duration: -568602:-47:-45.-778]
+   To: sip:192.168.4.108
+   Signaling quality: got 1st response in -1729334063 ms, connected after: -1729334063 ms
+15:04:52.359 sip_endpoint.c  Creating endpoint instance...
+15:04:52.382          pjlib  select() I/O Queue created (0074E4D8)
+15:04:52.401 sip_endpoint.c  Module "mod-msg-print" registered
+15:04:52.423 sip_transport.  Transport manager created.
+15:04:52.457    udp00755D60  SIP UDP transport started, published address is 192.168.6.38:5060
+15:04:52.481 c:\users\admin  SIP UDP listening on 192.168.6.38:5060
+15:04:52.501 sip_endpoint.c  Module "mod-tsx-layer" registered
+15:04:52.523 sip_endpoint.c  Module "mod-stateful-util" registered
+15:04:52.543 sip_endpoint.c  Module "mod-ua" registered
+15:04:52.564 sip_endpoint.c  Module "mod-100rel" registered
+15:04:52.584 sip_endpoint.c  Module "mod-invite" registered
+15:04:52.606 sip_endpoint.c  Module "monitor_modul" registered
+15:04:52.626 sip_endpoint.c  Module "logger_module" registered
+15:04:52.674     wmme_dev.c  WMME found 3 devices:
+15:04:52.693     wmme_dev.c   dev_id 0: Wave mapper  (in=2, out=2)
+15:04:52.718     wmme_dev.c   dev_id 1: Âó¿Ë·ç (Realtek High Definition  (in=2, out=0)
+15:04:52.810     wmme_dev.c   dev_id 2: ÑïÉùÆ÷ (Realtek High Definition  (in=0, out=2)
+15:04:52.831     wmme_dev.c  WMME initialized
+15:04:52.851          pjlib  select() I/O Queue created (0076ACAC)
+15:04:52.952    dshow_dev.c  DShow has 1 devices:
+15:04:52.991    dshow_dev.c   dev_id 0: PC Camera (capture)
+15:04:53.010 colorbar_dev.c  Colorbar video src initialized with 1 device(s):
+15:04:53.033 colorbar_dev.c   0: Colorbar generator
+15:04:53.062      sdl_dev.c  SDL 2.0 initialized
+15:04:53.373         siprtp !Remote RTP address switched to 192.168.4.108:4012
+15:04:53.395         siprtp  Remote RTCP address switched to predicted address 192.168.4.108:4013
+15:04:53.414         siprtp  Remote RTP address switched to 192.168.4.108:4000
+15:04:53.433         siprtp  Remote RTCP address switched to predicted address 192.168.4.108:4001
+15:04:53.744    dlg007C516C !UAC dialog created
+15:04:53.775    dlg007C516C  Module mod-invite added as dialog usage, data=007C64D0
+15:04:53.796    dlg007C516C  .Session count inc to 2 by mod-invite
+15:04:53.816    dlg007C516C  Module mod-100rel added as dialog usage, data=007C7A74
+15:04:53.838    dlg007C516C  100rel module attached
+15:04:53.858    inv007C516C  UAC invite session created for dialog dlg007C516C
+15:04:53.888       endpoint  Request msg INVITE/cseq=18468 (tdta007C7C00) created.
+15:04:53.908    inv007C516C  .Sending Request msg INVITE/cseq=18468 (tdta007C7C00)
+15:04:53.930    dlg007C516C  ..Sending Request msg INVITE/cseq=18468 (tdta007C7C00)
+15:04:53.950    tsx007C9C84  ...Transaction created for Request msg INVITE/cseq=18467 (tdta007C7C00)
+15:04:53.971    tsx007C9C84  ..Sending Request msg INVITE/cseq=18467 (tdta007C7C00) in state Null
+15:04:53.991  sip_resolve.c  ...Target '192.168.4.108:5060' type=Unspecified resolved to '192.168.4.108:5060' type=UDP (UDP transport)
+15:04:54.013    tsx007C9C84  ...State changed from Null to Calling, event=TX_MSG
+15:04:54.014 sip_endpoint.c !Processing incoming message: Response msg 500/INVITE/cseq=18467 (rdata00757184)
+15:04:54.037    dlg007C516C !....Transaction tsx007C9C84 state changed to Calling
+15:04:54.054    tsx007C9C84 !.Incoming Response msg 500/INVITE/cseq=18467 (rdata00757184) in state Calling
+15:04:54.104       endpoint  ..Request msg ACK/cseq=18467 (tdta007CC620) created.
+15:04:54.124    tsx007C9C84  ..State changed from Calling to Completed, event=RX_MSG
+15:04:54.146    dlg007C516C  ...Received Response msg 500/INVITE/cseq=18467 (rdata00757184)
+15:04:54.168    dlg007C516C  ...Transaction tsx007C9C84 state changed to Completed
+15:05:25.786 sip_endpoint.c  Creating endpoint instance...
+15:05:25.830          pjlib  select() I/O Queue created (008BE4D8)
+15:05:25.851 sip_endpoint.c  Module "mod-msg-print" registered
+15:05:25.871 sip_transport.  Transport manager created.
+15:05:25.918    udp008C5D60  SIP UDP transport started, published address is 192.168.6.38:5060
+15:05:25.954 c:\users\admin  SIP UDP listening on 192.168.6.38:5060
+15:05:25.976 sip_endpoint.c  Module "mod-tsx-layer" registered
+15:05:25.996 sip_endpoint.c  Module "mod-stateful-util" registered
+15:05:26.018 sip_endpoint.c  Module "mod-ua" registered
+15:05:26.037 sip_endpoint.c  Module "mod-100rel" registered
+15:05:26.059 sip_endpoint.c  Module "mod-invite" registered
+15:05:26.088 sip_endpoint.c  Module "monitor_modul" registered
+15:05:26.109 sip_endpoint.c  Module "logger_module" registered
+15:05:26.188     wmme_dev.c  WMME found 3 devices:
+15:05:26.209     wmme_dev.c   dev_id 0: Wave mapper  (in=2, out=2)
+15:05:26.229     wmme_dev.c   dev_id 1: Âó¿Ë·ç (Realtek High Definition  (in=2, out=0)
+15:05:26.252     wmme_dev.c   dev_id 2: ÑïÉùÆ÷ (Realtek High Definition  (in=0, out=2)
+15:05:26.288     wmme_dev.c  WMME initialized
+15:05:26.309          pjlib  select() I/O Queue created (008DACAC)
+15:05:26.417    dshow_dev.c  DShow has 1 devices:
+15:05:26.434    dshow_dev.c   dev_id 0: PC Camera (capture)
+15:05:26.453 colorbar_dev.c  Colorbar video src initialized with 1 device(s):
+15:05:26.476 colorbar_dev.c   0: Colorbar generator
+15:05:26.497      sdl_dev.c  SDL 2.0 initialized
+15:05:26.829         siprtp !Remote RTP address switched to 192.168.4.108:4004
+15:05:26.853         siprtp  Remote RTCP address switched to predicted address 192.168.4.108:4005
+15:05:26.875         siprtp  Remote RTP address switched to 192.168.4.108:4000
+15:05:26.895         siprtp  Remote RTCP address switched to predicted address 192.168.4.108:4001
+15:05:27.804         siprtp  Remote RTCP address switched to 192.168.4.108:4009
+15:05:28.176    dlg0093518C !UAC dialog created
+15:05:28.193    dlg0093518C  Module mod-invite added as dialog usage, data=009367F0
+15:05:28.215    dlg0093518C  .Session count inc to 2 by mod-invite
+15:05:28.235    dlg0093518C  Module mod-100rel added as dialog usage, data=00937D94
+15:05:28.257    dlg0093518C  100rel module attached
+15:05:28.276    inv0093518C  UAC invite session created for dialog dlg0093518C
+15:05:28.299       endpoint  Request msg INVITE/cseq=18468 (tdta00937F20) created.
+15:05:28.327    inv0093518C  .Sending Request msg INVITE/cseq=18468 (tdta00937F20)
+15:05:28.349    dlg0093518C  ..Sending Request msg INVITE/cseq=18468 (tdta00937F20)
+15:05:28.368    tsx00939FA4  ...Transaction created for Request msg INVITE/cseq=18467 (tdta00937F20)
+15:05:28.390    tsx00939FA4  ..Sending Request msg INVITE/cseq=18467 (tdta00937F20) in state Null
+15:05:28.410  sip_resolve.c  ...Target '192.168.4.108:5060' type=Unspecified resolved to '192.168.4.108:5060' type=UDP (UDP transport)
+15:05:28.432    tsx00939FA4  ...State changed from Null to Calling, event=TX_MSG
+15:05:28.433 sip_endpoint.c !Processing incoming message: Response msg 500/INVITE/cseq=18467 (rdata008C7184)
+15:05:28.460    dlg0093518C !....Transaction tsx00939FA4 state changed to Calling
+15:05:28.482    tsx00939FA4 !.Incoming Response msg 500/INVITE/cseq=18467 (rdata008C7184) in state Calling
+15:05:28.523       endpoint  ..Request msg ACK/cseq=18467 (tdta0093C940) created.
+15:05:28.543    tsx00939FA4  ..State changed from Calling to Completed, event=RX_MSG
+15:05:28.567    dlg0093518C  ...Received Response msg 500/INVITE/cseq=18467 (rdata008C7184)
+15:05:28.602    dlg0093518C  ...Transaction tsx00939FA4 state changed to Completed
+15:05:51.428 sip_endpoint.c  Creating endpoint instance...
+15:05:51.458          pjlib  select() I/O Queue created (008CE4D8)
+15:05:51.477 sip_endpoint.c  Module "mod-msg-print" registered
+15:05:51.500 sip_transport.  Transport manager created.
+15:05:51.541    udp008D5D60  SIP UDP transport started, published address is 192.168.6.38:5060
+15:05:51.574 c:\users\admin  SIP UDP listening on 192.168.6.38:5060
+15:05:51.594 sip_endpoint.c  Module "mod-tsx-layer" registered
+15:05:51.615 sip_endpoint.c  Module "mod-stateful-util" registered
+15:05:51.635 sip_endpoint.c  Module "mod-ua" registered
+15:05:51.656 sip_endpoint.c  Module "mod-100rel" registered
+15:05:51.677 sip_endpoint.c  Module "mod-invite" registered
+15:05:51.698 sip_endpoint.c  Module "monitor_modul" registered
+15:05:51.729 sip_endpoint.c  Module "logger_module" registered
+15:05:51.781     wmme_dev.c  WMME found 3 devices:
+15:05:51.802     wmme_dev.c   dev_id 0: Wave mapper  (in=2, out=2)
+15:05:51.823     wmme_dev.c   dev_id 1: Âó¿Ë·ç (Realtek High Definition  (in=2, out=0)
+15:05:51.843     wmme_dev.c   dev_id 2: ÑïÉùÆ÷ (Realtek High Definition  (in=0, out=2)
+15:05:51.864     wmme_dev.c  WMME initialized
+15:05:51.896          pjlib  select() I/O Queue created (008EACAC)
+15:05:52.002    dshow_dev.c  DShow has 1 devices:
+15:05:52.018    dshow_dev.c   dev_id 0: PC Camera (capture)
+15:05:52.044 colorbar_dev.c  Colorbar video src initialized with 1 device(s):
+15:05:52.068 colorbar_dev.c   0: Colorbar generator
+15:05:52.090      sdl_dev.c  SDL 2.0 initialized
+15:05:52.688    dlg009451A4  UAC dialog created
+15:05:52.727    dlg009451A4  Module mod-invite added as dialog usage, data=00946508
+15:05:52.812    dlg009451A4  .Session count inc to 2 by mod-invite
+15:05:52.838    dlg009451A4  Module mod-100rel added as dialog usage, data=00947AAC
+15:05:52.859    dlg009451A4  100rel module attached
+15:05:52.880    inv009451A4  UAC invite session created for dialog dlg009451A4
+15:05:52.903       endpoint  Request msg INVITE/cseq=18468 (tdta00947C38) created.
+15:05:52.921    inv009451A4  .Sending Request msg INVITE/cseq=18468 (tdta00947C38)
+15:05:52.942    dlg009451A4  ..Sending Request msg INVITE/cseq=18468 (tdta00947C38)
+15:05:52.963    tsx00949CBC  ...Transaction created for Request msg INVITE/cseq=18467 (tdta00947C38)
+15:05:52.984    tsx00949CBC  ..Sending Request msg INVITE/cseq=18467 (tdta00947C38) in state Null
+15:05:53.005  sip_resolve.c  ...Target '192.168.4.108:5060' type=Unspecified resolved to '192.168.4.108:5060' type=UDP (UDP transport)
+15:05:53.026    tsx00949CBC  ...State changed from Null to Calling, event=TX_MSG
+15:05:53.046    dlg009451A4 !....Transaction tsx00949CBC state changed to Calling
+15:05:53.029 sip_endpoint.c !Processing incoming message: Response msg 200/INVITE/cseq=18467 (rdata008D7184)
+15:05:53.090    tsx00949CBC !.Incoming Response msg 200/INVITE/cseq=18467 (rdata008D7184) in state Calling
+15:05:53.109    tsx00949CBC  ..State changed from Calling to Terminated, event=RX_MSG
+15:05:53.130    dlg009451A4  ...Received Response msg 200/INVITE/cseq=18467 (rdata008D7184)
+15:05:53.150    dlg009451A4  ....Route-set updated
+15:05:53.171    dlg009451A4  ....Route-set frozen
+15:05:53.192    dlg009451A4  ...Transaction tsx00949CBC state changed to Terminated
+15:05:53.213    inv009451A4  ....Got SDP answer in Response msg 200/INVITE/cseq=18467 (rdata008D7184)
+15:05:53.234    inv009451A4  ....SDP negotiation done, status=0
+15:05:53.255          rtp.c  ....pjmedia_rtp_session_init: ses=008941D4, default_pt=0, ssrc=0x4ae13d6c
+15:05:53.275          rtp.c  ....pjmedia_rtp_session_init: ses=00894204, default_pt=0, ssrc=0x0
+15:05:53.296          rtp.c  ....pjmedia_rtp_session_init: ses=00894674, default_pt=97, ssrc=0x5af141bb
+15:05:53.317          rtp.c  ....pjmedia_rtp_session_init: ses=008946A4, default_pt=97, ssrc=0x0
+15:05:53.327         siprtp !Remote RTP address switched to 192.168.4.108:4000
+15:05:53.358         siprtp  Remote RTCP address switched to predicted address 192.168.4.108:4001
+15:05:53.379         siprtp !....SO_RCVBUF set to 65536
+15:05:53.400         siprtp  ....SO_SNDBUF set to 65536
+15:05:53.421         siprtp  ....SO_RCVBUF set to 65536
+15:05:53.452         siprtp  ....SO_SNDBUF set to 65536
+15:05:53.471    inv009451A4  ....Received Response msg 200/INVITE/cseq=18467 (rdata008D7184), sending ACK
+15:05:53.492       endpoint  ....Request msg ACK/cseq=18467 (tdta0094D798) created.
+15:05:53.512    dlg009451A4  .....Sending Request msg ACK/cseq=18467 (tdta0094D798)
+15:05:53.544  sip_resolve.c  .....Target '192.168.4.108:5060' type=Unspecified resolved to '192.168.4.108:5060' type=UDP (UDP transport)
+15:05:53.565 c:\users\admin  ....Call #0 connected in 663 ms
+15:05:56.485 sip_endpoint.c  Processing incoming message: Response msg 200/INVITE/cseq=18467 (rdata008D7184)
+15:05:56.548    dlg009451A4  .Received Response msg 200/INVITE/cseq=18467 (rdata008D7184)
+15:05:56.570    inv009451A4  ..Received Response msg 200/INVITE/cseq=18467 (rdata008D7184), sending ACK
+15:05:56.588    dlg009451A4  ...Sending Request msg ACK/cseq=18467 (tdta0094D798)
+15:05:56.603       endpoint  ...Request msg ACK/cseq=18467 (tdta0094D798): skipping target resolution because address is already set
+15:05:56.622    tsx00949CBC  Timeout timer event
+15:05:56.645    tsx00949CBC  .State changed from Terminated to Destroyed, event=TIMER
+15:05:56.663    tsx00949CBC  Transaction destroyed!
+15:06:06.485       endpoint  .Request msg BYE/cseq=18469 (tdta00950758) created.
+15:06:06.529    inv009451A4  .Sending Request msg BYE/cseq=18469 (tdta00950758)
+15:06:06.542    dlg009451A4  ..Sending Request msg BYE/cseq=18469 (tdta00950758)
+15:06:06.560    tsx009517FC  ...Transaction created for Request msg BYE/cseq=18468 (tdta00950758)
+15:06:06.589    tsx009517FC  ..Sending Request msg BYE/cseq=18468 (tdta00950758) in state Null
+15:06:06.609  sip_resolve.c  ...Target '192.168.4.108:5060' type=Unspecified resolved to '192.168.4.108:5060' type=UDP (UDP transport)
+15:06:06.636    tsx009517FC  ...State changed from Null to Calling, event=TX_MSG
+15:06:06.677    dlg009451A4  ....Transaction tsx009517FC state changed to Calling
+15:06:06.711 sip_endpoint.c  Processing incoming message: Response msg 200/BYE/cseq=18468 (rdata008D7184)
+15:06:06.777    tsx009517FC  .Incoming Response msg 200/BYE/cseq=18468 (rdata008D7184) in state Calling
+15:06:06.801    tsx009517FC  ..State changed from Calling to Completed, event=RX_MSG
+15:06:06.818    dlg009451A4  ...Received Response msg 200/BYE/cseq=18468 (rdata008D7184)
+15:06:06.834    dlg009451A4  ...Transaction tsx009517FC state changed to Completed
+15:06:06.852 c:\users\admin  ....Call #0 disconnected. Reason=603 (Decline)
+15:06:06.867 c:\users\admin  ....Call #0 statistics:
+Call #0: DISCONNCTD [duration: 00:00:13.320]
+   To: sip:192.168.4.108;tag=17a52f6a-2795-460a-b6cd-92ed6b02c8b5
+   Signaling quality: got 1st response in -1729458545 ms, connected after: 663 ms
+   Stream #0: audio PCMU@8000Hz, 20ms/frame, 8.00KB/s (9.06KB/s +IP hdr)
+              RX stat last update: never
+                 total 658 packets 105.02KB received (126.03KB +IP hdr)
+                 pkt loss=0 (0.0%), dup=0 (0.0%), reorder=0 (0.0%)
+                       (msec)    min     avg     max     last
+                 loss period:   0.000   0.000   0.000   0.000
+                 jitter     :   0.000   4.005  19.875   0.000
+              TX stat last update: 00h:00m:02.296s ago
+                 total 0 packets 0B sent (0B +IP hdr)
+                 pkt loss=0 (-1.$%), dup=0 (-1.$%), reorder=0 (-1.$%)
+                       (msec)    min     avg     max     last
+                 loss period:   0.000   0.000   0.000   0.000
+                 jitter     :   0.000   0.000   0.000   0.000
+             RTT delay      :   0.000   0.000   0.000   0.000
+
+15:06:07.017   tdta0094D798  ....Destroying txdata Request msg ACK/cseq=18467 (tdta0094D798)
+15:06:07.035   tdta00947C38  ....Destroying txdata Request msg INVITE/cseq=18467 (tdta00947C38)
+15:06:07.050    dlg009451A4  .....Session count dec to 1 by mod-invite
+15:06:11.802    tsx009517FC  Timeout timer event
+15:06:11.839    tsx009517FC  .State changed from Completed to Terminated, event=TIMER
+15:06:11.854    dlg009451A4  ..Transaction tsx009517FC state changed to Terminated
+15:06:11.872    dlg009451A4  ...Dialog destroyed
+15:06:11.897    tsx009517FC  Timeout timer event
+15:06:11.922    tsx009517FC  .State changed from Terminated to Destroyed, event=TIMER
+15:06:11.946   tdta00950758  ..Destroying txdata Request msg BYE/cseq=18468 (tdta00950758)
+15:06:11.964    tsx009517FC  Transaction destroyed!
+15:07:31.332 sip_endpoint.c  Creating endpoint instance...
+15:07:31.381          pjlib  select() I/O Queue created (0047E3A0)
+15:07:31.394 sip_endpoint.c  Module "mod-msg-print" registered
+15:07:31.412 sip_transport.  Transport manager created.
+15:07:31.447    udp004857B0  SIP UDP transport started, published address is 192.168.6.38:5060
+15:07:31.462 c:\users\admin  SIP UDP listening on 192.168.6.38:5060
+15:07:31.485 sip_endpoint.c  Module "mod-tsx-layer" registered
+15:07:31.503 sip_endpoint.c  Module "mod-stateful-util" registered
+15:07:31.518 sip_endpoint.c  Module "mod-ua" registered
+15:07:31.537 sip_endpoint.c  Module "mod-100rel" registered
+15:07:31.552 sip_endpoint.c  Module "mod-invite" registered
+15:07:31.570 sip_endpoint.c  Module "monitor_modul" registered
+15:07:31.593 sip_endpoint.c  Module "logger_module" registered
+15:07:31.653     wmme_dev.c  WMME found 3 devices:
+15:07:31.668     wmme_dev.c   dev_id 0: Wave mapper  (in=2, out=2)
+15:07:31.686     wmme_dev.c   dev_id 1: Âó¿Ë·ç (Realtek High Definition  (in=2, out=0)
+15:07:31.702     wmme_dev.c   dev_id 2: ÑïÉùÆ÷ (Realtek High Definition  (in=0, out=2)
+15:07:31.720     wmme_dev.c  WMME initialized
+15:07:31.744          pjlib  select() I/O Queue created (0049AB6C)
+15:07:31.833    dshow_dev.c  DShow has 1 devices:
+15:07:31.855    dshow_dev.c   dev_id 0: PC Camera (capture)
+15:07:31.868 colorbar_dev.c  Colorbar video src initialized with 1 device(s):
+15:07:31.886 colorbar_dev.c   0: Colorbar generator
+15:07:31.902      sdl_dev.c  SDL 2.0 initialized
+15:07:32.702    dlg004F503C  UAC dialog created
+15:07:32.739    dlg004F503C  Module mod-invite added as dialog usage, data=004F63A0
+15:07:32.828    dlg004F503C  .Session count inc to 2 by mod-invite
+15:07:32.896    dlg004F503C  Module mod-100rel added as dialog usage, data=004F7944
+15:07:32.992    dlg004F503C  100rel module attached
+15:07:33.128    inv004F503C  UAC invite session created for dialog dlg004F503C
+15:07:33.187       endpoint  Request msg INVITE/cseq=18468 (tdta004F7AD0) created.
+15:07:33.219    inv004F503C  .Sending Request msg INVITE/cseq=18468 (tdta004F7AD0)
+15:07:33.233    dlg004F503C  ..Sending Request msg INVITE/cseq=18468 (tdta004F7AD0)
+15:07:33.252    tsx004F9B54  ...Transaction created for Request msg INVITE/cseq=18467 (tdta004F7AD0)
+15:07:33.267    tsx004F9B54  ..Sending Request msg INVITE/cseq=18467 (tdta004F7AD0) in state Null
+15:07:33.285  sip_resolve.c  ...Target '192.168.4.108:5060' type=Unspecified resolved to '192.168.4.108:5060' type=UDP (UDP transport)
+15:07:33.308    tsx004F9B54  ...State changed from Null to Calling, event=TX_MSG
+15:07:33.310 sip_endpoint.c !Processing incoming message: Response msg 200/INVITE/cseq=18467 (rdata0048700C)
+15:07:33.326    dlg004F503C !....Transaction tsx004F9B54 state changed to Calling
+15:07:33.341    tsx004F9B54 !.Incoming Response msg 200/INVITE/cseq=18467 (rdata0048700C) in state Calling
+15:07:33.375    tsx004F9B54  ..State changed from Calling to Terminated, event=RX_MSG
+15:07:33.393    dlg004F503C  ...Received Response msg 200/INVITE/cseq=18467 (rdata0048700C)
+15:07:33.408    dlg004F503C  ....Route-set updated
+15:07:33.434    dlg004F503C  ....Route-set frozen
+15:07:33.450    dlg004F503C  ...Transaction tsx004F9B54 state changed to Terminated
+15:07:33.468    inv004F503C  ....Got SDP answer in Response msg 200/INVITE/cseq=18467 (rdata0048700C)
+15:07:33.483    inv004F503C  ....SDP negotiation done, status=0
+15:07:33.501          rtp.c  ....pjmedia_rtp_session_init: ses=004467AC, default_pt=0, ssrc=0x4ae13d6c
+15:07:33.516          rtp.c  ....pjmedia_rtp_session_init: ses=004467DC, default_pt=0, ssrc=0x0
+15:07:33.543          rtp.c  ....pjmedia_rtp_session_init: ses=00446C4C, default_pt=97, ssrc=0x5af141bb
+15:07:33.558          rtp.c  ....pjmedia_rtp_session_init: ses=00446C7C, default_pt=97, ssrc=0x0
+15:07:33.576         siprtp  ....SO_RCVBUF set to 65536
+15:07:33.591         siprtp  ....SO_SNDBUF set to 65536
+15:07:33.609         siprtp  ....SO_RCVBUF set to 65536
+15:07:33.624         siprtp  ....SO_SNDBUF set to 65536
+15:07:33.651    inv004F503C  ....Received Response msg 200/INVITE/cseq=18467 (rdata0048700C), sending ACK
+15:07:33.666       endpoint  ....Request msg ACK/cseq=18467 (tdta004FD630) created.
+15:07:33.684    dlg004F503C  .....Sending Request msg ACK/cseq=18467 (tdta004FD630)
+15:07:33.699  sip_resolve.c  .....Target '192.168.4.108:5060' type=Unspecified resolved to '192.168.4.108:5060' type=UDP (UDP transport)
+15:07:33.718 c:\users\admin  ....Call #4 connected in 531 ms
+15:07:33.741    tsx004F9B54  Timeout timer event
+15:07:33.759    tsx004F9B54  .State changed from Terminated to Destroyed, event=TIMER
+15:07:33.774    tsx004F9B54  Transaction destroyed!
+15:07:57.380    dlg004F9B54 !UAC dialog created
+15:07:57.416    dlg004F9B54  Module mod-invite added as dialog usage, data=00500CC0
+15:07:57.434    dlg004F9B54  .Session count inc to 2 by mod-invite
+15:07:57.450    dlg004F9B54  Module mod-100rel added as dialog usage, data=005024E4
+15:07:57.468    dlg004F9B54  100rel module attached
+15:07:57.491    inv004F9B54  UAC invite session created for dialog dlg004F9B54
+15:07:57.509       endpoint  Request msg INVITE/cseq=26501 (tdta00502670) created.
+15:07:57.525    inv004F9B54  .Sending Request msg INVITE/cseq=26501 (tdta00502670)
+15:07:57.543    dlg004F9B54  ..Sending Request msg INVITE/cseq=26501 (tdta00502670)
+15:07:57.559    tsx005046F4  ...Transaction created for Request msg INVITE/cseq=26500 (tdta00502670)
+15:07:57.576    tsx005046F4  ..Sending Request msg INVITE/cseq=26500 (tdta00502670) in state Null
+15:07:57.591  sip_resolve.c  ...Target '192.168.4.108:5060' type=Unspecified resolved to '192.168.4.108:5060' type=UDP (UDP transport)
+15:07:57.609    tsx005046F4  ...State changed from Null to Calling, event=TX_MSG
+15:07:57.610 sip_endpoint.c !Processing incoming message: Response msg 200/INVITE/cseq=26500 (rdata0048700C)
+15:07:57.624    dlg004F9B54 !....Transaction tsx005046F4 state changed to Calling
+15:07:57.651    tsx005046F4 !.Incoming Response msg 200/INVITE/cseq=26500 (rdata0048700C) in state Calling
+15:07:57.684    tsx005046F4  ..State changed from Calling to Terminated, event=RX_MSG
+15:07:57.699    dlg004F9B54  ...Received Response msg 200/INVITE/cseq=26500 (rdata0048700C)
+15:07:57.717    dlg004F9B54  ....Route-set updated
+15:07:57.733    dlg004F9B54  ....Route-set frozen
+15:07:57.751    dlg004F9B54  ...Transaction tsx005046F4 state changed to Terminated
+15:07:57.766    inv004F9B54  ....Got SDP answer in Response msg 200/INVITE/cseq=26500 (rdata0048700C)
+15:07:57.784    inv004F9B54  ....SDP negotiation done, status=0
+15:07:57.799          rtp.c  ....pjmedia_rtp_session_init: ses=004441CC, default_pt=0, ssrc=0x124305e
+15:07:57.817          rtp.c  ....pjmedia_rtp_session_init: ses=004441FC, default_pt=0, ssrc=0x0
+15:07:57.833          rtp.c  ....pjmedia_rtp_session_init: ses=0044466C, default_pt=97, ssrc=0x39b32d12
+15:07:57.849          rtp.c  ....pjmedia_rtp_session_init: ses=0044469C, default_pt=97, ssrc=0x0
+15:07:57.867         siprtp  ....SO_RCVBUF set to 65536
+15:07:57.883         siprtp  ....SO_SNDBUF set to 65536
+15:07:57.901         siprtp  ....SO_RCVBUF set to 65536
+15:07:57.916         siprtp  ....SO_SNDBUF set to 65536
+15:07:57.934    inv004F9B54  ....Received Response msg 200/INVITE/cseq=26500 (rdata0048700C), sending ACK
+15:07:57.949       endpoint  ....Request msg ACK/cseq=26500 (tdta005081D0) created.
+15:07:57.967    dlg004F9B54  .....Sending Request msg ACK/cseq=26500 (tdta005081D0)
+15:07:57.982  sip_resolve.c  .....Target '192.168.4.108:5060' type=Unspecified resolved to '192.168.4.108:5060' type=UDP (UDP transport)
+15:07:58.001 c:\users\admin  ....Call #0 connected in 492 ms
+15:07:58.016    tsx005046F4  Timeout timer event
+15:07:58.034    tsx005046F4  .State changed from Terminated to Destroyed, event=TIMER
+15:07:58.049    tsx005046F4  Transaction destroyed!
+15:15:35.196 sip_endpoint.c  Creating endpoint instance...
+15:15:35.239          pjlib  select() I/O Queue created (008BE3A0)
+15:15:35.287 sip_endpoint.c  Module "mod-msg-print" registered
+15:15:35.331 sip_transport.  Transport manager created.
+15:15:35.377    udp008C57B0  SIP UDP transport started, published address is 192.168.6.38:5060
+15:15:35.396 c:\users\admin  SIP UDP listening on 192.168.6.38:5060
+15:15:35.416 sip_endpoint.c  Module "mod-tsx-layer" registered
+15:15:35.438 sip_endpoint.c  Module "mod-stateful-util" registered
+15:15:35.458 sip_endpoint.c  Module "mod-ua" registered
+15:15:35.488 sip_endpoint.c  Module "mod-100rel" registered
+15:15:35.508 sip_endpoint.c  Module "mod-invite" registered
+15:15:35.529 sip_endpoint.c  Module "monitor_modul" registered
+15:15:35.549 sip_endpoint.c  Module "logger_module" registered
+15:15:35.606     wmme_dev.c  WMME found 3 devices:
+15:15:35.624     wmme_dev.c   dev_id 0: Wave mapper  (in=2, out=2)
+15:15:35.654     wmme_dev.c   dev_id 1: Âó¿Ë·ç (Realtek High Definition  (in=2, out=0)
+15:15:35.674     wmme_dev.c   dev_id 2: ÑïÉùÆ÷ (Realtek High Definition  (in=0, out=2)
+15:15:35.696     wmme_dev.c  WMME initialized
+15:15:35.744          pjlib  select() I/O Queue created (008DAB6C)
+15:15:35.890    dshow_dev.c  DShow has 1 devices:
+15:15:35.924    dshow_dev.c   dev_id 0: PC Camera (capture)
+15:15:35.945 colorbar_dev.c  Colorbar video src initialized with 1 device(s):
+15:15:35.974 colorbar_dev.c   0: Colorbar generator
+15:15:35.997      sdl_dev.c  SDL 2.0 initialized
+15:15:40.862    dlg0093505C  UAC dialog created
+15:15:40.890    dlg0093505C  Module mod-invite added as dialog usage, data=009363C0
+15:15:40.932    dlg0093505C  .Session count inc to 2 by mod-invite
+15:15:40.956    dlg0093505C  Module mod-100rel added as dialog usage, data=00937964
+15:15:40.985    dlg0093505C  100rel module attached
+15:15:41.015    inv0093505C  UAC invite session created for dialog dlg0093505C
+15:15:41.044       endpoint  Request msg INVITE/cseq=18468 (tdta00937AF0) created.
+15:15:41.073    inv0093505C  .Sending Request msg INVITE/cseq=18468 (tdta00937AF0)
+15:15:41.102    dlg0093505C  ..Sending Request msg INVITE/cseq=18468 (tdta00937AF0)
+15:15:41.132    tsx00939B74  ...Transaction created for Request msg INVITE/cseq=18467 (tdta00937AF0)
+15:15:41.160    tsx00939B74  ..Sending Request msg INVITE/cseq=18467 (tdta00937AF0) in state Null
+15:15:41.209  sip_resolve.c  ...Target '192.168.4.108:5060' type=Unspecified resolved to '192.168.4.108:5060' type=UDP (UDP transport)
+15:15:41.236    tsx00939B74  ...State changed from Null to Calling, event=TX_MSG
+15:15:41.238 sip_endpoint.c !Processing incoming message: Response msg 200/INVITE/cseq=18467 (rdata008C700C)
+15:15:41.315    tsx00939B74 !.Incoming Response msg 200/INVITE/cseq=18467 (rdata008C700C) in state Calling
+15:15:41.281    dlg0093505C !....Transaction tsx00939B74 state changed to Calling
+15:15:41.382    tsx00939B74  ..State changed from Calling to Terminated, event=RX_MSG
+15:15:41.413    dlg0093505C  ...Received Response msg 200/INVITE/cseq=18467 (rdata008C700C)
+15:15:41.440    dlg0093505C  ....Route-set updated
+15:15:41.473    dlg0093505C  ....Route-set frozen
+15:15:41.506    dlg0093505C  ...Transaction tsx00939B74 state changed to Terminated
+15:15:41.538         siprtp !Remote RTP address switched to 192.168.4.108:4000
+15:15:41.573         siprtp !Remote RTCP address switched to predicted address 192.168.4.108:4001
+15:15:41.542    inv0093505C !....Got SDP answer in Response msg 200/INVITE/cseq=18467 (rdata008C700C)
+15:15:41.625    inv0093505C !....SDP negotiation done, status=0
+15:15:41.651          rtp.c  ....pjmedia_rtp_session_init: ses=008841CC, default_pt=0, ssrc=0x4ae13d6c
+15:15:41.672          rtp.c  ....pjmedia_rtp_session_init: ses=008841FC, default_pt=0, ssrc=0x0
+15:15:41.693          rtp.c  ....pjmedia_rtp_session_init: ses=0088466C, default_pt=97, ssrc=0x5af141bb
+15:15:41.714          rtp.c  ....pjmedia_rtp_session_init: ses=0088469C, default_pt=97, ssrc=0x0
+15:15:41.734         siprtp  ....SO_RCVBUF set to 65536
+15:15:41.766         siprtp  ....SO_SNDBUF set to 65536
+15:15:41.786         siprtp  ....SO_RCVBUF set to 65536
+15:15:41.805         siprtp  ....SO_SNDBUF set to 65536
+15:15:41.826    inv0093505C  ....Received Response msg 200/INVITE/cseq=18467 (rdata008C700C), sending ACK
+15:15:41.860       endpoint  ....Request msg ACK/cseq=18467 (tdta0093D650) created.
+15:15:41.929    dlg0093505C  .....Sending Request msg ACK/cseq=18467 (tdta0093D650)
+15:15:41.951  sip_resolve.c  .....Target '192.168.4.108:5060' type=Unspecified resolved to '192.168.4.108:5060' type=UDP (UDP transport)
+15:15:41.972 c:\users\admin  ....Call #0 connected in 928 ms
+15:15:41.993 sip_endpoint.c  Processing incoming message: Response msg 200/INVITE/cseq=18467 (rdata008C700C)
+15:15:42.014    dlg0093505C  .Received Response msg 200/INVITE/cseq=18467 (rdata008C700C)
+15:15:42.034    inv0093505C  ..Received Response msg 200/INVITE/cseq=18467 (rdata008C700C), sending ACK
+15:15:42.064    dlg0093505C  ...Sending Request msg ACK/cseq=18467 (tdta0093D650)
+15:15:42.085       endpoint  ...Request msg ACK/cseq=18467 (tdta0093D650): skipping target resolution because address is already set
+15:15:42.105    tsx00939B74  Timeout timer event
+15:15:42.126    tsx00939B74  .State changed from Terminated to Destroyed, event=TIMER
+15:15:42.147    tsx00939B74  Transaction destroyed!
+15:16:25.242       endpoint !.Request msg BYE/cseq=18469 (tdta009414B0) created.
+15:16:25.272    inv0093505C  .Sending Request msg BYE/cseq=18469 (tdta009414B0)
+15:16:25.293    dlg0093505C  ..Sending Request msg BYE/cseq=18469 (tdta009414B0)
+15:16:25.314    tsx00942554  ...Transaction created for Request msg BYE/cseq=18468 (tdta009414B0)
+15:16:25.335    tsx00942554  ..Sending Request msg BYE/cseq=18468 (tdta009414B0) in state Null
+15:16:25.355  sip_resolve.c  ...Target '192.168.4.108:5060' type=Unspecified resolved to '192.168.4.108:5060' type=UDP (UDP transport)
+15:16:25.376    tsx00942554  ...State changed from Null to Calling, event=TX_MSG
+15:16:25.377 sip_endpoint.c !Processing incoming message: Response msg 200/BYE/cseq=18468 (rdata008C700C)
+15:16:25.397    dlg0093505C !....Transaction tsx00942554 state changed to Calling
+15:16:25.418    tsx00942554 !.Incoming Response msg 200/BYE/cseq=18468 (rdata008C700C) in state Calling
+15:16:25.459    tsx00942554  ..State changed from Calling to Completed, event=RX_MSG
+15:16:25.489    dlg0093505C  ...Received Response msg 200/BYE/cseq=18468 (rdata008C700C)
+15:16:25.509    dlg0093505C  ...Transaction tsx00942554 state changed to Completed
+15:16:25.530 c:\users\admin  ....Call #0 disconnected. Reason=603 (Decline)
+15:16:25.554 c:\users\admin  ....Call #0 statistics:
+Call #0: DISCONNCTD [duration: 00:00:43.600]
+   To: sip:192.168.4.108;tag=8c1f1144-1e07-447b-bc86-4d78952ac0ff
+   Signaling quality: got 1st response in -1730046687 ms, connected after: 928 ms
+   Stream #0: audio PCMU@8000Hz, 20ms/frame, 8.00KB/s (9.06KB/s +IP hdr)
+              RX stat last update: never
+                 total 2.01K packets 348.03KB received (417.09KB +IP hdr)
+                 pkt loss=0 (0.0%), dup=0 (0.0%), reorder=0 (0.0%)
+                       (msec)    min     avg     max     last
+                 loss period:   0.000   0.000   0.000   0.000
+                 jitter     :   0.000   2.342 155.500  13.750
+              TX stat last update: 00h:00m:04.965s ago
+                 total 0 packets 0B sent (0B +IP hdr)
+                 pkt loss=0 (-1.$%), dup=0 (-1.$%), reorder=0 (-1.$%)
+                       (msec)    min     avg     max     last
+                 loss period:   0.000   0.000   0.000   0.000
+                 jitter     :   0.000   0.000   0.000   0.000
+             RTT delay      :   0.000   0.000   0.000   0.000
+
+15:16:25.717   tdta0093D650  ....Destroying txdata Request msg ACK/cseq=18467 (tdta0093D650)
+15:16:25.738   tdta00937AF0  ....Destroying txdata Request msg INVITE/cseq=18467 (tdta00937AF0)
+15:16:25.759    dlg0093505C  .....Session count dec to 1 by mod-invite
+15:16:30.460    tsx00942554  Timeout timer event
+15:16:30.487    tsx00942554  .State changed from Completed to Terminated, event=TIMER
+15:16:30.508    dlg0093505C  ..Transaction tsx00942554 state changed to Terminated
+15:16:30.529    dlg0093505C  ...Dialog destroyed
+15:16:30.560    tsx00942554  Timeout timer event
+15:16:30.579    tsx00942554  .State changed from Terminated to Destroyed, event=TIMER
+15:16:30.599   tdta009414B0  ..Destroying txdata Request msg BYE/cseq=18468 (tdta009414B0)
+15:16:30.621    tsx00942554  Transaction destroyed!
+15:16:47.971    dlg0093505C !UAC dialog created
+15:16:47.989    dlg0093505C  Module mod-invite added as dialog usage, data=009363C0
+15:16:48.010    dlg0093505C  .Session count inc to 2 by mod-invite
+15:16:48.031    dlg0093505C  Module mod-100rel added as dialog usage, data=00937964
+15:16:48.052    dlg0093505C  100rel module attached
+15:16:48.072    inv0093505C  UAC invite session created for dialog dlg0093505C
+15:16:48.093       endpoint  Request msg INVITE/cseq=26501 (tdta00937AF0) created.
+15:16:48.114    inv0093505C  .Sending Request msg INVITE/cseq=26501 (tdta00937AF0)
+15:16:48.135    dlg0093505C  ..Sending Request msg INVITE/cseq=26501 (tdta00937AF0)
+15:16:48.156    tsx00941514  ...Transaction created for Request msg INVITE/cseq=26500 (tdta00937AF0)
+15:16:48.170    tsx00941514  ..Sending Request msg INVITE/cseq=26500 (tdta00937AF0) in state Null
+15:16:48.189  sip_resolve.c  ...Target '192.168.4.108:5060' type=Unspecified resolved to '192.168.4.108:5060' type=UDP (UDP transport)
+15:16:48.210    tsx00941514  ...State changed from Null to Calling, event=TX_MSG
+15:16:48.211 sip_endpoint.c !Processing incoming message: Response msg 200/INVITE/cseq=26500 (rdata008C700C)
+15:16:48.231    dlg0093505C !....Transaction tsx00941514 state changed to Calling
+15:16:48.252    tsx00941514 !.Incoming Response msg 200/INVITE/cseq=26500 (rdata008C700C) in state Calling
+15:16:48.272    tsx00941514  ..State changed from Calling to Terminated, event=RX_MSG
+15:16:48.293    dlg0093505C  ...Received Response msg 200/INVITE/cseq=26500 (rdata008C700C)
+15:16:48.314    dlg0093505C  ....Route-set updated
+15:16:48.335    dlg0093505C  ....Route-set frozen
+15:16:48.356    dlg0093505C  ...Transaction tsx00941514 state changed to Terminated
+15:16:48.376    inv0093505C  ....Got SDP answer in Response msg 200/INVITE/cseq=26500 (rdata008C700C)
+15:16:48.397    inv0093505C  ....SDP negotiation done, status=0
+15:16:48.418          rtp.c  ....pjmedia_rtp_session_init: ses=008841CC, default_pt=0, ssrc=0x124305e
+15:16:48.439          rtp.c  ....pjmedia_rtp_session_init: ses=008841FC, default_pt=0, ssrc=0x0
+15:16:48.460          rtp.c  ....pjmedia_rtp_session_init: ses=0088466C, default_pt=97, ssrc=0x39b32d12
+15:16:48.480          rtp.c  ....pjmedia_rtp_session_init: ses=0088469C, default_pt=97, ssrc=0x0
+15:16:48.501         siprtp  ....SO_RCVBUF set to 65536
+15:16:48.522         siprtp  ....SO_SNDBUF set to 65536
+15:16:48.543         siprtp  ....SO_RCVBUF set to 65536
+15:16:48.564         siprtp  ....SO_SNDBUF set to 65536
+15:16:48.584    inv0093505C  ....Received Response msg 200/INVITE/cseq=26500 (rdata008C700C), sending ACK
+15:16:48.605       endpoint  ....Request msg ACK/cseq=26500 (tdta0093B8B8) created.
+15:16:48.626    dlg0093505C  .....Sending Request msg ACK/cseq=26500 (tdta0093B8B8)
+15:16:48.647  sip_resolve.c  .....Target '192.168.4.108:5060' type=Unspecified resolved to '192.168.4.108:5060' type=UDP (UDP transport)
+15:16:48.668 c:\users\admin  ....Call #0 connected in 575 ms
+15:16:48.688    tsx00941514  Timeout timer event
+15:16:48.710    tsx00941514  .State changed from Terminated to Destroyed, event=TIMER
+15:16:48.730    tsx00941514  Transaction destroyed!
+15:16:49.195       endpoint !.Request msg BYE/cseq=26502 (tdta0093E878) created.
+15:16:49.217    inv0093505C  .Sending Request msg BYE/cseq=26502 (tdta0093E878)
+15:16:49.238    dlg0093505C  ..Sending Request msg BYE/cseq=26502 (tdta0093E878)
+15:16:49.259    tsx00941514  ...Transaction created for Request msg BYE/cseq=26501 (tdta0093E878)
+15:16:49.279    tsx00941514  ..Sending Request msg BYE/cseq=26501 (tdta0093E878) in state Null
+15:16:49.300  sip_resolve.c  ...Target '192.168.4.108:5060' type=Unspecified resolved to '192.168.4.108:5060' type=UDP (UDP transport)
+15:16:49.321    tsx00941514  ...State changed from Null to Calling, event=TX_MSG
+15:16:49.322 sip_endpoint.c !Processing incoming message: Response msg 200/BYE/cseq=26501 (rdata008C700C)
+15:16:49.342    dlg0093505C !....Transaction tsx00941514 state changed to Calling
+15:16:49.371    tsx00941514 !.Incoming Response msg 200/BYE/cseq=26501 (rdata008C700C) in state Calling
+15:16:49.413    tsx00941514  ..State changed from Calling to Completed, event=RX_MSG
+15:16:49.433    dlg0093505C  ...Received Response msg 200/BYE/cseq=26501 (rdata008C700C)
+15:16:49.454    dlg0093505C  ...Transaction tsx00941514 state changed to Completed
+15:16:49.475 c:\users\admin  ....Call #0 disconnected. Reason=603 (Decline)
+15:16:49.496 c:\users\admin  ....Call #0 statistics:
+Call #0: DISCONNCTD [duration: 00:00:00.849]
+   To: sip:192.168.4.108;tag=0e5c07e0-b4a8-4f31-a434-c5ac9996e382
+   Signaling quality: got 1st response in 283 ms, connected after: 575 ms
+   Stream #0: audio PCMU@8000Hz, 20ms/frame, 8.00KB/s (9.06KB/s +IP hdr)
+              RX stat last update: never
+                 total 37 packets 5.09KB received (7.01KB +IP hdr)
+                 pkt loss=0 (0.0%), dup=0 (0.0%), reorder=0 (0.0%)
+                       (msec)    min     avg     max     last
+                 loss period:   0.000   0.000   0.000   0.000
+                 jitter     :   0.000   0.183   0.250   0.125
+              TX stat last update: never
+                 total 0 packets 0B sent (0B +IP hdr)
+                 pkt loss=0 (-1.$%), dup=0 (-1.$%), reorder=0 (-1.$%)
+                       (msec)    min     avg     max     last
+                 loss period:   0.000   0.000   0.000   0.000
+                 jitter     :   0.000   0.000   0.000   0.000
+             RTT delay      :   0.000   0.000   0.000   0.000
+
+15:16:49.671   tdta0093B8B8  ....Destroying txdata Request msg ACK/cseq=26500 (tdta0093B8B8)
+15:16:49.692   tdta00937AF0  ....Destroying txdata Request msg INVITE/cseq=26500 (tdta00937AF0)
+15:16:49.712    dlg0093505C  .....Session count dec to 1 by mod-invite
+15:16:50.499    dlg0093F91C !UAC dialog created
+15:16:50.520    dlg0093F91C  Module mod-invite added as dialog usage, data=00937D80
+15:16:50.541    dlg0093F91C  .Session count inc to 2 by mod-invite
+15:16:50.561    dlg0093F91C  Module mod-100rel added as dialog usage, data=00939324
+15:16:50.582    dlg0093F91C  100rel module attached
+15:16:50.603    inv0093F91C  UAC invite session created for dialog dlg0093F91C
+15:16:50.624       endpoint  Request msg INVITE/cseq=15725 (tdta00941F30) created.
+15:16:50.646    inv0093F91C  .Sending Request msg INVITE/cseq=15725 (tdta00941F30)
+15:16:50.665    dlg0093F91C  ..Sending Request msg INVITE/cseq=15725 (tdta00941F30)
+15:16:50.686    tsx0093B91C  ...Transaction created for Request msg INVITE/cseq=15724 (tdta00941F30)
+15:16:50.707    tsx0093B91C  ..Sending Request msg INVITE/cseq=15724 (tdta00941F30) in state Null
+15:16:50.728  sip_resolve.c  ...Target '192.168.4.108:5060' type=Unspecified resolved to '192.168.4.108:5060' type=UDP (UDP transport)
+15:16:50.749    tsx0093B91C  ...State changed from Null to Calling, event=TX_MSG
+15:16:50.750 sip_endpoint.c !Processing incoming message: Response msg 200/INVITE/cseq=15724 (rdata008C700C)
+15:16:50.790    tsx0093B91C !.Incoming Response msg 200/INVITE/cseq=15724 (rdata008C700C) in state Calling
+15:16:50.771    dlg0093F91C !....Transaction tsx0093B91C state changed to Calling
+15:16:50.832    tsx0093B91C  ..State changed from Calling to Terminated, event=RX_MSG
+15:16:50.853    dlg0093F91C  ...Received Response msg 200/INVITE/cseq=15724 (rdata008C700C)
+15:16:50.874    dlg0093F91C  ....Route-set updated
+15:16:50.894    dlg0093F91C  ....Route-set frozen
+15:16:50.915    dlg0093F91C  ...Transaction tsx0093B91C state changed to Terminated
+15:16:50.936    inv0093F91C  ....Got SDP answer in Response msg 200/INVITE/cseq=15724 (rdata008C700C)
+15:16:50.957    inv0093F91C  ....SDP negotiation done, status=0
+15:16:50.978          rtp.c  ....pjmedia_rtp_session_init: ses=008841CC, default_pt=0, ssrc=0x45091238
+15:16:51.007          rtp.c  ....pjmedia_rtp_session_init: ses=008841FC, default_pt=0, ssrc=0x0
+15:16:51.028          rtp.c  ....pjmedia_rtp_session_init: ses=0088466C, default_pt=97, ssrc=0x7f967ff5
+15:16:51.048          rtp.c  ....pjmedia_rtp_session_init: ses=0088469C, default_pt=97, ssrc=0x0
+15:16:51.065         siprtp  ....SO_RCVBUF set to 65536
+15:16:51.082         siprtp  ....SO_SNDBUF set to 65536
+15:16:51.107         siprtp  ....SO_RCVBUF set to 65536
+15:16:51.123         siprtp  ....SO_SNDBUF set to 65536
+15:16:51.140    inv0093F91C  ....Received Response msg 200/INVITE/cseq=15724 (rdata008C700C), sending ACK
+15:16:51.165       endpoint  ....Request msg ACK/cseq=15724 (tdta067D2428) created.
+15:16:51.182    dlg0093F91C  .....Sending Request msg ACK/cseq=15724 (tdta067D2428)
+15:16:51.198  sip_resolve.c  .....Target '192.168.4.108:5060' type=Unspecified resolved to '192.168.4.108:5060' type=UDP (UDP transport)
+15:16:51.223 c:\users\admin  ....Call #0 connected in 599 ms
+15:16:51.248    tsx0093B91C  Timeout timer event
+15:16:51.265    tsx0093B91C  .State changed from Terminated to Destroyed, event=TIMER
+15:16:51.281    tsx0093B91C  Transaction destroyed!
+15:16:51.474       endpoint !.Request msg BYE/cseq=15726 (tdta067D53E8) created.
+15:16:51.489    inv0093F91C  .Sending Request msg BYE/cseq=15726 (tdta067D53E8)
+15:16:51.514    dlg0093F91C  ..Sending Request msg BYE/cseq=15726 (tdta067D53E8)
+15:16:51.531    tsx0093B91C  ...Transaction created for Request msg BYE/cseq=15725 (tdta067D53E8)
+15:16:51.548    tsx0093B91C  ..Sending Request msg BYE/cseq=15725 (tdta067D53E8) in state Null
+15:16:51.564  sip_resolve.c  ...Target '192.168.4.108:5060' type=Unspecified resolved to '192.168.4.108:5060' type=UDP (UDP transport)
+15:16:51.581    tsx0093B91C  ...State changed from Null to Calling, event=TX_MSG
+15:16:51.582 sip_endpoint.c !Processing incoming message: Response msg 200/BYE/cseq=15725 (rdata008C700C)
+15:16:51.598    dlg0093F91C !....Transaction tsx0093B91C state changed to Calling
+15:16:51.623    tsx0093B91C !.Incoming Response msg 200/BYE/cseq=15725 (rdata008C700C) in state Calling
+15:16:51.640    tsx0093B91C  ..State changed from Calling to Completed, event=RX_MSG
+15:16:51.656    dlg0093F91C  ...Received Response msg 200/BYE/cseq=15725 (rdata008C700C)
+15:16:51.673    dlg0093F91C  ...Transaction tsx0093B91C state changed to Completed
+15:16:51.689 c:\users\admin  ....Call #0 disconnected. Reason=603 (Decline)
+15:16:51.706 c:\users\admin  ....Call #0 statistics:
+Call #0: DISCONNCTD [duration: 00:00:00.500]
+   To: sip:192.168.4.108;tag=b0819763-f649-4361-9287-91ddf2eff939
+   Signaling quality: got 1st response in 312 ms, connected after: 599 ms
+   Stream #0: audio PCMU@8000Hz, 20ms/frame, 8.00KB/s (9.06KB/s +IP hdr)
+              RX stat last update: never
+                 total 22 packets 3.05KB received (4.02KB +IP hdr)
+                 pkt loss=0 (0.0%), dup=0 (0.0%), reorder=0 (0.0%)
+                       (msec)    min     avg     max     last
+                 loss period:   0.000   0.000   0.000   0.000
+                 jitter     :  -0.001   0.000   0.000   0.000
+              TX stat last update: never
+                 total 0 packets 0B sent (0B +IP hdr)
+                 pkt loss=0 (-1.$%), dup=0 (-1.$%), reorder=0 (-1.$%)
+                       (msec)    min     avg     max     last
+                 loss period:   0.000   0.000   0.000   0.000
+                 jitter     :   0.000   0.000   0.000   0.000
+             RTT delay      :   0.000   0.000   0.000   0.000
+
+15:16:51.842   tdta067D2428  ....Destroying txdata Request msg ACK/cseq=15724 (tdta067D2428)
+15:16:51.856   tdta00941F30  ....Destroying txdata Request msg INVITE/cseq=15724 (tdta00941F30)
+15:16:51.872    dlg0093F91C  .....Session count dec to 1 by mod-invite
+15:16:52.154    dlg0093C15C !UAC dialog created
+15:16:52.172    dlg0093C15C  Module mod-invite added as dialog usage, data=0093D008
+15:16:52.189    dlg0093C15C  .Session count inc to 2 by mod-invite
+15:16:52.214    dlg0093C15C  Module mod-100rel added as dialog usage, data=00942624
+15:16:52.230    dlg0093C15C  100rel module attached
+15:16:52.247    inv0093C15C  UAC invite session created for dialog dlg0093C15C
+15:16:52.264       endpoint  Request msg INVITE/cseq=29359 (tdta009427B0) created.
+15:16:52.280    inv0093C15C  .Sending Request msg INVITE/cseq=29359 (tdta009427B0)
+15:16:52.297    dlg0093C15C  ..Sending Request msg INVITE/cseq=29359 (tdta009427B0)
+15:16:52.314    tsx00943854  ...Transaction created for Request msg INVITE/cseq=29358 (tdta009427B0)
+15:16:52.333    tsx00943854  ..Sending Request msg INVITE/cseq=29358 (tdta009427B0) in state Null
+15:16:52.347  sip_resolve.c  ...Target '192.168.4.108:5060' type=Unspecified resolved to '192.168.4.108:5060' type=UDP (UDP transport)
+15:16:52.364    tsx00943854  ...State changed from Null to Calling, event=TX_MSG
+15:16:52.365 sip_endpoint.c !Processing incoming message: Response msg 200/INVITE/cseq=29358 (rdata008C700C)
+15:16:52.397    tsx00943854 !.Incoming Response msg 200/INVITE/cseq=29358 (rdata008C700C) in state Calling
+15:16:52.380    dlg0093C15C !....Transaction tsx00943854 state changed to Calling
+15:16:52.433    tsx00943854  ..State changed from Calling to Terminated, event=RX_MSG
+15:16:52.447    dlg0093C15C  ...Received Response msg 200/INVITE/cseq=29358 (rdata008C700C)
+15:16:52.463    dlg0093C15C  ....Route-set updated
+15:16:52.480    dlg0093C15C  ....Route-set frozen
+15:16:52.497    dlg0093C15C !...Transaction tsx00943854 state changed to Terminated
+15:16:52.482       endpoint !.Request msg CANCEL/cseq=29358 (tdta067D83A8) created.
+15:16:52.513    inv0093C15C  ....Got SDP answer in Response msg 200/INVITE/cseq=29358 (rdata008C700C)
+15:16:52.541    inv0093C15C !.Sending Request msg CANCEL/cseq=29358 (tdta067D83A8)
+15:16:52.555    inv0093C15C !....SDP negotiation done, status=0
+15:16:52.588          rtp.c  ....pjmedia_rtp_session_init: ses=008841CC, default_pt=0, ssrc=0x120759a
+15:16:52.605          rtp.c  ....pjmedia_rtp_session_init: ses=008841FC, default_pt=0, ssrc=0x0
+15:16:52.622          rtp.c  ....pjmedia_rtp_session_init: ses=0088466C, default_pt=97, ssrc=0x3e121a49
+15:16:52.641          rtp.c  ....pjmedia_rtp_session_init: ses=0088469C, default_pt=97, ssrc=0x0
+15:16:52.655         siprtp  ....SO_RCVBUF set to 65536
+15:16:52.671         siprtp  ....SO_SNDBUF set to 65536
+15:16:52.688         siprtp  ....SO_RCVBUF set to 65536
+15:16:52.705         siprtp  ....SO_SNDBUF set to 65536
+15:16:52.722    inv0093C15C  ....Received Response msg 200/INVITE/cseq=29358 (rdata008C700C), sending ACK
+15:16:52.738       endpoint  ....Request msg ACK/cseq=29358 (tdta067D9FA8) created.
+15:16:52.763    dlg0093C15C  .....Sending Request msg ACK/cseq=29358 (tdta067D9FA8)
+15:16:52.780  sip_resolve.c  .....Target '192.168.4.108:5060' type=Unspecified resolved to '192.168.4.108:5060' type=UDP (UDP transport)
+15:16:52.797 c:\users\admin  ....Call #0 connected in 533 ms
+15:16:52.813    dlg0093C15C !..Sending Request msg CANCEL/cseq=29358 (tdta067D83A8)
+15:16:52.813    tsx00943854 !Timeout timer event
+15:16:52.830    tsx067DCFCC !...Transaction created for Request msg CANCEL/cseq=29358 (tdta067D83A8)
+15:16:52.846    tsx00943854 !.State changed from Terminated to Destroyed, event=TIMER
+15:16:52.872    tsx067DCFCC !..Sending Request msg CANCEL/cseq=29358 (tdta067D83A8) in state Null
+15:16:52.888       endpoint  ...Request msg CANCEL/cseq=29358 (tdta067D83A8): skipping target resolution because address is already set
+15:16:52.905    tsx067DCFCC  ...State changed from Null to Calling, event=TX_MSG
+15:16:52.922    dlg0093C15C  ....Transaction tsx067DCFCC state changed to Calling
+15:16:52.871    tsx00943854  Transaction destroyed!
+15:16:52.939    dlg067DF9CC  UAC dialog created
+15:16:52.980    dlg067DF9CC !Module mod-invite added as dialog usage, data=067E0438
+15:16:52.996    dlg067DF9CC  .Session count inc to 2 by mod-invite
+15:16:53.013    dlg067DF9CC  Module mod-100rel added as dialog usage, data=067E179C
+15:16:53.029    dlg067DF9CC  100rel module attached
+15:16:52.955 sip_endpoint.c !Processing incoming message: Response msg 481/CANCEL/cseq=29358 (rdata008C700C)
+15:16:53.046    inv067DF9CC  UAC invite session created for dialog dlg067DF9CC
+15:16:53.063    tsx067DCFCC !.Incoming Response msg 481/CANCEL/cseq=29358 (rdata008C700C) in state Calling
+15:16:53.080       endpoint !Request msg INVITE/cseq=24465 (tdta067E1928) created.
+15:16:53.113    inv067DF9CC !.Sending Request msg INVITE/cseq=24465 (tdta067E1928)
+15:16:53.099    tsx067DCFCC !..State changed from Calling to Completed, event=RX_MSG
+15:16:53.129    dlg067DF9CC  ..Sending Request msg INVITE/cseq=24465 (tdta067E1928)
+15:16:53.146    tsx067E39AC  ...Transaction created for Request msg INVITE/cseq=24464 (tdta067E1928)
+15:16:53.146    dlg0093C15C !...Received Response msg 481/CANCEL/cseq=29358 (rdata008C700C)
+15:16:53.163    tsx067E39AC !..Sending Request msg INVITE/cseq=24464 (tdta067E1928) in state Null
+15:16:53.179    dlg0093C15C !...Transaction tsx067DCFCC state changed to Completed
+15:16:53.207  sip_resolve.c !...Target '192.168.4.108:5060' type=Unspecified resolved to '192.168.4.108:5060' type=UDP (UDP transport)
+15:16:53.221    tsx067E39AC  ...State changed from Null to Calling, event=TX_MSG
+15:16:53.238    dlg067DF9CC !....Transaction tsx067E39AC state changed to Calling
+15:16:53.223 sip_endpoint.c !Processing incoming message: Response msg 200/INVITE/cseq=24464 (rdata008C700C)
+15:16:53.271    inv067DF9CC  .Delaying CANCEL since no provisional response is received yet
+15:16:53.271    tsx067E39AC !.Incoming Response msg 200/INVITE/cseq=24464 (rdata008C700C) in state Calling
+15:16:53.307    tsx067E39AC !..State changed from Calling to Terminated, event=RX_MSG
+15:16:53.321    dlg067DF9CC  ...Received Response msg 200/INVITE/cseq=24464 (rdata008C700C)
+15:16:53.306    dlg067E63AC !UAC dialog created
+15:16:53.337    dlg067DF9CC  ....Route-set updated
+15:16:53.354    dlg067DF9CC !....Route-set frozen
+15:16:53.338    dlg067E63AC !Module mod-invite added as dialog usage, data=067E7498
+15:16:53.371    dlg067DF9CC  ...Transaction tsx067E39AC state changed to Terminated
+15:16:53.387    dlg067E63AC !.Session count inc to 2 by mod-invite
+15:16:53.421    dlg067E63AC !Module mod-100rel added as dialog usage, data=067E8A3C
+15:16:53.437    dlg067E63AC  100rel module attached
+15:16:53.407    inv067DF9CC !....Got SDP answer in Response msg 200/INVITE/cseq=24464 (rdata008C700C)
+15:16:53.454    inv067E63AC  UAC invite session created for dialog dlg067E63AC
+15:16:53.488       endpoint !Request msg INVITE/cseq=28146 (tdta067E9488) created.
+15:16:53.504    inv067E63AC  .Sending Request msg INVITE/cseq=28146 (tdta067E9488)
+15:16:53.471    inv067DF9CC !....SDP negotiation done, status=0
+15:16:53.547          rtp.c !....pjmedia_rtp_session_init: ses=008841CC, default_pt=0, ssrc=0x49442e40
+15:16:53.564          rtp.c  ....pjmedia_rtp_session_init: ses=008841FC, default_pt=0, ssrc=0x0
+15:16:53.579          rtp.c  ....pjmedia_rtp_session_init: ses=0088466C, default_pt=97, ssrc=0x60322c3b
+15:16:53.529    dlg067E63AC  ..Sending Request msg INVITE/cseq=28146 (tdta067E9488)
+15:16:53.596          rtp.c  ....pjmedia_rtp_session_init: ses=0088469C, default_pt=97, ssrc=0x0
+15:16:53.612    tsx067EBD8C !...Transaction created for Request msg INVITE/cseq=28145 (tdta067E9488)
+15:16:53.637         siprtp !....SO_RCVBUF set to 65536
+15:16:53.654    tsx067EBD8C !..Sending Request msg INVITE/cseq=28145 (tdta067E9488) in state Null
+15:16:53.679         siprtp !....SO_SNDBUF set to 65536
+15:16:53.712         siprtp !....SO_RCVBUF set to 65536
+15:16:53.730         siprtp  ....SO_SNDBUF set to 65536
+15:16:53.695  sip_resolve.c !...Target '192.168.4.108:5060' type=Unspecified resolved to '192.168.4.108:5060' type=UDP (UDP transport)
+15:16:53.754    inv067DF9CC  ....Received Response msg 200/INVITE/cseq=24464 (rdata008C700C), sending ACK
+15:16:53.787       endpoint !....Request msg ACK/cseq=24464 (tdta067EE728) created.
+15:16:53.770    tsx067EBD8C !...State changed from Null to Calling, event=TX_MSG
+15:16:53.804    dlg067DF9CC  .....Sending Request msg ACK/cseq=24464 (tdta067EE728)
+15:16:53.820    dlg067E63AC !....Transaction tsx067EBD8C state changed to Calling
+15:16:53.837  sip_resolve.c !.....Target '192.168.4.108:5060' type=Unspecified resolved to '192.168.4.108:5060' type=UDP (UDP transport)
+15:16:53.868    inv067E63AC !.Delaying CANCEL since no provisional response is received yet
+15:16:53.873 c:\users\admin !....Call #0 connected in 385 ms
+15:16:53.904 sip_endpoint.c  Processing incoming message: Response msg 200/INVITE/cseq=24464 (rdata008C700C)
+15:16:53.920    dlg067DF9CC  .Received Response msg 200/INVITE/cseq=24464 (rdata008C700C)
+15:16:53.937    inv067DF9CC  ..Received Response msg 200/INVITE/cseq=24464 (rdata008C700C), sending ACK
+15:16:53.953    dlg067DF9CC  ...Sending Request msg ACK/cseq=24464 (tdta067EE728)
+15:16:53.973       endpoint  ...Request msg ACK/cseq=24464 (tdta067EE728): skipping target resolution because address is already set
+15:16:53.978    dlg067EF7CC !UAC dialog created
+15:16:54.003    dlg067EF7CC !Module mod-invite added as dialog usage, data=067F08B8
+15:16:54.020    dlg067EF7CC  .Session count inc to 2 by mod-invite
+15:16:53.987 sip_endpoint.c !Processing incoming message: Response msg 200/INVITE/cseq=28145 (rdata008C700C)
+15:16:54.037    dlg067EF7CC  Module mod-100rel added as dialog usage, data=0094911C
+15:16:54.170    tsx067EBD8C !.Incoming Response msg 200/INVITE/cseq=28145 (rdata008C700C) in state Calling
+15:16:54.304    dlg067EF7CC !100rel module attached
+15:16:54.321    inv067EF7CC  UAC invite session created for dialog dlg067EF7CC
+15:16:54.304    tsx067EBD8C  ..State changed from Calling to Terminated, event=RX_MSG
+15:16:54.363    dlg067E63AC !...Received Response msg 200/INVITE/cseq=28145 (rdata008C700C)
+15:16:54.380    dlg067E63AC  ....Route-set updated
+15:16:54.396    dlg067E63AC  ....Route-set frozen
+15:16:54.337       endpoint  Request msg INVITE/cseq=16828 (tdta009492A8) created.
+15:16:54.415    dlg067E63AC  ...Transaction tsx067EBD8C state changed to Terminated
+15:16:54.429    inv067E63AC  ....Got SDP answer in Response msg 200/INVITE/cseq=28145 (rdata008C700C)
+15:16:54.446    inv067E63AC  ....SDP negotiation done, status=0
+15:16:54.462          rtp.c  ....pjmedia_rtp_session_init: ses=008841CC, default_pt=0, ssrc=0x58b026ca
+15:16:54.479          rtp.c  ....pjmedia_rtp_session_init: ses=008841FC, default_pt=0, ssrc=0x0
+15:16:54.496          rtp.c  ....pjmedia_rtp_session_init: ses=0088466C, default_pt=97, ssrc=0x692c4a80
+15:16:54.512          rtp.c  ....pjmedia_rtp_session_init: ses=0088469C, default_pt=97, ssrc=0x0
+15:16:54.532         siprtp  ....SO_RCVBUF set to 65536
+15:16:54.546         siprtp !....SO_SNDBUF set to 65536
+15:16:54.564         siprtp  ....SO_RCVBUF set to 65536
+15:16:54.580         siprtp  ....SO_SNDBUF set to 65536
+15:16:54.532    inv067EF7CC !.Sending Request msg INVITE/cseq=16828 (tdta009492A8)
+15:16:54.613    dlg067EF7CC !..Sending Request msg INVITE/cseq=16828 (tdta009492A8)
+15:16:54.596    inv067E63AC  ....Received Response msg 200/INVITE/cseq=28145 (rdata008C700C), sending ACK
+15:16:54.645       endpoint !....Request msg ACK/cseq=28145 (tdta0094CE88) created.
+15:16:54.664    dlg067E63AC  .....Sending Request msg ACK/cseq=28145 (tdta0094CE88)
+15:16:54.679  sip_resolve.c  .....Target '192.168.4.108:5060' type=Unspecified resolved to '192.168.4.108:5060' type=UDP (UDP transport)
+15:16:54.632    tsx0094C46C  ...Transaction created for Request msg INVITE/cseq=16827 (tdta009492A8)
+15:16:54.712    tsx0094C46C !..Sending Request msg INVITE/cseq=16827 (tdta009492A8) in state Null
+15:16:54.697 c:\users\admin  ....Call #0 connected in 360 ms
+15:16:54.754  sip_resolve.c  ...Target '192.168.4.108:5060' type=Unspecified resolved to '192.168.4.108:5060' type=UDP (UDP transport)
+15:16:54.797    tsx0094C46C !...State changed from Null to Calling, event=TX_MSG
+15:16:54.814    dlg067EF7CC  ....Transaction tsx0094C46C state changed to Calling
+15:16:54.779 sip_endpoint.c !Processing incoming message: Response msg 200/INVITE/cseq=28145 (rdata008C700C)
+15:16:54.845    dlg067E63AC !.Received Response msg 200/INVITE/cseq=28145 (rdata008C700C)
+15:16:54.862    inv067E63AC  ..Received Response msg 200/INVITE/cseq=28145 (rdata008C700C), sending ACK
+15:16:54.830    inv067EF7CC  .Delaying CANCEL since no provisional response is received yet
+15:16:54.882    dlg067E63AC  ...Sending Request msg ACK/cseq=28145 (tdta0094CE88)
+15:16:54.898    dlg00951E2C !UAC dialog created
+15:16:54.920       endpoint !...Request msg ACK/cseq=28145 (tdta0094CE88): skipping target resolution because address is already set
+15:16:54.962 sip_endpoint.c !Processing incoming message: Response msg 200/INVITE/cseq=16827 (rdata008C700C)
+15:16:54.941    dlg00951E2C !Module mod-invite added as dialog usage, data=00952F18
+15:16:54.982    tsx0094C46C  .Incoming Response msg 200/INVITE/cseq=16827 (rdata008C700C) in state Calling
+15:16:55.003    dlg00951E2C !.Session count inc to 2 by mod-invite
+15:16:55.024    tsx0094C46C !..State changed from Calling to Terminated, event=RX_MSG
+15:16:55.045    dlg00951E2C !Module mod-100rel added as dialog usage, data=0095473C
+15:16:55.045    dlg067EF7CC  ...Received Response msg 200/INVITE/cseq=16827 (rdata008C700C)
+15:16:55.204    dlg067EF7CC !....Route-set updated
+15:16:55.182    dlg00951E2C  100rel module attached
+15:16:55.245    inv00951E2C !UAC invite session created for dialog dlg00951E2C
+15:16:55.224    dlg067EF7CC  ....Route-set frozen
+15:16:55.266       endpoint  Request msg INVITE/cseq=492 (tdta009548C8) created.
+15:16:55.307    inv00951E2C !.Sending Request msg INVITE/cseq=492 (tdta009548C8)
+15:16:55.328    dlg00951E2C  ..Sending Request msg INVITE/cseq=492 (tdta009548C8)
+15:16:55.286    dlg067EF7CC !...Transaction tsx0094C46C state changed to Terminated
+15:16:55.349    tsx0095694C  ...Transaction created for Request msg INVITE/cseq=491 (tdta009548C8)
+15:16:55.370    inv067EF7CC !....Got SDP answer in Response msg 200/INVITE/cseq=16827 (rdata008C700C)
+15:16:55.411    inv067EF7CC !....SDP negotiation done, status=0
+15:16:55.390    tsx0095694C !..Sending Request msg INVITE/cseq=491 (tdta009548C8) in state Null
+15:16:55.453  sip_resolve.c !...Target '192.168.4.108:5060' type=Unspecified resolved to '192.168.4.108:5060' type=UDP (UDP transport)
+15:16:55.474    tsx0095694C  ...State changed from Null to Calling, event=TX_MSG
+15:16:55.494    dlg00951E2C  ....Transaction tsx0095694C state changed to Calling
+15:16:55.432          rtp.c  ....pjmedia_rtp_session_init: ses=008841CC, default_pt=0, ssrc=0x575360bf
+15:16:55.544          rtp.c !....pjmedia_rtp_session_init: ses=008841FC, default_pt=0, ssrc=0x0
+15:16:55.553    inv00951E2C !.Delaying CANCEL since no provisional response is received yet
+15:16:55.565          rtp.c !....pjmedia_rtp_session_init: ses=0088466C, default_pt=97, ssrc=0x422d54dc
+15:16:55.607          rtp.c  ....pjmedia_rtp_session_init: ses=0088469C, default_pt=97, ssrc=0x0
+15:16:55.629         siprtp  ....SO_RCVBUF set to 65536
+15:16:55.649         siprtp  ....SO_SNDBUF set to 65536
+15:16:55.670         siprtp  ....SO_RCVBUF set to 65536
+15:16:55.690         siprtp  ....SO_SNDBUF set to 65536
+15:16:55.711    inv067EF7CC  ....Received Response msg 200/INVITE/cseq=16827 (rdata008C700C), sending ACK
+15:16:55.732       endpoint  ....Request msg ACK/cseq=16827 (tdta0095A428) created.
+15:16:55.752    dlg067EF7CC  .....Sending Request msg ACK/cseq=16827 (tdta0095A428)
+15:16:55.774  sip_resolve.c  .....Target '192.168.4.108:5060' type=Unspecified resolved to '192.168.4.108:5060' type=UDP (UDP transport)
+15:16:55.794 c:\users\admin  ....Call #0 connected in 529 ms
+15:16:55.815 sip_endpoint.c  Processing incoming message: Response msg 200/INVITE/cseq=16827 (rdata008C700C)
+15:16:55.836    dlg067EF7CC  .Received Response msg 200/INVITE/cseq=16827 (rdata008C700C)
+15:16:55.856    inv067EF7CC  ..Received Response msg 200/INVITE/cseq=16827 (rdata008C700C), sending ACK
+15:16:55.877    dlg067EF7CC  ...Sending Request msg ACK/cseq=16827 (tdta0095A428)
+15:16:55.898       endpoint  ...Request msg ACK/cseq=16827 (tdta0095A428): skipping target resolution because address is already set
+15:16:55.927 sip_endpoint.c  Processing incoming message: Response msg 200/INVITE/cseq=491 (rdata008C700C)
+15:16:55.948    tsx0095694C  .Incoming Response msg 200/INVITE/cseq=491 (rdata008C700C) in state Calling
+15:16:55.969    tsx0095694C  ..State changed from Calling to Terminated, event=RX_MSG
+15:16:55.990    dlg00951E2C  ...Received Response msg 200/INVITE/cseq=491 (rdata008C700C)
+15:16:56.010    dlg00951E2C  ....Route-set updated
+15:16:56.031    dlg00951E2C  ....Route-set frozen
+15:16:56.052    dlg00951E2C  ...Transaction tsx0095694C state changed to Terminated
+15:16:56.073    inv00951E2C  ....Got SDP answer in Response msg 200/INVITE/cseq=491 (rdata008C700C)
+15:16:56.094    inv00951E2C  ....SDP negotiation done, status=0
+15:16:56.115          rtp.c  ....pjmedia_rtp_session_init: ses=008841CC, default_pt=0, ssrc=0x3a6122cd
+15:16:56.135          rtp.c  ....pjmedia_rtp_session_init: ses=008841FC, default_pt=0, ssrc=0x0
+15:16:56.156          rtp.c  ....pjmedia_rtp_session_init: ses=0088466C, default_pt=97, ssrc=0x6b7232e6
+15:16:56.177          rtp.c  ....pjmedia_rtp_session_init: ses=0088469C, default_pt=97, ssrc=0x0
+15:16:56.198         siprtp  ....SO_RCVBUF set to 65536
+15:16:56.227         siprtp  ....SO_SNDBUF set to 65536
+15:16:56.294         siprtp  ....SO_RCVBUF set to 65536
+15:16:56.353         siprtp  ....SO_SNDBUF set to 65536
+15:16:56.398    inv00951E2C  ....Received Response msg 200/INVITE/cseq=491 (rdata008C700C), sending ACK
+15:16:56.435       endpoint  ....Request msg ACK/cseq=491 (tdta0095E528) created.
+15:16:56.456    dlg00951E2C  .....Sending Request msg ACK/cseq=491 (tdta0095E528)
+15:16:56.477  sip_resolve.c  .....Target '192.168.4.108:5060' type=Unspecified resolved to '192.168.4.108:5060' type=UDP (UDP transport)
+15:16:56.498 c:\users\admin  ....Call #0 connected in 1233 ms
+15:16:56.518 sip_endpoint.c  Processing incoming message: Response msg 200/INVITE/cseq=491 (rdata008C700C)
+15:16:56.547    dlg00951E2C  .Received Response msg 200/INVITE/cseq=491 (rdata008C700C)
+15:16:56.568    inv00951E2C  ..Received Response msg 200/INVITE/cseq=491 (rdata008C700C), sending ACK
+15:16:56.589    dlg00951E2C  ...Sending Request msg ACK/cseq=491 (tdta0095E528)
+15:16:56.610       endpoint  ...Request msg ACK/cseq=491 (tdta0095E528): skipping target resolution because address is already set
+15:16:56.631    tsx067E39AC  Timeout timer event
+15:16:56.651    tsx067E39AC  .State changed from Terminated to Destroyed, event=TIMER
+15:16:56.672    tsx067E39AC  Transaction destroyed!
+15:16:56.693    tsx00941514  Timeout timer event
+15:16:56.714    tsx00941514  .State changed from Completed to Terminated, event=TIMER
+15:16:56.742    dlg0093505C  ..Transaction tsx00941514 state changed to Terminated
+15:16:56.764    dlg0093505C  ...Dialog destroyed
+15:16:56.785    tsx067EBD8C  Timeout timer event
+15:16:56.805    tsx067EBD8C  .State changed from Terminated to Destroyed, event=TIMER
+15:16:56.833    tsx067EBD8C  Transaction destroyed!
+15:16:56.855    tsx0094C46C  Timeout timer event
+15:16:56.876    tsx0094C46C  .State changed from Terminated to Destroyed, event=TIMER
+15:16:56.897    tsx0094C46C  Transaction destroyed!
+15:16:56.918    tsx0095694C  Timeout timer event
+15:16:56.939    tsx0095694C  .State changed from Terminated to Destroyed, event=TIMER
+15:16:56.963    tsx0095694C  Transaction destroyed!
+15:16:56.999    tsx0093B91C  Timeout timer event
+15:16:57.018    tsx0093B91C  .State changed from Completed to Terminated, event=TIMER
+15:16:57.038    dlg0093F91C  ..Transaction tsx0093B91C state changed to Terminated
+15:16:57.059    dlg0093F91C  ...Dialog destroyed
+15:16:57.080    tsx00941514  Timeout timer event
+15:16:57.101    tsx00941514  .State changed from Terminated to Destroyed, event=TIMER
+15:16:57.122   tdta0093E878  ..Destroying txdata Request msg BYE/cseq=26501 (tdta0093E878)
+15:16:57.142    tsx00941514  Transaction destroyed!
+15:16:57.174    tsx0093B91C  Timeout timer event
+15:16:57.192    tsx0093B91C  .State changed from Terminated to Destroyed, event=TIMER
+15:16:57.214   tdta067D53E8  ..Destroying txdata Request msg BYE/cseq=15725 (tdta067D53E8)
+15:16:57.234    tsx0093B91C  Transaction destroyed!
+15:16:58.209    tsx067DCFCC  Timeout timer event
+15:16:58.233    tsx067DCFCC  .State changed from Completed to Terminated, event=TIMER
+15:16:58.254    dlg0093C15C  ..Transaction tsx067DCFCC state changed to Terminated
+15:16:58.285    tsx067DCFCC  Timeout timer event
+15:16:58.312    tsx067DCFCC  .State changed from Terminated to Destroyed, event=TIMER
+15:16:58.333   tdta067D83A8  ..Destroying txdata Request msg CANCEL/cseq=29358 (tdta067D83A8)
+15:16:58.354    tsx067DCFCC  Transaction destroyed!
+15:17:00.297         siprtp !Remote RTCP address switched to 192.168.4.108:4009
+15:17:03.905         siprtp  Remote RTCP address switched to 192.168.4.108:4001
+15:17:06.889         siprtp  Remote RTCP address switched to 192.168.4.108:4009
+15:17:12.181         siprtp  Remote RTCP address switched to 192.168.4.108:4013
+15:17:14.445         siprtp  Remote RTCP address switched to 192.168.4.108:4001
+15:17:18.665         siprtp  Remote RTCP address switched to 192.168.4.108:4013
+15:17:20.827         siprtp  Remote RTCP address switched to 192.168.4.108:4017
+15:17:25.022         siprtp  Remote RTCP address switched to 192.168.4.108:4013
+15:17:29.211         siprtp  Remote RTCP address switched to 192.168.4.108:4005
+15:27:28.903 sip_endpoint.c  Creating endpoint instance...
+15:27:28.932          pjlib  select() I/O Queue created (004EE3A0)
+15:27:28.960 sip_endpoint.c  Module "mod-msg-print" registered
+15:27:28.981 sip_transport.  Transport manager created.
+15:27:29.029    udp004F57B0  SIP UDP transport started, published address is 192.168.6.38:5060
+15:27:29.048 c:\users\admin  SIP UDP listening on 192.168.6.38:5060
+15:27:29.069 sip_endpoint.c  Module "mod-tsx-layer" registered
+15:27:29.090 sip_endpoint.c  Module "mod-stateful-util" registered
+15:27:29.111 sip_endpoint.c  Module "mod-ua" registered
+15:27:29.165 sip_endpoint.c  Module "mod-100rel" registered
+15:27:29.323 sip_endpoint.c  Module "mod-invite" registered
+15:27:29.343 sip_endpoint.c  Module "monitor_modul" registered
+15:27:29.364 sip_endpoint.c  Module "logger_module" registered
+15:27:29.634     wmme_dev.c  WMME found 3 devices:
+15:27:29.664     wmme_dev.c   dev_id 0: Wave mapper  (in=2, out=2)
+15:27:29.685     wmme_dev.c   dev_id 1: Âó¿Ë·ç (Realtek High Definition  (in=2, out=0)
+15:27:29.706     wmme_dev.c   dev_id 2: ÑïÉùÆ÷ (Realtek High Definition  (in=0, out=2)
+15:27:29.726     wmme_dev.c  WMME initialized
+15:27:29.747          pjlib  select() I/O Queue created (0050AB6C)
+15:27:29.823    dshow_dev.c  DShow has 1 devices:
+15:27:29.847    dshow_dev.c   dev_id 0: PC Camera (capture)
+15:27:29.868 colorbar_dev.c  Colorbar video src initialized with 1 device(s):
+15:27:29.889 colorbar_dev.c   0: Colorbar generator
+15:27:29.910      sdl_dev.c  SDL 2.0 initialized
+15:27:30.268         siprtp !Remote RTP address switched to 192.168.4.108:4000
+15:27:30.292         siprtp  Remote RTCP address switched to predicted address 192.168.4.108:4001
+15:27:30.742    dlg0056503C !UAC dialog created
+15:27:31.021    dlg0056503C  Module mod-invite added as dialog usage, data=005663A0
+15:27:31.088    dlg0056503C  .Session count inc to 2 by mod-invite
+15:27:31.144    dlg0056503C  Module mod-100rel added as dialog usage, data=00567944
+15:27:31.171    dlg0056503C  100rel module attached
+15:27:31.191    inv0056503C  UAC invite session created for dialog dlg0056503C
+15:27:31.225       endpoint  Request msg INVITE/cseq=18468 (tdta00567AD0) created.
+15:27:31.246    inv0056503C  .Sending Request msg INVITE/cseq=18468 (tdta00567AD0)
+15:27:31.266    dlg0056503C  ..Sending Request msg INVITE/cseq=18468 (tdta00567AD0)
+15:27:31.287    tsx00569B54  ...Transaction created for Request msg INVITE/cseq=18467 (tdta00567AD0)
+15:27:31.308    tsx00569B54  ..Sending Request msg INVITE/cseq=18467 (tdta00567AD0) in state Null
+15:27:31.329  sip_resolve.c  ...Target '192.168.4.108:5060' type=Unspecified resolved to '192.168.4.108:5060' type=UDP (UDP transport)
+15:27:31.358    tsx00569B54  ...State changed from Null to Calling, event=TX_MSG
+15:27:31.359 sip_endpoint.c !Processing incoming message: Response msg 500/INVITE/cseq=18467 (rdata004F700C)
+15:27:31.379    dlg0056503C !....Transaction tsx00569B54 state changed to Calling
+15:27:31.416    tsx00569B54 !.Incoming Response msg 500/INVITE/cseq=18467 (rdata004F700C) in state Calling
+15:27:31.458       endpoint  ..Request msg ACK/cseq=18467 (tdta0056F688) created.
+15:27:31.479    tsx00569B54  ..State changed from Calling to Completed, event=RX_MSG
+15:27:31.516    dlg0056503C  ...Received Response msg 500/INVITE/cseq=18467 (rdata004F700C)
+15:27:31.537    dlg0056503C  ...Transaction tsx00569B54 state changed to Completed
+15:27:31.558 c:\users\admin  ....Call #0 disconnected. Reason=500 (Too many calls)
+15:27:31.578 c:\users\admin  ....Call #0 statistics:
+Call #0: DISCONNCTD [duration: -568602:-24:-2.-950]
+   To: sip:192.168.4.108
+   Signaling quality: got 1st response in -1730756868 ms, connected after: -1730756868 ms
+15:27:53.496 sip_endpoint.c  Creating endpoint instance...
+15:27:53.514          pjlib  select() I/O Queue created (0081E3A0)
+15:27:53.534 sip_endpoint.c  Module "mod-msg-print" registered
+15:27:53.568 sip_transport.  Transport manager created.
+15:27:53.612    udp008257B0  SIP UDP transport started, published address is 192.168.6.38:5060
+15:27:53.634 c:\users\admin  SIP UDP listening on 192.168.6.38:5060
+15:27:53.656 sip_endpoint.c  Module "mod-tsx-layer" registered
+15:27:53.675 sip_endpoint.c  Module "mod-stateful-util" registered
+15:27:53.696 sip_endpoint.c  Module "mod-ua" registered
+15:27:53.717 sip_endpoint.c  Module "mod-100rel" registered
+15:27:53.751 sip_endpoint.c  Module "mod-invite" registered
+15:27:53.780 sip_endpoint.c  Module "monitor_modul" registered
+15:27:53.800 sip_endpoint.c  Module "logger_module" registered
+15:27:53.855     wmme_dev.c  WMME found 3 devices:
+15:27:53.875     wmme_dev.c   dev_id 0: Wave mapper  (in=2, out=2)
+15:27:53.896     wmme_dev.c   dev_id 1: Âó¿Ë·ç (Realtek High Definition  (in=2, out=0)
+15:27:53.926     wmme_dev.c   dev_id 2: ÑïÉùÆ÷ (Realtek High Definition  (in=0, out=2)
+15:27:53.947     wmme_dev.c  WMME initialized
+15:27:53.967          pjlib  select() I/O Queue created (0083AB6C)
+15:27:54.072    dshow_dev.c  DShow has 1 devices:
+15:27:54.092    dshow_dev.c   dev_id 0: PC Camera (capture)
+15:27:54.113 colorbar_dev.c  Colorbar video src initialized with 1 device(s):
+15:27:54.142 colorbar_dev.c   0: Colorbar generator
+15:27:54.164      sdl_dev.c  SDL 2.0 initialized
+15:27:56.322    dlg00895044  UAC dialog created
+15:27:56.344    dlg00895044  Module mod-invite added as dialog usage, data=008963A8
+15:27:56.364    dlg00895044  .Session count inc to 2 by mod-invite
+15:27:56.385    dlg00895044  Module mod-100rel added as dialog usage, data=0089794C
+15:27:56.415    dlg00895044  100rel module attached
+15:27:56.435    inv00895044  UAC invite session created for dialog dlg00895044
+15:27:56.456       endpoint  Request msg INVITE/cseq=18468 (tdta00897AD8) created.
+15:27:56.477    inv00895044  .Sending Request msg INVITE/cseq=18468 (tdta00897AD8)
+15:27:56.497    dlg00895044  ..Sending Request msg INVITE/cseq=18468 (tdta00897AD8)
+15:27:56.518    tsx00899B5C  ...Transaction created for Request msg INVITE/cseq=18467 (tdta00897AD8)
+15:27:56.539    tsx00899B5C  ..Sending Request msg INVITE/cseq=18467 (tdta00897AD8) in state Null
+15:27:56.573  sip_resolve.c  ...Target '192.168.4.108:5060' type=Unspecified resolved to '192.168.4.108:5060' type=UDP (UDP transport)
+15:27:56.593    tsx00899B5C  ...State changed from Null to Calling, event=TX_MSG
+15:27:56.595 sip_endpoint.c !Processing incoming message: Response msg 200/INVITE/cseq=18467 (rdata0082700C)
+15:27:56.614    dlg00895044 !....Transaction tsx00899B5C state changed to Calling
+15:27:56.635    tsx00899B5C !.Incoming Response msg 200/INVITE/cseq=18467 (rdata0082700C) in state Calling
+15:27:56.676    tsx00899B5C  ..State changed from Calling to Terminated, event=RX_MSG
+15:27:56.708    dlg00895044  ...Received Response msg 200/INVITE/cseq=18467 (rdata0082700C)
+15:27:56.768    dlg00895044  ....Route-set updated
+15:27:56.799    dlg00895044  ....Route-set frozen
+15:27:56.835    dlg00895044  ...Transaction tsx00899B5C state changed to Terminated
+15:27:56.865    inv00895044  ....Got SDP answer in Response msg 200/INVITE/cseq=18467 (rdata0082700C)
+15:27:56.895         siprtp !Remote RTP address switched to 192.168.4.108:4000
+15:27:56.901    inv00895044 !....SDP negotiation done, status=0
+15:27:56.922         siprtp !Remote RTCP address switched to predicted address 192.168.4.108:4001
+15:27:56.943          rtp.c !....pjmedia_rtp_session_init: ses=007E41CC, default_pt=0, ssrc=0x4ae13d6c
+15:27:56.984          rtp.c  ....pjmedia_rtp_session_init: ses=007E41FC, default_pt=0, ssrc=0x0
+15:27:57.015          rtp.c  ....pjmedia_rtp_session_init: ses=007E466C, default_pt=97, ssrc=0x5af141bb
+15:27:57.034          rtp.c  ....pjmedia_rtp_session_init: ses=007E469C, default_pt=97, ssrc=0x0
+15:27:57.055         siprtp  ....SO_RCVBUF set to 65536
+15:27:57.076         siprtp  ....SO_SNDBUF set to 65536
+15:27:57.098         siprtp  ....SO_RCVBUF set to 65536
+15:27:57.117         siprtp  ....SO_SNDBUF set to 65536
+15:27:57.138    inv00895044  ....Received Response msg 200/INVITE/cseq=18467 (rdata0082700C), sending ACK
+15:27:57.173       endpoint  ....Request msg ACK/cseq=18467 (tdta0089DB98) created.
+15:27:57.192    dlg00895044  .....Sending Request msg ACK/cseq=18467 (tdta0089DB98)
+15:27:57.213  sip_resolve.c  .....Target '192.168.4.108:5060' type=Unspecified resolved to '192.168.4.108:5060' type=UDP (UDP transport)
+15:27:57.234 c:\users\admin  ....Call #0 connected in 778 ms
+15:27:57.255 sip_endpoint.c  Processing incoming message: Response msg 200/INVITE/cseq=18467 (rdata0082700C)
+15:27:57.276    dlg00895044  .Received Response msg 200/INVITE/cseq=18467 (rdata0082700C)
+15:27:57.306    inv00895044  ..Received Response msg 200/INVITE/cseq=18467 (rdata0082700C), sending ACK
+15:27:57.326    dlg00895044  ...Sending Request msg ACK/cseq=18467 (tdta0089DB98)
+15:27:57.346       endpoint  ...Request msg ACK/cseq=18467 (tdta0089DB98): skipping target resolution because address is already set
+15:27:57.367    tsx00899B5C  Timeout timer event
+15:27:57.388    tsx00899B5C  .State changed from Terminated to Destroyed, event=TIMER
+15:27:57.409    tsx00899B5C  Transaction destroyed!
+15:30:45.677 sip_endpoint.c  Creating endpoint instance...
+15:30:45.714          pjlib  select() I/O Queue created (0062E3A0)
+15:30:45.753 sip_endpoint.c  Module "mod-msg-print" registered
+15:30:45.784 sip_transport.  Transport manager created.
+15:30:45.849    udp006357B0  SIP UDP transport started, published address is 192.168.6.38:5060
+15:30:45.871 c:\users\admin  SIP UDP listening on 192.168.6.38:5060
+15:30:45.900 sip_endpoint.c  Module "mod-tsx-layer" registered
+15:30:45.922 sip_endpoint.c  Module "mod-stateful-util" registered
+15:30:45.951 sip_endpoint.c  Module "mod-ua" registered
+15:30:45.971 sip_endpoint.c  Module "mod-100rel" registered
+15:30:45.992 sip_endpoint.c  Module "mod-invite" registered
+15:30:46.013 sip_endpoint.c  Module "monitor_modul" registered
+15:30:46.035 sip_endpoint.c  Module "logger_module" registered
+15:30:46.108     wmme_dev.c  WMME found 3 devices:
+15:30:46.206     wmme_dev.c   dev_id 0: Wave mapper  (in=2, out=2)
+15:30:46.229     wmme_dev.c   dev_id 1: Âó¿Ë·ç (Realtek High Definition  (in=2, out=0)
+15:30:46.250     wmme_dev.c   dev_id 2: ÑïÉùÆ÷ (Realtek High Definition  (in=0, out=2)
+15:30:46.271     wmme_dev.c  WMME initialized
+15:30:46.292          pjlib  select() I/O Queue created (0064AB6C)
+15:30:46.376    dshow_dev.c  DShow has 1 devices:
+15:30:46.410    dshow_dev.c   dev_id 0: PC Camera (capture)
+15:30:46.429 colorbar_dev.c  Colorbar video src initialized with 1 device(s):
+15:30:46.450 colorbar_dev.c   0: Colorbar generator
+15:30:46.471      sdl_dev.c  SDL 2.0 initialized
+15:30:47.725    dlg006A809C  UAC dialog created
+15:30:47.761    dlg006A809C  Module mod-invite added as dialog usage, data=006A8B08
+15:30:47.781    dlg006A809C  .Session count inc to 2 by mod-invite
+15:30:47.802    dlg006A809C  Module mod-100rel added as dialog usage, data=006AA32C
+15:30:47.823    dlg006A809C  100rel module attached
+15:30:47.844    inv006A809C  UAC invite session created for dialog dlg006A809C
+15:30:47.865       endpoint  Request msg INVITE/cseq=18468 (tdta006AA4B8) created.
+15:30:47.886    inv006A809C  .Sending Request msg INVITE/cseq=18468 (tdta006AA4B8)
+15:30:47.906    dlg006A809C  ..Sending Request msg INVITE/cseq=18468 (tdta006AA4B8)
+15:30:47.928    tsx006AC53C  ...Transaction created for Request msg INVITE/cseq=18467 (tdta006AA4B8)
+15:30:47.948    tsx006AC53C  ..Sending Request msg INVITE/cseq=18467 (tdta006AA4B8) in state Null
+15:30:47.969  sip_resolve.c  ...Target '192.168.4.108:5060' type=Unspecified resolved to '192.168.4.108:5060' type=UDP (UDP transport)
+15:30:47.990    tsx006AC53C  ...State changed from Null to Calling, event=TX_MSG
+15:30:47.995 sip_endpoint.c !Processing incoming message: Response msg 200/INVITE/cseq=18467 (rdata0063700C)
+15:30:48.019    dlg006A809C !....Transaction tsx006AC53C state changed to Calling
+15:30:48.039    tsx006AC53C !.Incoming Response msg 200/INVITE/cseq=18467 (rdata0063700C) in state Calling
+15:30:48.081    tsx006AC53C  ..State changed from Calling to Terminated, event=RX_MSG
+15:30:48.102    dlg006A809C  ...Received Response msg 200/INVITE/cseq=18467 (rdata0063700C)
+15:30:48.123    dlg006A809C  ....Route-set updated
+15:30:48.144    dlg006A809C  ....Route-set frozen
+15:30:48.164    dlg006A809C  ...Transaction tsx006AC53C state changed to Terminated
+15:30:48.185    inv006A809C  ....Got SDP answer in Response msg 200/INVITE/cseq=18467 (rdata0063700C)
+15:30:48.206    inv006A809C  ....SDP negotiation done, status=0
+15:30:48.227          rtp.c  ....pjmedia_rtp_session_init: ses=005F41CC, default_pt=0, ssrc=0x4ae13d6c
+15:30:48.248          rtp.c  ....pjmedia_rtp_session_init: ses=005F41FC, default_pt=0, ssrc=0x0
+15:30:48.269          rtp.c  ....pjmedia_rtp_session_init: ses=005F466C, default_pt=97, ssrc=0x5af141bb
+15:30:48.289          rtp.c  ....pjmedia_rtp_session_init: ses=005F469C, default_pt=97, ssrc=0x0
+15:30:48.291         siprtp !Remote RTP address switched to 192.168.4.108:4000
+15:30:48.331         siprtp  Remote RTCP address switched to predicted address 192.168.4.108:4001
+15:30:48.352         siprtp !....SO_RCVBUF set to 65536
+15:30:48.372         siprtp  ....SO_SNDBUF set to 65536
+15:30:48.393         siprtp  ....SO_RCVBUF set to 65536
+15:30:48.414         siprtp  ....SO_SNDBUF set to 65536
+15:30:48.435    inv006A809C  ....Received Response msg 200/INVITE/cseq=18467 (rdata0063700C), sending ACK
+15:30:48.458       endpoint  ....Request msg ACK/cseq=18467 (tdta006B1030) created.
+15:30:48.477    dlg006A809C  .....Sending Request msg ACK/cseq=18467 (tdta006B1030)
+15:30:48.498  sip_resolve.c  .....Target '192.168.4.108:5060' type=Unspecified resolved to '192.168.4.108:5060' type=UDP (UDP transport)
+15:30:48.519 c:\users\admin  ....Call #0 connected in 654 ms
+15:30:48.539 sip_endpoint.c  Processing incoming message: Response msg 200/INVITE/cseq=18467 (rdata0063700C)
+15:30:48.560    dlg006A809C  .Received Response msg 200/INVITE/cseq=18467 (rdata0063700C)
+15:30:48.583    inv006A809C  ..Received Response msg 200/INVITE/cseq=18467 (rdata0063700C), sending ACK
+15:30:48.602    dlg006A809C  ...Sending Request msg ACK/cseq=18467 (tdta006B1030)
+15:30:48.622       endpoint  ...Request msg ACK/cseq=18467 (tdta006B1030): skipping target resolution because address is already set
+15:30:48.643    tsx006AC53C  Timeout timer event
+15:30:48.664    tsx006AC53C  .State changed from Terminated to Destroyed, event=TIMER
+15:30:48.685    tsx006AC53C  Transaction destroyed!
+15:30:59.710       endpoint !.Request msg BYE/cseq=18469 (tdta006B3FF0) created.
+15:30:59.736    inv006A809C  .Sending Request msg BYE/cseq=18469 (tdta006B3FF0)
+15:30:59.757    dlg006A809C  ..Sending Request msg BYE/cseq=18469 (tdta006B3FF0)
+15:30:59.777    tsx006AC654  ...Transaction created for Request msg BYE/cseq=18468 (tdta006B3FF0)
+15:30:59.798    tsx006AC654  ..Sending Request msg BYE/cseq=18468 (tdta006B3FF0) in state Null
+15:30:59.819  sip_resolve.c  ...Target '192.168.4.108:5060' type=Unspecified resolved to '192.168.4.108:5060' type=UDP (UDP transport)
+15:30:59.840    tsx006AC654  ...State changed from Null to Calling, event=TX_MSG
+15:30:59.841 sip_endpoint.c !Processing incoming message: Response msg 200/BYE/cseq=18468 (rdata0063700C)
+15:30:59.864    dlg006A809C !....Transaction tsx006AC654 state changed to Calling
+15:30:59.882    tsx006AC654 !.Incoming Response msg 200/BYE/cseq=18468 (rdata0063700C) in state Calling
+15:30:59.923    tsx006AC654  ..State changed from Calling to Completed, event=RX_MSG
+15:30:59.944    dlg006A809C  ...Received Response msg 200/BYE/cseq=18468 (rdata0063700C)
+15:30:59.965    dlg006A809C  ...Transaction tsx006AC654 state changed to Completed
+15:30:59.981 c:\users\admin  ....Call #0 disconnected. Reason=603 (Decline)
+15:30:59.998 c:\users\admin  ....Call #0 statistics:
+Call #0: DISCONNCTD [duration: 00:00:11.500]
+   To: sip:192.168.4.108;tag=706e8e25-e589-4e82-8195-e36c2313b7ac
+   Signaling quality: got 1st response in -1730953508 ms, connected after: 654 ms
+   Stream #0: audio PCMU@8000Hz, 20ms/frame, 8.00KB/s (9.06KB/s +IP hdr)
+              RX stat last update: never
+                 total 571 packets 91.03KB received (109.06KB +IP hdr)
+                 pkt loss=0 (0.0%), dup=0 (0.0%), reorder=0 (0.0%)
+                       (msec)    min     avg     max     last
+                 loss period:   0.000   0.000   0.000   0.000
+                 jitter     :   0.000   0.053   0.250   0.000
+              TX stat last update: 00h:00m:05.716s ago
+                 total 0 packets 0B sent (0B +IP hdr)
+                 pkt loss=0 (-1.$%), dup=0 (-1.$%), reorder=0 (-1.$%)
+                       (msec)    min     avg     max     last
+                 loss period:   0.000   0.000   0.000   0.000
+                 jitter     :   0.000   0.000   0.000   0.000
+             RTT delay      :   0.000   0.000   0.000   0.000
+
+15:31:00.173   tdta006B1030  ....Destroying txdata Request msg ACK/cseq=18467 (tdta006B1030)
+15:31:00.194   tdta006AA4B8  ....Destroying txdata Request msg INVITE/cseq=18467 (tdta006AA4B8)
+15:31:00.215    dlg006A809C  .....Session count dec to 1 by mod-invite
+17:34:40.351 sip_endpoint.c  Creating endpoint instance...
+17:34:40.371          pjlib  select() I/O Queue created (0070D968)
+17:34:40.391 sip_endpoint.c  Module "mod-msg-print" registered
+17:34:40.412 sip_transport.  Transport manager created.
+17:34:40.453    udp00714CB8  SIP UDP transport started, published address is 192.168.6.38:5060
+17:34:40.479 c:\users\admin  SIP UDP listening on 192.168.6.38:5060
+17:34:40.499 sip_endpoint.c  Module "mod-tsx-layer" registered
+17:34:40.526 sip_endpoint.c  Module "mod-stateful-util" registered
+17:34:40.553 sip_endpoint.c  Module "mod-ua" registered
+17:34:40.583 sip_endpoint.c  Module "mod-100rel" registered
+17:34:40.604 sip_endpoint.c  Module "mod-invite" registered
+17:34:40.624 sip_endpoint.c  Module "monitor_modul" registered
+17:34:40.645 sip_endpoint.c  Module "logger_module" registered
+17:34:40.725     wmme_dev.c  WMME found 3 devices:
+17:34:40.817     wmme_dev.c   dev_id 0: Wave mapper  (in=2, out=2)
+17:34:40.841     wmme_dev.c   dev_id 1: Âó¿Ë·ç (Realtek High Definition  (in=2, out=0)
+17:34:40.862     wmme_dev.c   dev_id 2: ÑïÉùÆ÷ (Realtek High Definition  (in=0, out=2)
+17:34:40.882     wmme_dev.c  WMME initialized
+17:34:40.904          pjlib  select() I/O Queue created (0072A11C)
+17:34:41.044    dshow_dev.c  DShow has 1 devices:
+17:34:41.070    dshow_dev.c   dev_id 0: PC Camera (capture)
+17:34:41.091 colorbar_dev.c  Colorbar video src initialized with 1 device(s):
+17:34:41.111 colorbar_dev.c   0: Colorbar generator
+17:34:41.133      sdl_dev.c  SDL 2.0 initialized
+17:45:01.540 sip_endpoint.c  Creating endpoint instance...
+17:45:01.572          pjlib  select() I/O Queue created (005FD968)
+17:45:01.605 sip_endpoint.c  Module "mod-msg-print" registered
+17:45:01.626 sip_transport.  Transport manager created.
+17:45:01.663    udp00604CB8  SIP UDP transport started, published address is 192.168.6.38:5060
+17:45:01.684 c:\users\admin  SIP UDP listening on 192.168.6.38:5060
+17:45:01.704 sip_endpoint.c  Module "mod-tsx-layer" registered
+17:45:01.729 sip_endpoint.c  Module "mod-stateful-util" registered
+17:45:01.754 sip_endpoint.c  Module "mod-ua" registered
+17:45:01.775 sip_endpoint.c  Module "mod-100rel" registered
+17:45:01.796 sip_endpoint.c  Module "mod-invite" registered
+17:45:01.817 sip_endpoint.c  Module "monitor_modul" registered
+17:45:01.838 sip_endpoint.c  Module "logger_module" registered
+17:45:01.977     wmme_dev.c  WMME found 3 devices:
+17:45:02.004     wmme_dev.c   dev_id 0: Wave mapper  (in=2, out=2)
+17:45:02.025     wmme_dev.c   dev_id 1: Âó¿Ë·ç (Realtek High Definition  (in=2, out=0)
+17:45:02.046     wmme_dev.c   dev_id 2: ÑïÉùÆ÷ (Realtek High Definition  (in=0, out=2)
+17:45:02.067     wmme_dev.c  WMME initialized
+17:45:02.088          pjlib  select() I/O Queue created (0061A11C)
+17:45:02.211    dshow_dev.c  DShow has 1 devices:
+17:45:02.248    dshow_dev.c   dev_id 0: PC Camera (capture)
+17:45:02.267 colorbar_dev.c  Colorbar video src initialized with 1 device(s):
+17:45:02.288 colorbar_dev.c   0: Colorbar generator
+17:45:02.312      sdl_dev.c  SDL 2.0 initialized

@@ -9,7 +9,14 @@ END_MESSAGE_MAP()
 void Screen::OnLButtonDown(UINT nFlags, CPoint point)
 {
 	pj_str_t remote_uri = pj_str("sip:192.168.4.108:5060");
-	SessionMgr::GetInstance()->StartSession(&remote_uri, index);
+	if ( ( call_status ++ ) % 2 == 0 )
+	{
+		/*SessionMgr::GetInstance()->StartSession(&remote_uri, idx);*/
+	}
+	else
+	{
+		/*SessionMgr::GetInstance()->StopSession(idx);*/
+	}
 }
 
 Screen::Screen()
@@ -17,10 +24,12 @@ Screen::Screen()
 	, msg_queue()
 	, screen_rect(0, 0, 0, 0)
 	, wrapper(nullptr)
-	, index(0)
+	, idx(0)
+	, id(0)
 	, window(nullptr)
 	, render(nullptr)
 	, texture(nullptr)
+	, call_status(0)
 {
 }
 
@@ -28,14 +37,15 @@ Screen::~Screen()
 {
 }
 
-void Screen::Prepare(const CRect &rect, const CWnd *wrapper, pj_uint32_t idx)
+void Screen::Prepare(const CRect &rect, const CWnd *wrapper, pj_uint32_t idx, pj_uint32_t id)
 {
 	pj_uint32_t width = PJ_ABS(rect.right - rect.left);
 	pj_uint32_t height = PJ_ABS(rect.bottom - rect.top);
 
 	this->screen_rect = rect;
 	this->wrapper = wrapper;
-	this->index = idx;
+	this->idx = idx;
+	this->id  = id;
 
 	pj_bool_t ret = this->Create(
 		nullptr,
@@ -43,7 +53,7 @@ void Screen::Prepare(const CRect &rect, const CWnd *wrapper, pj_uint32_t idx)
 		WS_BORDER | WS_VISIBLE | WS_CHILD,
 		rect,
 		(CWnd *)wrapper,
-		idx);
+		id);
 	pj_assert(ret == PJ_TRUE);
 
 	window = SDL_CreateWindowFrom(GetSafeHwnd());
@@ -55,7 +65,7 @@ void Screen::Prepare(const CRect &rect, const CWnd *wrapper, pj_uint32_t idx)
 	texture = SDL_CreateTexture(render, SDL_PIXELFORMAT_IYUV, SDL_TEXTUREACCESS_STREAMING, width, height);
 	pj_assert(texture != nullptr);
 
-	msg_thread = thread( (std::bind(&Screen::WorkThread, this)) );
+	msg_thread = thread( (std::bind(&Screen::MessageQueueThread, this)) );
 }
 
 void Screen::Refresh(const CRect &rect)
@@ -81,19 +91,71 @@ void Screen::Painting(const SDL_Rect &rect, const void *pixels, int pitch)
 	SDL_RenderPresent( render );
 }
 
-void Screen::WorkThread()
+void Screen::PushPacket(util_packet_t *packet)
+{
+	msg_queue.Push(packet);
+}
+
+void Screen::MessageQueueThread()
 {
 	while (1)
 	{
 		msg_queue.Wait();
 
-		int *package = nullptr;
+		util_packet_t *packet = nullptr;
 		do
 		{
-			package = msg_queue.Pop();
-			if ( package )
+			packet = msg_queue.Pop();
+			if ( packet )
 			{
+				ProcessMessage(packet);
+
+				if (packet->buf)
+				{
+					delete packet->buf;
+					packet->buf = NULL;
+				}
+
+				delete packet;
+				packet = NULL;
 			}
-		} while ( package != nullptr );
+		} while ( packet != nullptr );
 	}
+}
+
+void Screen::ProcessMessage(util_packet_t *packet)
+{
+	PJ_RETURN_IF_FALSE(packet != NULL);
+
+	switch(packet->type)
+	{
+		case sinashow::UTIL_PACKET_SIP:
+		{
+			ProcessSipMessage(packet);
+			break;
+		}
+		case sinashow::UTIL_PACKET_MEDIA:
+		{
+			ProcessMediaMessage(packet);
+			break;
+		}
+	}
+}
+
+void Screen::ProcessSipMessage(util_packet_t *packet)
+{
+	pj_uint8_t code = *(pj_uint8_t *)packet->buf;
+
+	PJ_LOG(5, (__FILE__, "code = %d", code));
+
+	return;
+}
+
+void Screen::ProcessMediaMessage(util_packet_t *packet)
+{
+	pj_uint8_t code = *(pj_uint8_t *)packet->buf;
+
+	PJ_LOG(5, (__FILE__, "code = %d", code));
+
+	return;
 }
