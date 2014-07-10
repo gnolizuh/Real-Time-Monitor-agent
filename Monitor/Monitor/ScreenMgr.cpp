@@ -16,6 +16,7 @@ ScreenMgr::ScreenMgr()
 	, last_height(NIMINUM_SCREEN_HEIGHT)
 	, screen_mgr_res(SCREEN_RES_3x3)
 	, screen_mgr_active(PJ_FALSE)
+	, screens(MAXIMAL_SCREEN_NUM)
 {
 	refresh_func.push_back(&ScreenMgr::Refresh_1x1);
 	num_blocks.push_back(1);
