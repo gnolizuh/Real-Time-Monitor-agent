@@ -75,6 +75,10 @@ SessionMgr::SessionMgr()
 	, media_endpt(NULL)
 	, sessions(MAXIMAL_SCREEN_NUM)
 {
+	for (int idx = 0; idx < MAXIMAL_SCREEN_NUM; ++ idx)
+	{
+		sessions[idx] = new Session();
+	}
 }
 
 SessionMgr::~SessionMgr()

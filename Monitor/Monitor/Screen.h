@@ -13,6 +13,7 @@ using std::thread;
 using std::mutex;
 using sinashow::MessageQueue;
 using sinashow::util_packet_t;
+using sinashow::util_sip_packet_type_t;
 
 class Screen
 	: public CWnd

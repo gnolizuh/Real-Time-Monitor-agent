@@ -26,6 +26,11 @@ ScreenMgr::ScreenMgr()
 	num_blocks.push_back(3);
 	refresh_func.push_back(&ScreenMgr::Refresh_3x3);
 	num_blocks.push_back(3);
+
+	for (int idx = 0; idx < MAXIMAL_SCREEN_NUM; ++ idx)
+	{
+		screens[idx] = new Screen();
+	}
 }
 
 ScreenMgr::~ScreenMgr()

@@ -11,11 +11,11 @@ void Screen::OnLButtonDown(UINT nFlags, CPoint point)
 	pj_str_t remote_uri = pj_str("sip:192.168.4.108:5060");
 	if ( ( call_status ++ ) % 2 == 0 )
 	{
-		/*SessionMgr::GetInstance()->StartSession(&remote_uri, idx);*/
+		SessionMgr::GetInstance()->StartSession(&remote_uri, idx);
 	}
 	else
 	{
-		/*SessionMgr::GetInstance()->StopSession(idx);*/
+		SessionMgr::GetInstance()->StopSession(idx);
 	}
 }
 
@@ -144,18 +144,18 @@ void Screen::ProcessMessage(util_packet_t *packet)
 
 void Screen::ProcessSipMessage(util_packet_t *packet)
 {
-	pj_uint8_t code = *(pj_uint8_t *)packet->buf;
+	util_sip_packet_type_t code = *(util_sip_packet_type_t *)packet->buf;
 
-	PJ_LOG(5, (__FILE__, "code = %d", code));
+	//PJ_LOG(5, (THIS_FILE, "code = %u", code));
 
 	return;
 }
 
 void Screen::ProcessMediaMessage(util_packet_t *packet)
 {
-	pj_uint8_t code = *(pj_uint8_t *)packet->buf;
+	util_sip_packet_type_t code = *(util_sip_packet_type_t *)packet->buf;
 
-	PJ_LOG(5, (__FILE__, "code = %d", code));
+	//PJ_LOG(5, (THIS_FILE, "code = %u", code));
 
 	return;
 }

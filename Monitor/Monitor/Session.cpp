@@ -168,9 +168,9 @@ void Session::OnConnecting(pjsip_inv_session *inv, pjsip_event *e)
 
 	util_packet_t *packet = new util_packet_t();
 	packet->type = sinashow::UTIL_PACKET_SIP;
-	packet->buf = new pj_uint8_t();
-	packet->buflen = sizeof(pj_uint8_t);
-	*((pj_uint8_t *)packet->buf) = sinashow::UTIL_SIP_PACKET_CONNECTING;
+	packet->buf = new sinashow::util_sip_packet_type_t();
+	packet->buflen = sizeof(sinashow::util_sip_packet_type_t);
+	*((sinashow::util_sip_packet_type_t *)packet->buf) = sinashow::UTIL_SIP_PACKET_CONNECTING;
 
 	ScreenMgr::GetInstance()->PushScreenPacket(packet, index);
 }
@@ -193,9 +193,9 @@ void Session::OnConfirmed(pjsip_inv_session *inv, pjsip_event *e)
 
 	util_packet_t *packet = new util_packet_t();
 	packet->type = sinashow::UTIL_PACKET_SIP;
-	packet->buf = new pj_uint8_t();
-	packet->buflen = sizeof(pj_uint8_t);
-	*((pj_uint8_t *)packet->buf) = sinashow::UTIL_SIP_PACKET_CONNECTED;
+	packet->buf = new sinashow::util_sip_packet_type_t();
+	packet->buflen = sizeof(sinashow::util_sip_packet_type_t);
+	*((sinashow::util_sip_packet_type_t *)packet->buf) = sinashow::UTIL_SIP_PACKET_CONNECTED;
 
 	ScreenMgr::GetInstance()->PushScreenPacket(packet, index);
 }
@@ -224,9 +224,9 @@ void Session::OnDisconnected(pjsip_inv_session *inv, pjsip_event *e)
 
 	util_packet_t *packet = new util_packet_t();
 	packet->type = sinashow::UTIL_PACKET_SIP;
-	packet->buf = new pj_uint8_t();
-	packet->buflen = sizeof(pj_uint8_t);
-	*((pj_uint8_t *)packet->buf) = sinashow::UTIL_SIP_PACKET_DISCONNECTED;
+	packet->buf = new sinashow::util_sip_packet_type_t();
+	packet->buflen = sizeof(sinashow::util_sip_packet_type_t);
+	*((sinashow::util_sip_packet_type_t *)packet->buf) = sinashow::UTIL_SIP_PACKET_DISCONNECTED;
 
 	ScreenMgr::GetInstance()->PushScreenPacket(packet, index);
 }
