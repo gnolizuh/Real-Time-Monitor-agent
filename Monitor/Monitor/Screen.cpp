@@ -11,24 +11,27 @@ void Screen::OnLButtonDown(UINT nFlags, CPoint point)
 	pj_str_t remote_uri = pj_str("sip:192.168.4.108:5060");
 	if ( ( call_status ++ ) % 2 == 0 )
 	{
-		SessionMgr::GetInstance()->StartSession(&remote_uri, index);
+		SessionMgr::GetInstance()->StartSession(&remote_uri, index());
 	}
 	else
 	{
-		SessionMgr::GetInstance()->StopSession(index);
+		SessionMgr::GetInstance()->StopSession(index());
 	}
 }
 
 Screen::Screen(pj_uint32_t index)
 	: CWnd()
-	, index(index)
-	, msg_queue()
-	, screen_rect(0, 0, 0, 0)
-	, wrapper(nullptr)
-	, id(0)
-	, window(nullptr)
-	, render(nullptr)
-	, texture(nullptr)
+	, rect_(0, 0, 0, 0)
+	, wrapper_(NULL)
+	, index_(index)
+	, uid_(0)
+	, window_(NULL)
+	, render_(NULL)
+	, texture_(NULL)
+	, mutex_()
+	, thread_()
+	, msg_queue_()
+
 	, call_status(0)
 {
 }
@@ -37,14 +40,14 @@ Screen::~Screen()
 {
 }
 
-void Screen::Prepare(const CRect &rect, const CWnd *wrapper, pj_uint32_t id)
+void Screen::Prepare(const CRect &rect, const CWnd *wrapper, pj_uint32_t uid)
 {
 	pj_uint32_t width = PJ_ABS(rect.right - rect.left);
 	pj_uint32_t height = PJ_ABS(rect.bottom - rect.top);
 
-	this->screen_rect = rect;
-	this->wrapper = wrapper;
-	this->id  = id;
+	set_rect(rect);
+	set_wrapper(wrapper);
+	set_uid(uid);
 
 	pj_bool_t ret = this->Create(
 		nullptr,
@@ -52,64 +55,65 @@ void Screen::Prepare(const CRect &rect, const CWnd *wrapper, pj_uint32_t id)
 		WS_BORDER | WS_VISIBLE | WS_CHILD,
 		rect,
 		(CWnd *)wrapper,
-		id);
+		this->uid());
 	pj_assert(ret == PJ_TRUE);
 
-	window = SDL_CreateWindowFrom(GetSafeHwnd());
-	pj_assert(window != nullptr);
+	set_window(SDL_CreateWindowFrom(GetSafeHwnd()));
+	pj_assert(window() != NULL);
 
-	render = SDL_CreateRenderer(window, -1, SDL_RENDERER_SOFTWARE);
-	pj_assert(render != nullptr);
+	set_render(SDL_CreateRenderer(window(), -1, SDL_RENDERER_SOFTWARE));
+	pj_assert(render() != NULL);
 
-	texture = SDL_CreateTexture(render, SDL_PIXELFORMAT_IYUV, SDL_TEXTUREACCESS_STREAMING, width, height);
-	pj_assert(texture != nullptr);
+	set_texture(SDL_CreateTexture(render(), SDL_PIXELFORMAT_IYUV, SDL_TEXTUREACCESS_STREAMING, width, height));
+	pj_assert(texture() != NULL);
 
-	msg_thread = thread( (std::bind(&Screen::MessageQueueThread, this)) );
+	thread_ = std::thread((std::bind(&Screen::MessageQueueThread, this)));
 }
 
 void Screen::Refresh(const CRect &rect)
 {
-	lock_guard<mutex> internal_lock(win_mutex);
-	this->screen_rect = rect;
+	lock_guard<std::mutex> internal_lock(mutex_);
+	set_rect(rect);
+
 	this->MoveWindow(rect);
 	this->ShowWindow(SW_SHOW);
 }
 
 void Screen::Hide()
 {
-	lock_guard<mutex> internal_lock(win_mutex);
-	SDL_HideWindow(window);
+	lock_guard<std::mutex> internal_lock(mutex_);
+	SDL_HideWindow(window());
 }
 
 void Screen::Painting(const SDL_Rect &rect, const void *pixels, int pitch)
 {
-	lock_guard<mutex> internal_lock(win_mutex);
-	SDL_UpdateTexture( texture, &rect, pixels, pitch );
-	SDL_RenderClear( render );
-	SDL_RenderCopy( render, texture, nullptr, nullptr );
-	SDL_RenderPresent( render );
+	lock_guard<std::mutex> internal_lock(mutex_);
+	SDL_UpdateTexture(texture(), &rect, pixels, pitch);
+	SDL_RenderClear(render());
+	SDL_RenderCopy(render(), texture(), NULL, NULL);
+	SDL_RenderPresent(render());
 }
 
 void Screen::PushPacket(util_packet_t *packet)
 {
-	msg_queue.Push(packet);
+	msg_queue().Push(packet);
 }
 
 MessageQueue<util_packet_t *> *Screen::GetMessageQueue()
 {
-	return &msg_queue;
+	return &msg_queue();
 }
 
 void Screen::MessageQueueThread()
 {
 	while (1)
 	{
-		msg_queue.Wait();
+		msg_queue().Wait();
 
 		util_packet_t *packet = nullptr;
 		do
 		{
-			packet = msg_queue.Pop();
+			packet = msg_queue().Pop();
 			if ( packet )
 			{
 				ProcessMessage(packet);
@@ -161,8 +165,8 @@ void Screen::ProcessMediaMessage(util_packet_t *packet)
 
 	//PJ_LOG(5, (THIS_FILE, "code = %u", code));
 
-	pj_uint32_t width = PJ_ABS(screen_rect.right - screen_rect.left);
-	pj_uint32_t height = PJ_ABS(screen_rect.bottom - screen_rect.top);
+	pj_uint32_t width = PJ_ABS(rect().right - rect().left);
+	pj_uint32_t height = PJ_ABS(rect().bottom - rect().top);
 	int left_pitch = width * SDL_BYTESPERPIXEL(SDL_PIXELFORMAT_IYUV);
 	SDL_Rect left_rect = {0, 0, width, height};
 

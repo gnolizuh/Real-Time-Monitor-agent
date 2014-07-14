@@ -24,8 +24,5 @@ extern "C"
 #define MAXIMAL_SCREEN_NUM    9
 #define PJ_RETURN_VAL_IF_FALSE(exp, val) do { if ( !(exp) ) return val; } while(0)
 #define PJ_RETURN_IF_FALSE(exp) do { if ( !(exp) ) return; } while(0)
-#define GENERATE_ACCESSOR(_macro_name_, _macro_type_) \
-	_macro_type_ _macro_name_() const { return _macro_name_##_; } \
-	void set_##_macro_name_(_macro_type_ arg) { _macro_name_##_ = arg; }
 
 #endif
