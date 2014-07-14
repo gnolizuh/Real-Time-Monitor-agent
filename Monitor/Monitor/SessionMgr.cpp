@@ -75,9 +75,9 @@ SessionMgr::SessionMgr()
 	, media_endpt(NULL)
 	, sessions(MAXIMAL_SCREEN_NUM)
 {
-	for (int idx = 0; idx < MAXIMAL_SCREEN_NUM; ++ idx)
+	for (pj_uint32_t idx = 0; idx < MAXIMAL_SCREEN_NUM; ++ idx)
 	{
-		sessions[idx] = new Session();
+		sessions[idx] = new Session(idx);
 	}
 }
 
@@ -105,7 +105,7 @@ pj_status_t SessionMgr::Prepare(pj_str_t sip_addr, pj_uint16_t sip_port, pj_uint
 
 	pj_caching_pool_init(&caching_pool, &pj_pool_factory_default_policy, 0);
 
-	pool = pj_pool_create(&caching_pool.factory, POOL_NAME.ptr, 4000, 4000, NULL);
+	pool = pj_pool_create(&caching_pool.factory, POOL_NAME.ptr, 1000, 1000, NULL);
 
 	status = pj_file_open(pool, LOG_NAME.ptr, PJ_O_WRONLY | PJ_O_APPEND, &log_handle);
 	PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
@@ -164,11 +164,6 @@ pj_status_t SessionMgr::Prepare(pj_str_t sip_addr, pj_uint16_t sip_port, pj_uint
 	status = pjsip_endpt_register_module(sip_endpt, &logger_module);
     PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
 
-	for(pj_uint8_t idx = 0; idx < sessions.size(); ++ idx)
-	{
-		sessions[idx]->index = idx;
-	}
-
 	status = pjmedia_endpt_create(&caching_pool.factory, NULL, 1, &media_endpt);
 	PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
 
@@ -196,9 +191,9 @@ pj_status_t SessionMgr::Prepare(pj_str_t sip_addr, pj_uint16_t sip_port, pj_uint
 		PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
 	}
 
-	for (pj_uint8_t sess_idx = 0; sess_idx < sessions.size(); ++ sess_idx)
+	for (pj_uint32_t sess_idx = 0; sess_idx < sessions.size(); ++ sess_idx)
 	{
-		sessions[sess_idx]->Prepare(sip_endpt, media_endpt, local_addr, media_start_port, sess_idx, monitor_module.id);
+		sessions[sess_idx]->Prepare(sip_endpt, media_endpt, local_addr, media_start_port, monitor_module.id);
 	}
 
 	return status;
@@ -210,6 +205,12 @@ void SessionMgr::Launch()
 	{
 		pj_thread_create( pool, "monitor", &SessionMgr::SipThread, sip_endpt, 0, 0, &sip_thread[i]);
     }
+
+	for (pj_uint32_t sess_idx = 0; sess_idx < sessions.size(); ++ sess_idx)
+	{
+		sessions[sess_idx]->Launch();
+	}
+
 }
 
 pj_status_t SessionMgr::StartSession(const pj_str_t *remote_uri, pj_uint8_t sess_idx)

@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "Session.h"
 
-struct codec Session::audio_codecs[] = 
+struct codec Session::g_audio_codecs[] = 
 {
     { 0,  "PCMU", 8000, 64000, 20, "G.711 ULaw" },
     { 3,  "GSM",  8000, 13200, 20, "GSM" },
@@ -10,12 +10,24 @@ struct codec Session::audio_codecs[] =
     { 18, "G729", 8000, 8000,  20, "G.729" },
 };
 
-struct codec Session::video_codecs[] = 
+struct codec Session::g_video_codecs[] = 
 {
     { 97,  "H264", 90000, 62208000/* bits-rate */, 6000/* samples per frame */, "H.264/AVC" },
 };
 
-Session::Session()
+Session::Session(pj_uint32_t index)
+	: index_(index)
+	, module_id_(-1)
+	, invite_session_(NULL)
+	, medias_count_(2)
+	, bind_addr_()
+	, start_time_()
+	, response_time_()
+	, connect_time_()
+	, media_endpt_(NULL)
+	, sip_endpt_(NULL)
+	, medias_array_(medias_count_)
+	, msg_queue_(NULL)
 {
 }
 
@@ -25,38 +37,37 @@ Session::~Session()
 
 pj_status_t Session::Prepare( pjsip_endpoint *sip_endpt, 
 							 pjmedia_endpt *media_endpt,
-							 pj_str_t local_addr,
+							 pj_str_t bind_addr,
 							 pj_uint16_t &media_port,
-							 pj_uint8_t call_idx,
-							 int mod_id )
+							 int module_id )
 {
 	pj_status_t status;
 
-	this->index = call_idx;
-	this->media_endpt = media_endpt;
-	this->sip_endpt = sip_endpt;
-	this->mod_id = mod_id;
-	this->local_addr = local_addr;
+	set_media_endpt(media_endpt);
+	set_sip_endpt(sip_endpt);
+	set_module_id(module_id);
+	set_bind_addr(bind_addr);
+	set_msg_queue(ScreenMgr::GetInstance()->GetMessageQueue(index()));
 
 	/* Create transport for each media in the call */
-	for ( pj_uint8_t media_idx = 0; media_idx < PJ_ARRAY_SIZE(this->medias); ++ media_idx )
+	for ( pj_uint32_t media_idx = 0; media_idx < medias_array().size(); ++ media_idx )
 	{
 	    /* Repeat binding media socket to next port when fails to bind
 	     * to current port number.
 	     */
 	    int retry;
 
-	    this->medias[media_idx].call_index = call_idx;
-	    this->medias[media_idx].media_index = media_idx;
+	    medias_array()[media_idx].sess_index = index();
+	    medias_array()[media_idx].media_index = media_idx;
 
 	    status = -1;
 	    for ( retry = 0; retry < 100; ++ retry, media_port += 2 )
 		{
-			struct media_stream *m = &this->medias[media_idx];
+			struct media_stream *m = &(medias_array()[media_idx]);
 
 			status = pjmedia_transport_udp_create2(media_endpt, 
 				"siprtp",
-				&local_addr,
+				&bind_addr,
 				media_port, 0, 
 				&m->transport);
 			if (status == PJ_SUCCESS)
@@ -72,6 +83,7 @@ pj_status_t Session::Prepare( pjsip_endpoint *sip_endpt,
 
 void Session::Launch()
 {
+	return;
 }
 
 pj_status_t Session::Invite(const pj_str_t *local_uri, const pj_str_t *remote_uri, pj_int32_t module_id)
@@ -94,7 +106,7 @@ pj_status_t Session::Invite(const pj_str_t *local_uri, const pj_str_t *remote_ur
     CreateSdp(dlg->pool, &sdp);
 
     /* Create the INVITE session. */
-    status = pjsip_inv_create_uac(dlg, sdp, 0, &inv_session);
+    status = pjsip_inv_create_uac(dlg, sdp, 0, &invite_session_);
     if (status != PJ_SUCCESS)
 	{
 		pjsip_dlg_terminate(dlg);
@@ -102,23 +114,23 @@ pj_status_t Session::Invite(const pj_str_t *local_uri, const pj_str_t *remote_ur
     }
 
     /* Attach call data to invite session */
-	inv_session->mod_data[module_id] = this;
+	invite_session()->mod_data[module_id] = this;
 
     /* Mark start of call */
-    pj_gettimeofday(&start_time);
+    pj_gettimeofday(&start_time());
 
     /* Create initial INVITE request.
      * This INVITE request will contain a perfectly good request and 
      * an SDP body as well.
      */
-    status = pjsip_inv_invite(inv_session, &tdata);
+    status = pjsip_inv_invite(invite_session(), &tdata);
     PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
 
     /* Send initial INVITE request. 
      * From now on, the invite session's state will be reported to us
      * via the invite session callbacks.
      */
-    status = pjsip_inv_send_msg(inv_session, tdata);
+    status = pjsip_inv_send_msg(invite_session(), tdata);
     PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
 
     return PJ_SUCCESS;
@@ -129,15 +141,15 @@ pj_status_t Session::Hangup()
 	pjsip_tx_data *tdata;
 	pj_status_t status;
 
-    if (inv_session == NULL)
+    if (invite_session() == NULL)
 	{
 		return -1;
 	}
 
-    status = pjsip_inv_end_session(inv_session, 603, NULL, &tdata);
+    status = pjsip_inv_end_session(invite_session(), 603, NULL, &tdata);
     if (status==PJ_SUCCESS && tdata!=NULL)
 	{
-		pjsip_inv_send_msg(inv_session, tdata);
+		pjsip_inv_send_msg(invite_session(), tdata);
 	}
 
 	return status;
@@ -145,9 +157,9 @@ pj_status_t Session::Hangup()
 
 pj_status_t Session::Stop()
 {
-	for ( int idx = 0; idx < ARRAYSIZE(medias); ++ idx )
+	for ( pj_uint32_t idx = 0; idx < medias_array().size(); ++ idx )
 	{
-		struct media_stream *media = &medias[idx];
+		struct media_stream *media = &(medias_array()[idx]);
 		if (media)
 		{
 			media->active = PJ_FALSE;
@@ -161,9 +173,9 @@ pj_status_t Session::Stop()
 
 void Session::OnConnecting(pjsip_inv_session *inv, pjsip_event *e)
 {
-	if (response_time.sec == 0)
+	if (response_time().sec == 0)
 	{
-	    pj_gettimeofday(&response_time);
+	    pj_gettimeofday(&response_time());
 	}
 
 	util_packet_t *packet = new util_packet_t();
@@ -172,23 +184,23 @@ void Session::OnConnecting(pjsip_inv_session *inv, pjsip_event *e)
 	packet->buflen = sizeof(sinashow::util_sip_packet_type_t);
 	*((sinashow::util_sip_packet_type_t *)packet->buf) = sinashow::UTIL_SIP_PACKET_CONNECTING;
 
-	ScreenMgr::GetInstance()->PushScreenPacket(packet, index);
+	msg_queue()->Push(packet);
 }
 
 void Session::OnConfirmed(pjsip_inv_session *inv, pjsip_event *e)
 {
 	pj_time_val t;
 
-	pj_gettimeofday(&connect_time);
-	if (response_time.sec == 0)
+	pj_gettimeofday(&connect_time());
+	if (response_time().sec == 0)
 	{
-	    response_time = connect_time;
+	    set_response_time(connect_time());
 	}
 
-	t = connect_time;
-	PJ_TIME_VAL_SUB(t, start_time);
+	t = connect_time();
+	PJ_TIME_VAL_SUB(t, start_time());
 
-	PJ_LOG(3,(THIS_FILE, "Call #%d connected in %d ms", index,
+	PJ_LOG(3,(THIS_FILE, "Call #%d connected in %d ms", index(),
 		  PJ_TIME_VAL_MSEC(t)));
 
 	util_packet_t *packet = new util_packet_t();
@@ -197,7 +209,7 @@ void Session::OnConfirmed(pjsip_inv_session *inv, pjsip_event *e)
 	packet->buflen = sizeof(sinashow::util_sip_packet_type_t);
 	*((sinashow::util_sip_packet_type_t *)packet->buf) = sinashow::UTIL_SIP_PACKET_CONNECTED;
 
-	ScreenMgr::GetInstance()->PushScreenPacket(packet, index);
+	msg_queue()->Push(packet);
 }
 
 void Session::OnDisconnected(pjsip_inv_session *inv, pjsip_event *e)
@@ -205,22 +217,22 @@ void Session::OnDisconnected(pjsip_inv_session *inv, pjsip_event *e)
 	pj_time_val null_time = {0, 0};
 
 	PJ_LOG(3,(THIS_FILE, "Call #%d disconnected. Reason=%d (%.*s)",
-		  index,
-		  inv_session->cause,
-		  (int)inv_session->cause_text.slen,
-		  inv_session->cause_text.ptr));
+		  index(),
+		  invite_session()->cause,
+		  (int)invite_session()->cause_text.slen,
+		  invite_session()->cause_text.ptr));
 
-    PJ_LOG(3,(THIS_FILE, "Call #%d statistics:", index));
-    Statistic();
+    PJ_LOG(3,(THIS_FILE, "Call #%d statistics:", index()));
+    // Statistic();
 
-	inv_session = NULL;
-	inv->mod_data[mod_id] = NULL;
+	set_invite_session(NULL);
+	inv->mod_data[module_id()];
 
 	Stop();
 
-	start_time = null_time;
-	response_time = null_time;
-	connect_time = null_time;
+	set_start_time(null_time);
+	set_response_time(null_time);
+	set_connect_time(null_time);
 
 	util_packet_t *packet = new util_packet_t();
 	packet->type = sinashow::UTIL_PACKET_SIP;
@@ -228,7 +240,7 @@ void Session::OnDisconnected(pjsip_inv_session *inv, pjsip_event *e)
 	packet->buflen = sizeof(sinashow::util_sip_packet_type_t);
 	*((sinashow::util_sip_packet_type_t *)packet->buf) = sinashow::UTIL_SIP_PACKET_DISCONNECTED;
 
-	ScreenMgr::GetInstance()->PushScreenPacket(packet, index);
+	msg_queue()->Push(packet);
 }
 
 void Session::OnTimerStopSession(pj_timer_heap_t *timer_heap, struct pj_timer_entry *entry)
@@ -272,6 +284,14 @@ void Session::OnRxRtp(void *user_data, void *pkt, pj_ssize_t size)
 
     /* Update RTP session */
     pjmedia_rtp_session_update(&strm->in_sess, hdr, NULL);
+
+	util_packet_t *packet = new util_packet_t();
+	packet->type = sinashow::UTIL_PACKET_MEDIA;
+	packet->buf = new sinashow::util_sip_packet_type_t();
+	packet->buflen = sizeof(sinashow::util_sip_packet_type_t);
+	*((sinashow::util_sip_packet_type_t *)packet->buf) = sinashow::UTIL_SIP_PACKET_DISCONNECTED;
+
+	ScreenMgr::GetInstance()->PushScreenPacket(packet, strm->sess_index);
 }
 
 void Session::OnRxRtcp(void *user_data, void *pkt, pj_ssize_t size)
@@ -300,8 +320,8 @@ void Session::UpdateMedia(pjsip_inv_session *inv, pj_status_t status)
     unsigned i;
 
 	pool = inv->dlg->pool;
-    audio = &medias[0];
-	video = &medias[1];
+    audio = &medias_array()[0];
+	video = &medias_array()[1];
 
     /* If this is a mid-call media update, then destroy existing media */
 	audio->active = PJ_FALSE;
@@ -317,19 +337,19 @@ void Session::UpdateMedia(pjsip_inv_session *inv, pj_status_t status)
     pjmedia_sdp_neg_get_active_local(inv->neg, &local_sdp);
     pjmedia_sdp_neg_get_active_remote(inv->neg, &remote_sdp);
 
-    status = pjmedia_stream_info_from_sdp(&audio->ai, inv->pool, media_endpt,
+    status = pjmedia_stream_info_from_sdp(&audio->ai, inv->pool, media_endpt(),
 					  local_sdp, remote_sdp, 0);
 	PJ_RETURN_IF_FALSE(status == PJ_SUCCESS);
 
-	status = pjmedia_vid_stream_info_from_sdp(&video->vi, inv->pool, media_endpt, local_sdp, remote_sdp, 1);
+	status = pjmedia_vid_stream_info_from_sdp(&video->vi, inv->pool, media_endpt(), local_sdp, remote_sdp, 1);
 	PJ_RETURN_IF_FALSE(status == PJ_SUCCESS);
 
 	/* Find the codec description in codec array */
-	for (i=0; i<PJ_ARRAY_SIZE(audio_codecs); ++i)
+	for (i=0; i<PJ_ARRAY_SIZE(g_audio_codecs); ++i)
 	{
-		if (audio_codecs[i].pt == audio->ai.fmt.pt)
+		if (g_audio_codecs[i].pt == audio->ai.fmt.pt)
 		{
-			aud_codec_desc = &audio_codecs[i];
+			aud_codec_desc = &g_audio_codecs[i];
 			break;
 		}
 	}
@@ -341,10 +361,10 @@ void Session::UpdateMedia(pjsip_inv_session *inv, pj_status_t status)
 	}
 
 	/* Find the codec description in codec array */
-	for (i=0; i<PJ_ARRAY_SIZE(video_codecs); ++i)
+	for (i=0; i<PJ_ARRAY_SIZE(g_video_codecs); ++i)
 	{
-		if (video_codecs[i].pt == video->vi.codec_info.pt) {
-		vid_codec_desc = &video_codecs[i];
+		if (g_video_codecs[i].pt == video->vi.codec_info.pt) {
+		vid_codec_desc = &g_video_codecs[i];
 		break;
 		}
 	}
@@ -403,8 +423,8 @@ pj_status_t Session::CreateSdp( pj_pool_t *pool, pjmedia_sdp_session **p_sdp)
     pjmedia_sdp_media *m;
     pjmedia_sdp_attr *attr;
     pjmedia_transport_info tpinfo;
-    struct media_stream *audio = &medias[0];
-	struct media_stream *video = &medias[1];
+    struct media_stream *audio = &medias_array()[0];
+	struct media_stream *video = &medias_array()[1];
 
     PJ_ASSERT_RETURN(pool && p_sdp, PJ_EINVAL);
 
@@ -429,7 +449,7 @@ pj_status_t Session::CreateSdp( pj_pool_t *pool, pjmedia_sdp_session **p_sdp)
     sdp->conn = (pjmedia_sdp_conn *)pj_pool_zalloc (pool, sizeof(pjmedia_sdp_conn));
     sdp->conn->net_type = pj_str("IN");
     sdp->conn->addr_type = pj_str("IP4");
-    sdp->conn->addr = local_addr;
+    sdp->conn->addr = bind_addr_;
 
     /* SDP time and attributes. */
     sdp->time.start = sdp->time.stop = 0;
@@ -454,11 +474,11 @@ pj_status_t Session::CreateSdp( pj_pool_t *pool, pjmedia_sdp_session **p_sdp)
 	pjmedia_sdp_rtpmap rtpmap;
 	char ptstr[10];
 
-	sprintf(ptstr, "%d", audio_codecs[0].pt);
+	sprintf(ptstr, "%d", g_audio_codecs[0].pt);
 	pj_strdup2(pool, &m->desc.fmt[0], ptstr);
 	rtpmap.pt = m->desc.fmt[0];
-	rtpmap.clock_rate = audio_codecs[0].clock_rate;
-	rtpmap.enc_name = pj_str(audio_codecs[0].name);
+	rtpmap.clock_rate = g_audio_codecs[0].clock_rate;
+	rtpmap.enc_name = pj_str(g_audio_codecs[0].name);
 	rtpmap.param.slen = 0;
 
 	pjmedia_sdp_rtpmap_to_attr(pool, &rtpmap, &attr);
@@ -486,11 +506,11 @@ pj_status_t Session::CreateSdp( pj_pool_t *pool, pjmedia_sdp_session **p_sdp)
     m->desc.fmt_count = 1;
     m->attr_count = 0;
 
-	sprintf(ptstr, "%d", video_codecs[0].pt);
+	sprintf(ptstr, "%d", g_video_codecs[0].pt);
 	pj_strdup2(pool, &m->desc.fmt[0], ptstr);
 	rtpmap.pt = m->desc.fmt[0];
-	rtpmap.clock_rate = video_codecs[0].clock_rate;
-	rtpmap.enc_name = pj_str(video_codecs[0].name);
+	rtpmap.clock_rate = g_video_codecs[0].clock_rate;
+	rtpmap.enc_name = pj_str(g_video_codecs[0].name);
 	rtpmap.param.slen = 0;
 
 	pjmedia_sdp_rtpmap_to_attr(pool, &rtpmap, &attr);
@@ -528,9 +548,9 @@ const char *Session::GoodNumber(char *buf, pj_int32_t val)
 void Session::Statistic()
 {
     int len;
-	pjsip_inv_session *inv = this->inv_session;
+	pjsip_inv_session *inv = invite_session();
     pjsip_dialog *dlg = inv->dlg;
-    struct media_stream *audio = &medias[0];
+    struct media_stream *audio = &medias_array()[0];
     char userinfo[128];
     char duration[80], last_update[80];
     char bps[16], ipbps[16], packets[16], bytes[16], ipbytes[16];
@@ -543,8 +563,8 @@ void Session::Statistic()
     pj_gettimeofday(&now);
 
     /* Print duration */
-    if (inv->state >= PJSIP_INV_STATE_CONFIRMED && connect_time.sec) {
-		PJ_TIME_VAL_SUB(now, connect_time);
+    if (inv->state >= PJSIP_INV_STATE_CONFIRMED && connect_time().sec) {
+		PJ_TIME_VAL_SUB(now, connect_time());
 
 		sprintf(duration, " [duration: %02ld:%02ld:%02ld.%03ld]",
 			now.sec / 3600,
@@ -560,7 +580,7 @@ void Session::Statistic()
     /* Call number and state */
     PJ_LOG(3, (THIS_FILE,
 	      "Call #%d: %s%s", 
-	      index, pjsip_inv_state_name(inv->state), 
+	      index(), pjsip_inv_state_name(inv->state), 
 	      duration));
 
     /* Call identification */
@@ -576,9 +596,9 @@ void Session::Statistic()
 
     PJ_LOG(3, (THIS_FILE, "   %s", userinfo));
 
-	if (inv_session == NULL ||
-		inv_session->state < PJSIP_INV_STATE_CONFIRMED ||
-		connect_time.sec == 0) 
+	if (invite_session() == NULL ||
+		invite_session()->state < PJSIP_INV_STATE_CONFIRMED ||
+		connect_time().sec == 0) 
     {
 		pj_log_set_decor(decor);
 		return;
@@ -589,10 +609,10 @@ void Session::Statistic()
 		char pdd[64], connectdelay[64];
 		pj_time_val t;
 
-		if (response_time.sec)
+		if (response_time().sec)
 		{
-			t = response_time;
-			PJ_TIME_VAL_SUB(t, start_time);
+			t = response_time();
+			PJ_TIME_VAL_SUB(t, start_time());
 			sprintf(pdd, "got 1st response in %ld ms", PJ_TIME_VAL_MSEC(t));
 		}
 		else
@@ -600,10 +620,10 @@ void Session::Statistic()
 			pdd[0] = '\0';
 		}
 
-		if (connect_time.sec)
+		if (connect_time().sec)
 		{
-			t = connect_time;
-			PJ_TIME_VAL_SUB(t, start_time);
+			t = connect_time();
+			PJ_TIME_VAL_SUB(t, start_time());
 			sprintf(connectdelay, ", connected after: %ld ms", PJ_TIME_VAL_MSEC(t));
 		}
 		else

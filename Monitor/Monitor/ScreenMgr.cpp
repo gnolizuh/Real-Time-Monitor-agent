@@ -27,9 +27,9 @@ ScreenMgr::ScreenMgr()
 	refresh_func.push_back(&ScreenMgr::Refresh_3x3);
 	num_blocks.push_back(3);
 
-	for (int idx = 0; idx < MAXIMAL_SCREEN_NUM; ++ idx)
+	for (pj_uint32_t idx = 0; idx < MAXIMAL_SCREEN_NUM; ++ idx)
 	{
-		screens[idx] = new Screen();
+		screens[idx] = new Screen(idx);
 	}
 }
 
@@ -50,13 +50,18 @@ resolution_t ScreenMgr::GetDefaultResolution()
 	return DEFAULT_RESOLUTION;
 }
 
+MessageQueue<util_packet_t *> *ScreenMgr::GetMessageQueue(pj_uint8_t index)
+{
+	return screens[index]->GetMessageQueue();
+}
+
 void ScreenMgr::Prepare(CWnd *wrapper)
 {
 	this->wrapper = wrapper;
 
-	for(pj_uint8_t idx = 0; idx < screens.size(); ++ idx)
+	for(pj_uint32_t idx = 0; idx < screens.size(); ++ idx)
 	{
-		screens[idx]->Prepare(CRect(0, 0, min_width, min_height), (CWnd *)wrapper, idx, IDC_WALL_BASE_INDEX + idx);
+		screens[idx]->Prepare(CRect(0, 0, min_width, min_height), (CWnd *)wrapper, IDC_WALL_BASE_INDEX + idx);
 	}
 }
 

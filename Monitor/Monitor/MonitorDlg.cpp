@@ -114,7 +114,7 @@ BOOL CMonitorDlg::OnInitDialog()
 	ScreenMgr::GetInstance()->Launch();
 	ScreenMgr::GetInstance()->Adjest(width, height);
 
-	SessionMgr::GetInstance()->Prepare(pj_str("192.168.6.38"), 5060u, 12000u);
+	SessionMgr::GetInstance()->Prepare(pj_str("192.168.6.44"), 5060u, 12000u);
 	SessionMgr::GetInstance()->Launch();
 
 	this->MoveWindow(CRect(0, 0, width, height));

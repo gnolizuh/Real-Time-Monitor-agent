@@ -19,13 +19,14 @@ class Screen
 	: public CWnd
 {
 public:
-	Screen();
+	Screen(pj_uint32_t);
 	virtual ~Screen();
-	void Prepare(const CRect &, const CWnd *, pj_uint32_t, pj_uint32_t);
+	void Prepare(const CRect &, const CWnd *, pj_uint32_t);
 	void Refresh(const CRect &);
 	void Hide();
 	void Painting(const SDL_Rect &, const void *, int);
 	void PushPacket(util_packet_t *);
+	MessageQueue<util_packet_t *> *GetMessageQueue();
 
 protected:
 	void MessageQueueThread();
@@ -39,7 +40,7 @@ private:
 	pj_uint32_t         call_status;
 	CRect               screen_rect;
 	const CWnd         *wrapper;
-	pj_uint32_t         idx;
+	const pj_uint32_t   index;
 	pj_uint32_t         id;
 	SDL_Window         *window;       // SDL´°¿Ú
 	SDL_Renderer       *render;       // SDLäÖÈ¾Æ÷

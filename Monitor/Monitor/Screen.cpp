@@ -11,20 +11,20 @@ void Screen::OnLButtonDown(UINT nFlags, CPoint point)
 	pj_str_t remote_uri = pj_str("sip:192.168.4.108:5060");
 	if ( ( call_status ++ ) % 2 == 0 )
 	{
-		SessionMgr::GetInstance()->StartSession(&remote_uri, idx);
+		SessionMgr::GetInstance()->StartSession(&remote_uri, index);
 	}
 	else
 	{
-		SessionMgr::GetInstance()->StopSession(idx);
+		SessionMgr::GetInstance()->StopSession(index);
 	}
 }
 
-Screen::Screen()
+Screen::Screen(pj_uint32_t index)
 	: CWnd()
+	, index(index)
 	, msg_queue()
 	, screen_rect(0, 0, 0, 0)
 	, wrapper(nullptr)
-	, idx(0)
 	, id(0)
 	, window(nullptr)
 	, render(nullptr)
@@ -37,14 +37,13 @@ Screen::~Screen()
 {
 }
 
-void Screen::Prepare(const CRect &rect, const CWnd *wrapper, pj_uint32_t idx, pj_uint32_t id)
+void Screen::Prepare(const CRect &rect, const CWnd *wrapper, pj_uint32_t id)
 {
 	pj_uint32_t width = PJ_ABS(rect.right - rect.left);
 	pj_uint32_t height = PJ_ABS(rect.bottom - rect.top);
 
 	this->screen_rect = rect;
 	this->wrapper = wrapper;
-	this->idx = idx;
 	this->id  = id;
 
 	pj_bool_t ret = this->Create(
@@ -94,6 +93,11 @@ void Screen::Painting(const SDL_Rect &rect, const void *pixels, int pitch)
 void Screen::PushPacket(util_packet_t *packet)
 {
 	msg_queue.Push(packet);
+}
+
+MessageQueue<util_packet_t *> *Screen::GetMessageQueue()
+{
+	return &msg_queue;
 }
 
 void Screen::MessageQueueThread()
@@ -156,6 +160,18 @@ void Screen::ProcessMediaMessage(util_packet_t *packet)
 	util_sip_packet_type_t code = *(util_sip_packet_type_t *)packet->buf;
 
 	//PJ_LOG(5, (THIS_FILE, "code = %u", code));
+
+	pj_uint32_t width = PJ_ABS(screen_rect.right - screen_rect.left);
+	pj_uint32_t height = PJ_ABS(screen_rect.bottom - screen_rect.top);
+	int left_pitch = width * SDL_BYTESPERPIXEL(SDL_PIXELFORMAT_IYUV);
+	SDL_Rect left_rect = {0, 0, width, height};
+
+	int dec_buf_size = width * height * 3 / 2;
+	uint8_t *dec_buf = (uint8_t *)malloc(dec_buf_size);
+
+	memset(dec_buf, rand() % 100, dec_buf_size);
+
+	Painting(left_rect, dec_buf, left_pitch);
 
 	return;
 }

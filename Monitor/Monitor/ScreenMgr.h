@@ -4,6 +4,7 @@
 #include <vector>
 #include <thread>
 #include <mutex>
+#include "MessageQueue.hpp"
 #include "UtilPacket.h"
 #include "Resource.h"
 #include "common.h"
@@ -34,6 +35,7 @@ typedef struct
 using std::mutex;
 using std::lock_guard;
 using std::vector;
+using sinashow::MessageQueue;
 using sinashow::util_packet_t;
 
 class ScreenMgr;
@@ -53,6 +55,7 @@ public:
 	pj_status_t Launch();
 	void PushScreenPacket(util_packet_t *, pj_uint8_t);
 	static resolution_t GetDefaultResolution();
+	MessageQueue<util_packet_t *> *GetMessageQueue(pj_uint8_t);
 
 private:
 	ScreenMgr();                                                             // Construct by user is forbitten.

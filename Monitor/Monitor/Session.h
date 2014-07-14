@@ -1,6 +1,8 @@
 #ifndef __MONITOR_SESSION__
 #define __MONITOR_SESSION__
 
+#include <vector>
+#include "MessageQueue.hpp"
 #include "common.h"
 #include "UtilPacket.h"
 #include "SessionMgr.h"
@@ -19,7 +21,7 @@ struct codec
 struct media_stream
 {
     /* Static: */
-    unsigned		 call_index;	    /* Call owner.		*/
+    unsigned		 sess_index;	    /* Session owner.		*/
     unsigned		 media_index;	    /* Media index in call.	*/
     pjmedia_transport   *transport;	    /* To send/recv RTP/RTCP	*/
 
@@ -44,33 +46,23 @@ struct media_stream
     pjmedia_rtcp_session rtcp;		    /* incoming RTCP session.	*/
 };
 
+using std::vector;
+using sinashow::MessageQueue;
 using sinashow::util_packet_type_t;
 using sinashow::util_packet_t;
 
 class Session
 {
 public:
-	Session();
+	Session(pj_uint32_t);
 	~Session();
 
-	pj_status_t Prepare(pjsip_endpoint *, pjmedia_endpt *, pj_str_t, pj_uint16_t &, pj_uint8_t, int);
+	pj_status_t Prepare(pjsip_endpoint *, pjmedia_endpt *, pj_str_t, pj_uint16_t &, int);
 	void        Launch();
 	pj_status_t Invite(const pj_str_t *, const pj_str_t *, pj_int32_t);
 	pj_status_t Hangup();
 	pj_status_t Stop();
 	void        UpdateMedia(pjsip_inv_session *, pj_status_t);
-
-	unsigned		     index;
-	int                  mod_id;
-    pjsip_inv_session	*inv_session;
-    unsigned		     media_count;
-    struct media_stream	 medias[2];      /**< Support both audio and video. */
-	pj_str_t             local_addr;
-    pj_time_val		     start_time;
-    pj_time_val		     response_time;
-    pj_time_val		     connect_time;
-	pjmedia_endpt       *media_endpt;
-	pjsip_endpoint      *sip_endpt;
 
 	void OnConnecting(pjsip_inv_session *, pjsip_event *);
 	void OnConfirmed(pjsip_inv_session *, pjsip_event *);
@@ -79,14 +71,50 @@ public:
 private:
 	static void OnRxRtp(void *, void *, pj_ssize_t);
 	static void OnRxRtcp(void *, void *, pj_ssize_t);
-
 	static void OnTimerStopSession(pj_timer_heap_t *, struct pj_timer_entry *);
 	const char *GoodNumber(char *, pj_int32_t);
 	pj_status_t CreateSdp(pj_pool_t *pool, pjmedia_sdp_session **);
-	void Statistic();
+	void        Statistic();
 
-	static struct codec audio_codecs[];
-	static struct codec video_codecs[];
+	inline pj_uint32_t index() const { return index_; }
+	inline int module_id() const { return module_id_; }
+	inline void set_module_id(int module_id) { module_id_ = module_id; }
+	inline pjsip_inv_session *invite_session() const { return invite_session_; }
+	inline void set_invite_session(pjsip_inv_session *invite_session) { invite_session_ = invite_session; }
+	inline unsigned medias_count() const { return medias_count_; }
+	inline pj_str_t &bind_addr() { return bind_addr_; }
+	inline void set_bind_addr(pj_str_t bind_addr) { bind_addr_ = bind_addr; }
+	inline pj_time_val &start_time() { return start_time_; }
+	inline void set_start_time(const pj_time_val &start_time) { start_time_ = start_time; }
+	inline pj_time_val &response_time() { return response_time_; }
+	inline void set_response_time(const pj_time_val &response_time) { response_time_ = response_time; }
+	inline pj_time_val &connect_time() { return connect_time_; }
+	inline void set_connect_time(const pj_time_val &connect_time) { connect_time_ = connect_time; }
+	inline pjmedia_endpt *media_endpt() { return media_endpt_; }
+	inline void set_media_endpt(pjmedia_endpt *media_endpt) { media_endpt_ = media_endpt; }
+	inline pjsip_endpoint *sip_endpt() { return sip_endpt_; }
+	inline void set_sip_endpt(pjsip_endpoint *sip_endpt) { sip_endpt_ = sip_endpt; }
+	inline vector<struct media_stream> &medias_array() { return medias_array_; }
+	inline void set_medias_array(vector<struct media_stream> &medias_array) { medias_array_ = medias_array; }
+	inline MessageQueue<util_packet_t *> *msg_queue() { return msg_queue_; }
+	inline void set_msg_queue(MessageQueue<util_packet_t *> *msg_queue) { msg_queue_ = msg_queue; }
+
+private:
+	const pj_uint32_t    index_;
+	int                  module_id_;
+    pjsip_inv_session	*invite_session_;
+    const unsigned       medias_count_;
+	pj_str_t             bind_addr_;
+    pj_time_val		     start_time_;
+    pj_time_val		     response_time_;
+    pj_time_val		     connect_time_;
+	pjmedia_endpt       *media_endpt_;
+	pjsip_endpoint      *sip_endpt_;
+	vector<struct media_stream>	medias_array_;      /**< Support both audio and video. */
+	MessageQueue<util_packet_t *> *msg_queue_;
+
+	static struct codec g_audio_codecs[];
+	static struct codec g_video_codecs[];
 };
 
 #endif
