@@ -38,19 +38,20 @@ protected:
 
 private:
 	inline const CWnd *wrapper() const { return wrapper_; }
-	inline void set_wrapper(const CWnd *wrapper) { wrapper_ = wrapper; }
 	inline const pj_uint32_t index() const { return index_; }
 	inline CRect rect() const { return rect_; }
-	inline void set_rect(CRect rect) { rect_ = rect; }
 	inline pj_uint32_t uid() const { return uid_; }
-	inline void set_uid(pj_uint32_t uid) { uid_ = uid; }
 	inline SDL_Window *window() const { return window_; }
-	inline void set_window(SDL_Window *window) { window_ = window; }
 	inline SDL_Renderer *render() const { return render_; }
-	inline void set_render(SDL_Renderer *render) { render_ = render; }
 	inline SDL_Texture *texture() const { return texture_; }
-	inline void set_texture(SDL_Texture *texture) { texture_ = texture; }
 	inline MessageQueue<util_packet_t *> &msg_queue() { return msg_queue_; }
+
+	inline void set_wrapper(const CWnd *wrapper) { wrapper_ = wrapper; }
+	inline void set_rect(CRect rect) { rect_ = rect; }
+	inline void set_uid(pj_uint32_t uid) { uid_ = uid; }
+	inline void set_window(SDL_Window *window) { window_ = window; }
+	inline void set_render(SDL_Renderer *render) { render_ = render; }
+	inline void set_texture(SDL_Texture *texture) { texture_ = texture; }
 
 private:
 	const CWnd       *wrapper_;

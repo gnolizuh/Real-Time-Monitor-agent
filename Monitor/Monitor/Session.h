@@ -78,25 +78,26 @@ private:
 
 	inline pj_uint32_t index() const { return index_; }
 	inline int module_id() const { return module_id_; }
-	inline void set_module_id(int module_id) { module_id_ = module_id; }
 	inline pjsip_inv_session *invite_session() const { return invite_session_; }
-	inline void set_invite_session(pjsip_inv_session *invite_session) { invite_session_ = invite_session; }
 	inline unsigned medias_count() const { return medias_count_; }
 	inline pj_str_t &bind_addr() { return bind_addr_; }
-	inline void set_bind_addr(pj_str_t bind_addr) { bind_addr_ = bind_addr; }
 	inline pj_time_val &start_time() { return start_time_; }
-	inline void set_start_time(const pj_time_val &start_time) { start_time_ = start_time; }
 	inline pj_time_val &response_time() { return response_time_; }
-	inline void set_response_time(const pj_time_val &response_time) { response_time_ = response_time; }
 	inline pj_time_val &connect_time() { return connect_time_; }
-	inline void set_connect_time(const pj_time_val &connect_time) { connect_time_ = connect_time; }
 	inline pjmedia_endpt *media_endpt() { return media_endpt_; }
-	inline void set_media_endpt(pjmedia_endpt *media_endpt) { media_endpt_ = media_endpt; }
 	inline pjsip_endpoint *sip_endpt() { return sip_endpt_; }
-	inline void set_sip_endpt(pjsip_endpoint *sip_endpt) { sip_endpt_ = sip_endpt; }
 	inline vector<struct media_stream> &medias_array() { return medias_array_; }
-	inline void set_medias_array(vector<struct media_stream> &medias_array) { medias_array_ = medias_array; }
 	inline MessageQueue<util_packet_t *> *msg_queue() { return msg_queue_; }
+
+	inline void set_module_id(int module_id) { module_id_ = module_id; }
+	inline void set_invite_session(pjsip_inv_session *invite_session) { invite_session_ = invite_session; }
+	inline void set_bind_addr(pj_str_t bind_addr) { bind_addr_ = bind_addr; }
+	inline void set_start_time(const pj_time_val &start_time) { start_time_ = start_time; }
+	inline void set_response_time(const pj_time_val &response_time) { response_time_ = response_time; }
+	inline void set_connect_time(const pj_time_val &connect_time) { connect_time_ = connect_time; }
+	inline void set_media_endpt(pjmedia_endpt *media_endpt) { media_endpt_ = media_endpt; }
+	inline void set_sip_endpt(pjsip_endpoint *sip_endpt) { sip_endpt_ = sip_endpt; }
+	inline void set_medias_array(vector<struct media_stream> &medias_array) { medias_array_ = medias_array; }
 	inline void set_msg_queue(MessageQueue<util_packet_t *> *msg_queue) { msg_queue_ = msg_queue; }
 
 private:

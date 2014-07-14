@@ -39,7 +39,7 @@ using sinashow::MessageQueue;
 using sinashow::util_packet_t;
 
 class ScreenMgr;
-typedef void (ScreenMgr::*screenmgr_func_t)();
+typedef void (ScreenMgr::*screenmgr_func_t)(pj_uint32_t, pj_uint32_t);
 
 class Screen;
 
@@ -61,24 +61,45 @@ private:
 	ScreenMgr();                                                             // Construct by user is forbitten.
 	virtual ~ScreenMgr();
 
-	void Refresh_1x1();
-	void Refresh_2x2();
-	void Refresh_1x5();
-	void Refresh_3x3();
+	void Refresh_1x1(pj_uint32_t, pj_uint32_t);
+	void Refresh_2x2(pj_uint32_t, pj_uint32_t);
+	void Refresh_1x5(pj_uint32_t, pj_uint32_t);
+	void Refresh_3x3(pj_uint32_t, pj_uint32_t);
 
 private:
-	vector<Screen *> screens;
-	const CWnd *wrapper;
-	pj_uint32_t last_width, last_height, min_width, min_height;
-	screen_mgr_res_t screen_mgr_res;
-	pj_uint32_t vertical_padding;
-	pj_uint32_t horizontal_padding;
-	vector<screenmgr_func_t> refresh_func;
-	vector<pj_uint32_t> num_blocks;
-	pj_bool_t screen_mgr_active;
+	inline const CWnd *wrapper() { return wrapper_; }
+	inline vector<Screen *> &screens() { return screens_; }
+	inline pj_uint32_t width() const { return width_; }
+	inline pj_uint32_t height() const { return height_; }
+	inline screen_mgr_res_t screen_mgr_res() const { return screen_mgr_res_; }
+	inline pj_uint32_t vertical_padding() const { return vertical_padding_; }
+	inline pj_uint32_t horizontal_padding() const { return horizontal_padding_; }
+	inline pj_bool_t screen_mgr_active() const { return screen_mgr_active_; }
+	inline vector<screenmgr_func_t> &screenmgr_func_array() { return screenmgr_func_array_; }
+	inline vector<pj_uint32_t> &num_blocks() { return num_blocks_; }
 
-	static ScreenMgr *instance;
-	static mutex g_instance_mutex;
+	inline void set_wrapper(const CWnd *wrapper) { wrapper_ = wrapper; }
+	inline void set_width(pj_uint32_t width) { width_ = width; }
+	inline void set_height(pj_uint32_t height) { height_ = height; }
+	inline void set_screen_mgr_res(screen_mgr_res_t res) { screen_mgr_res_ = res; }
+	inline void set_vertical_padding(pj_uint32_t padding) { vertical_padding_ = padding; }
+	inline void set_horizontal_padding(pj_uint32_t padding) { horizontal_padding_ = padding; }
+	inline void set_screen_mgr_active(pj_bool_t active) { screen_mgr_active_ = active; }
+
+private:
+	const CWnd      *wrapper_;
+	vector<Screen *> screens_;
+	pj_uint32_t      width_;
+	pj_uint32_t      height_;
+	screen_mgr_res_t screen_mgr_res_;
+	pj_uint32_t      vertical_padding_;
+	pj_uint32_t      horizontal_padding_;
+	pj_bool_t        screen_mgr_active_;
+	vector<screenmgr_func_t> screenmgr_func_array_;
+	vector<pj_uint32_t> num_blocks_;
+
+	static ScreenMgr *g_instance_;
+	static mutex g_instance_mutex_;
 	static const resolution_t DEFAULT_RESOLUTION;
 };
 

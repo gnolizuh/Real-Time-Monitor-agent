@@ -120,7 +120,7 @@ BOOL CMonitorDlg::OnInitDialog()
 	this->MoveWindow(CRect(0, 0, width, height));
 	this->ShowWindow(SW_SHOW);
 
-	GetDlgItem(IDC_BUTTON1)->ShowWindow(SW_HIDE);
+	//GetDlgItem(IDC_BUTTON1)->ShowWindow(SW_HIDE);
 
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
 }
@@ -188,7 +188,7 @@ void CMonitorDlg::OnSize(UINT nType, int cx, int cy)
 {
 	ScreenMgr::GetInstance()->Adjest( cx, cy );
 
-	CDialog::OnSize(nType, cx, cy);
+	CDialogEx::OnSize(nType, cx, cy);
 }
 
 void CMonitorDlg::OnBnClickedButton1()
