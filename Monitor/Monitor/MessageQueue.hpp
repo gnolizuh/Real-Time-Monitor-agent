@@ -32,7 +32,7 @@ public:
 		SDL_LockMutex(msg_queue_lock_);
 		if ( msg_wait_list_.size() > 0 )
 		{
-			msg_proc_list_.merge(msg_wait_list_);
+			msg_proc_list_.splice(msg_proc_list_.end(), msg_wait_list_);
 		}
 		SDL_UnlockMutex(msg_queue_lock_);
 	}
