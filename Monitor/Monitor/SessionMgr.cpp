@@ -86,8 +86,6 @@ SessionMgr::SessionMgr()
 	{
 		sessions()[idx] = new Session(idx);
 	}
-
-	pj_file_open(pool(), LOG_NAME.ptr, PJ_O_WRONLY | PJ_O_APPEND, &g_log_handle);
 }
 
 SessionMgr::~SessionMgr()
@@ -116,6 +114,8 @@ pj_status_t SessionMgr::Prepare(pj_str_t local_sip_addr, pj_uint16_t local_sip_p
 	pj_caching_pool_init(&caching_pool(), &pj_pool_factory_default_policy, 0);
 
 	set_pool(pj_pool_create(&caching_pool().factory, POOL_NAME.ptr, 1000, 1000, NULL));
+
+	pj_file_open(pool(), LOG_NAME.ptr, PJ_O_WRONLY | PJ_O_APPEND, &g_log_handle);
 
 	status = pjsip_endpt_create(&caching_pool().factory, pj_gethostname()->ptr, &sip_endpt_);
 	PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
