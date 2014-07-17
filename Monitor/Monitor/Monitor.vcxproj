@@ -105,6 +105,7 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="call_back.h" />
     <ClInclude Include="common.h" />
     <ClInclude Include="MessageQueue.hpp" />
     <ClInclude Include="Monitor.h" />
@@ -119,6 +120,9 @@
     <ClInclude Include="UtilPacket.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="call_back.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Use</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="Monitor.cpp" />
     <ClCompile Include="MonitorDlg.cpp" />
     <ClCompile Include="Session.cpp" />

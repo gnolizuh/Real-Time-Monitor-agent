@@ -21,6 +21,39 @@ extern "C"
 #include <libavutil/mathematics.h>
 }
 
+enum { MEDIA_STREAM_AUDIO, MEDIA_STREAM_VIDEO };
+
+struct video_stream
+{
+	video_stream()
+		: tp(NULL)
+		, stream(NULL)
+		, renderer(NULL)
+		, active(PJ_FALSE)
+	{
+	}
+
+	pjmedia_transport      *tp;
+	pjmedia_vid_stream_info info;
+	pjmedia_vid_stream     *stream;
+	pjmedia_vid_port       *renderer;
+	pj_bool_t               active;
+};
+
+struct audio_stream
+{
+	audio_stream()
+		: tp(NULL)
+		, stream(NULL)
+		, active(PJ_FALSE)
+	{
+	}
+    pjmedia_transport   *tp;
+	pjmedia_stream_info info;
+	pjmedia_stream     *stream;
+	pj_bool_t           active;
+};
+
 #define MAXIMAL_SCREEN_NUM    9
 #define MAXIMAL_THREAD_NUM    1
 #define PJ_RETURN_VAL_IF_FALSE(exp, val) do { if ( !(exp) ) return val; } while(0)

@@ -200,7 +200,7 @@ pj_status_t SessionMgr::Prepare(pj_str_t local_sip_addr, pj_uint16_t local_sip_p
 
 	for (pj_uint32_t sess_idx = 0; sess_idx < sessions().size(); ++ sess_idx)
 	{
-		sessions()[sess_idx]->Prepare(sip_endpt(), media_endpt(), local_sip_addr_, media_start_port, g_monitor_module.id);
+		sessions()[sess_idx]->Prepare(sip_endpt(), pool(), media_endpt(), local_sip_addr_, media_start_port, g_monitor_module.id);
 	}
 
 	return status;
