@@ -131,7 +131,7 @@ void ScreenMgr::Destory()
 	pj_sock_close(local_udp_sock_);
 }
 
-void ScreenMgr::GetFlexSize(LPRECT lpRect)
+void ScreenMgr::GetSuitedSize(LPRECT lpRect)
 {
 	RETURN_IF_FAIL(active_);
 
@@ -266,12 +266,97 @@ void ScreenMgr::HideAll()
 
 void ScreenMgr::EventOnTcpRead(evutil_socket_t fd, short event)
 {
-	
+	pj_status_t status;
+	RETURN_IF_FAIL(event & EV_READ);
+
+	pj_ssize_t recvlen = MAX_STORAGE_SIZE - tcp_storage_offset_;
+	status = pj_sock_recv(local_tcp_sock_,
+		(char *)(tcp_storage_ + tcp_storage_offset_),
+		&recvlen,
+		0);
+
+	RETURN_IF_FAIL(status == PJ_SUCCESS);
+
+	if (recvlen > 0)
+	{
+		tcp_storage_offset_ += (pj_uint16_t)recvlen;
+		pj_uint16_t packet_len = ntohs(*(pj_uint16_t *)termination->tcp_storage_);
+		pj_uint16_t total_len = packet_len + sizeof(packet_len);
+
+		if (total_len > MAX_STORAGE_SIZE)
+		{
+			tcp_storage_offset_ = 0;
+		}
+		else if (total_len > termination->tcp_storage_offset_)
+		{
+			return;
+		}
+		else if (total_len <= termination->tcp_storage_offset_)
+		{
+			tcp_storage_offset_ -= total_len;
+
+			TcpParamScene(tcp_storage_, total_len);
+
+			sync_thread_pool_.Schedule([=]()
+			{
+				scene->Maintain(param, termination, room);
+				delete scene;
+				delete param;
+			});
+
+			if (termination->tcp_storage_offset_ > 0)
+			{
+				memcpy(termination->tcp_storage_,
+					termination->tcp_storage_ + total_len,
+					termination->tcp_storage_offset_);
+			}
+		}
+	}
+	else if (recvlen == 0)
+	{
+		DelTermination(client_tcp_sock);
+	}
+	else /* if ( recvlen < 0 ) */
+	{
+		DelTermination(client_tcp_sock);
+	}
 }
 
 void ScreenMgr::EventOnUdpRead(evutil_socket_t fd, short event)
 {
-	
+	pj_uint8_t datagram[MAX_UDP_DATA_SIZE];
+	pj_ssize_t datalen = MAX_UDP_DATA_SIZE;
+	pj_sock_t local_udp_sock = fd;
+	const pjmedia_rtp_hdr *rtp_hdr;
+
+	const pj_uint8_t *payload;
+	unsigned payload_len;
+
+	pj_sockaddr_in addr;
+	int addrlen = sizeof(addr);
+
+	pj_status_t status;
+	status = pj_sock_recvfrom(local_udp_sock_, datagram, &datalen, 0, &addr, &addrlen);
+	RETURN_IF_FAIL(status == PJ_SUCCESS);
+
+	if (datalen >= sizeof(*rtp_hdr))
+	{
+		status = pjmedia_rtp_decode_rtp(&rtp_in_session_,
+			datagram, (int)datalen,
+			&rtp_hdr, (const void **)&payload, &payload_len);
+		RETURN_IF_FAIL(status == PJ_SUCCESS);
+
+		UdpParamScene(payload, payload_len, param, scene, room);
+
+		async_thread_pool_.Schedule([=]()
+		{
+			scene->Maintain(param, room);
+			delete scene;
+			delete param;
+		});
+		
+		pjmedia_rtp_session_update(&rtp_in_session_, rtp_hdr, NULL);
+	}
 }
 
 void ScreenMgr::EventThread()

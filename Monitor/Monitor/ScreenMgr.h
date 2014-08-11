@@ -43,7 +43,7 @@ public:
 	pj_status_t Launch();
 	void        Destory();
 	void        Refresh(enum_screen_mgr_resolution_t);
-	void        GetFlexSize(LPRECT);
+	void        GetSuitedSize(LPRECT);
 	void        Adjest(pj_int32_t &, pj_int32_t &);
 	void        HideAll();
 	static resolution_t GetDefaultResolution();
@@ -79,9 +79,12 @@ private:
 	pj_pool_t		   *pool_;
 	struct event       *tcp_ev_, *udp_ev_;
 	struct event_base  *evbase_;
+	pj_uint8_t          tcp_storage_[MAX_STORAGE_SIZE];
+	pj_uint16_t         tcp_storage_offset_;
 	pjmedia_rtp_session rtp_in_session_;
 	thread              event_thread_;
 	pj_bool_t           active_;
+	PoolThread<std::function<void()>> async_thread_pool_;
 	vector<screenmgr_func_t> screenmgr_func_array_;
 	vector<pj_uint32_t> num_blocks_;
 	enum_screen_mgr_resolution_t screen_mgr_res_;
