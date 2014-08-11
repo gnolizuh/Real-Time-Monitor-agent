@@ -1,20 +1,48 @@
 #include "stdafx.h"
 #include "ScreenMgr.h"
 
-ScreenMgr *ScreenMgr::g_instance_ = new ScreenMgr();
-mutex ScreenMgr::g_instance_mutex_;
 const resolution_t ScreenMgr::DEFAULT_RESOLUTION = {MININUM_SCREEN_WIDTH * 3 + MININUM_PADDING,
 	NIMINUM_SCREEN_HEIGHT * 3 + MININUM_PADDING};
 
-ScreenMgr::ScreenMgr()
-	: wrapper_(NULL)
+void ScreenMgr::event_on_tcp_read(evutil_socket_t fd, short event, void *arg)
+{
+	ScreenMgr *mgr = static_cast<ScreenMgr *>(arg);
+	mgr->EventOnTcpRead(fd, event);
+}
+
+void ScreenMgr::event_on_udp_read(evutil_socket_t fd, short event, void *arg)
+{
+	ScreenMgr *mgr = static_cast<ScreenMgr *>(arg);
+	mgr->EventOnUdpRead(fd, event);
+}
+
+ScreenMgr::ScreenMgr(CWnd *wrapper,
+					 const pj_str_t &avsproxy_ip,
+					 pj_uint16_t avsproxy_tcp_port,
+					 const pj_str_t &local_ip,
+					 pj_uint16_t local_udp_port)
+	: Noncopyable()
+	, wrapper_(wrapper)
 	, screens_(MAXIMAL_SCREEN_NUM)
 	, width_(MININUM_SCREEN_WIDTH)
 	, height_(NIMINUM_SCREEN_HEIGHT)
 	, screen_mgr_res_(SCREEN_RES_3x3)
 	, vertical_padding_(MININUM_PADDING)
 	, horizontal_padding_(MININUM_PADDING)
-	, screen_mgr_active_(PJ_FALSE)
+	, local_tcp_sock_(-1)
+	, local_udp_sock_(-1)
+	, avsproxy_ip_(pj_str(avsproxy_ip.ptr))
+	, avsproxy_tcp_port_(avsproxy_tcp_port)
+	, local_ip_(local_ip)
+	, local_udp_port_(local_udp_port)
+	, caching_pool_()
+	, pool_(NULL)
+	, tcp_ev_(nullptr)
+	, udp_ev_(nullptr)
+	, evbase_(nullptr)
+	, rtp_in_session_()
+	, event_thread_()
+	, active_(PJ_FALSE)
 	, screenmgr_func_array_()
 	, num_blocks_()
 {
@@ -29,7 +57,7 @@ ScreenMgr::ScreenMgr()
 
 	for (pj_uint32_t idx = 0; idx < MAXIMAL_SCREEN_NUM; ++ idx)
 	{
-		screens()[idx] = new Screen(idx);
+		screens_[idx] = new Screen(idx);
 	}
 }
 
@@ -37,93 +65,124 @@ ScreenMgr::~ScreenMgr()
 {
 }
 
-ScreenMgr *ScreenMgr::GetInstance()
-{
-	// Thread safety
-	lock_guard<mutex> internal_lock(g_instance_mutex_);
-	pj_assert(g_instance_);
-	return g_instance_;
-}
-
 resolution_t ScreenMgr::GetDefaultResolution()
 {
 	return DEFAULT_RESOLUTION;
 }
 
-MessageQueue<util_packet_t *> *ScreenMgr::GetMessageQueue(pj_uint8_t index)
+pj_status_t ScreenMgr::Prepare(const pj_str_t &log_file_name)
 {
-	return screens()[index]->GetMessageQueue();
-}
+	pj_status_t status;
+	status = pj_open_tcp_clientport(&avsproxy_ip_, avsproxy_tcp_port_, local_tcp_sock_);
+	// RETURN_VAL_IF_FAIL( status == PJ_SUCCESS, status );
 
-void ScreenMgr::Prepare(CWnd *wrapper)
-{
-	set_wrapper(wrapper);
-
-	for(pj_uint32_t idx = 0; idx < screens().size(); ++ idx)
+	pj_uint8_t retrys = 50;
+	do
 	{
-		screens()[idx]->Prepare(CRect(0, 0, width(), height()), (CWnd *)wrapper, IDC_WALL_BASE_INDEX + idx);
+		status = pj_open_udp_transport(&local_ip_, local_udp_port_, local_udp_sock_);
+	} while(status != PJ_SUCCESS && ((++ local_udp_port_), (-- retrys > 0)));
+	RETURN_VAL_IF_FAIL( status == PJ_SUCCESS, status );
+
+	pj_caching_pool_init(&caching_pool_, &pj_pool_factory_default_policy, 0);
+
+	pool_ = pj_pool_create(&caching_pool_.factory, "AvsProxyClientPool", 1000, 1000, NULL);
+
+	status = log_open(pool_, log_file_name);
+
+	evbase_ = event_base_new();
+	RETURN_VAL_IF_FAIL( evbase_ != nullptr, -1 );
+
+	/*tcp_ev_ = event_new(evbase_, local_tcp_sock_, EV_READ | EV_PERSIST, event_on_tcp_read, this);
+	RETURN_VAL_IF_FAIL( tcp_ev_ != nullptr, -1 );*/
+
+	udp_ev_ = event_new(evbase_, local_udp_sock_, EV_READ | EV_PERSIST, event_on_udp_read, this);
+	RETURN_VAL_IF_FAIL( udp_ev_ != nullptr, -1 );
+
+	for(pj_uint32_t idx = 0; idx < screens_.size(); ++ idx)
+	{
+		status = screens_[idx]->Prepare(CRect(0, 0, width_, height_), (CWnd *)wrapper_, IDC_WALL_BASE_INDEX + idx);
 	}
-}
 
-void ScreenMgr::Prepare(CWnd *wrapper, pj_uint32_t width, pj_uint32_t height, screen_mgr_res_t res)
-{
-	set_width(width);
-	set_height(height);
-	set_screen_mgr_res(res);
-
-	Prepare(wrapper);
+	return status;
 }
 
 pj_status_t ScreenMgr::Launch()
 {
-	(this->* screenmgr_func_array()[GET_FUNC_INDEX(screen_mgr_res())])(width(), height());
+	(this->* screenmgr_func_array_[GET_FUNC_INDEX(screen_mgr_res_)])(width_, height_);
 
-	set_screen_mgr_active(PJ_TRUE);
+	active_ = PJ_TRUE;
+
+	event_thread_ = thread(std::bind(&ScreenMgr::EventThread, this));
+
+	for(pj_uint32_t idx = 0; idx < screens_.size(); ++ idx)
+	{
+		screens_[idx]->Launch();
+	}
 
 	return PJ_SUCCESS;
 }
 
-void ScreenMgr::PushScreenPacket(util_packet_t *packet, pj_uint8_t idx)
+void ScreenMgr::Destory()
 {
-	screens()[idx]->PushPacket(packet);
+	active_ = PJ_FALSE;
+	event_base_loopexit(evbase_, NULL);
+
+	pj_sock_close(local_tcp_sock_);
+	pj_sock_close(local_udp_sock_);
+}
+
+void ScreenMgr::GetFlexSize(LPRECT lpRect)
+{
+	RETURN_IF_FAIL(active_);
+
+	pj_uint32_t width, height;
+	width = lpRect->right - lpRect->left - 2 * SIDE_SIZE;
+	height = lpRect->bottom - lpRect->top - SIDE_SIZE - TOP_SIDE_SIZE;
+
+	pj_uint32_t divisor = num_blocks_[GET_FUNC_INDEX(screen_mgr_res_)];
+	ROUND(width, divisor);
+	ROUND(height, divisor);
+
+	lpRect->right = lpRect->left + width + 2 * SIDE_SIZE;
+	lpRect->bottom = lpRect->top + height + SIDE_SIZE + TOP_SIDE_SIZE;
 }
 
 void ScreenMgr::Adjest(pj_int32_t &cx, pj_int32_t &cy)
 {
-	PJ_RETURN_IF_FALSE(screen_mgr_active());
+	RETURN_IF_FAIL(active_);
 
-	set_width(cx);
-	set_height(cy);
+	width_ = cx;
+	height_ = cy;
 
-	pj_uint32_t divisor = num_blocks()[GET_FUNC_INDEX(screen_mgr_res())];
+	pj_uint32_t divisor = num_blocks_[GET_FUNC_INDEX(screen_mgr_res_)];
 	pj_uint32_t round_width, round_height;
 	round_width  = ROUND(cx, divisor);
 	round_height = ROUND(cy, divisor);
 
-	(this->* screenmgr_func_array()[GET_FUNC_INDEX(screen_mgr_res())])(round_width, round_height);
+	(this->* screenmgr_func_array_[GET_FUNC_INDEX(screen_mgr_res_)])(round_width, round_height);
 }
 
-void ScreenMgr::Refresh(screen_mgr_res_t res)
+void ScreenMgr::Refresh(enum_screen_mgr_resolution_t res)
 {
-	PJ_RETURN_IF_FALSE(screen_mgr_res() != res);
+	RETURN_IF_FAIL(screen_mgr_res_ != res);
 
-	set_screen_mgr_res(res);
+	screen_mgr_res_ = res;
 
 	// 沿用上一次的cx,cy. 以免窗口大小被计算后越来越小.
-	pj_uint32_t divisor = num_blocks()[GET_FUNC_INDEX(screen_mgr_res())];
-	pj_uint32_t width = this->width(), height = this->height();
+	pj_uint32_t divisor = num_blocks_[GET_FUNC_INDEX(screen_mgr_res_)];
+	pj_uint32_t width = width_, height = height_;
 	pj_uint32_t round_width, round_height;
 	round_width = ROUND(width, divisor);
 	round_height = ROUND(height, divisor);
-	
+
 	HideAll();
 
-	(this->* screenmgr_func_array()[GET_FUNC_INDEX(screen_mgr_res())])(round_width, round_height);
+	(this->* screenmgr_func_array_[GET_FUNC_INDEX(screen_mgr_res_)])(round_width, round_height);
 }
 
 void ScreenMgr::Refresh_1x1(pj_uint32_t width, pj_uint32_t height)
 {
-	screens()[0]->Refresh(CRect(0, 0, width, height));
+	screens_[0]->Refresh(CRect(0, 0, width, height));
 }
 
 void ScreenMgr::Refresh_2x2(pj_uint32_t width, pj_uint32_t height)
@@ -135,12 +194,12 @@ void ScreenMgr::Refresh_2x2(pj_uint32_t width, pj_uint32_t height)
 		{
 			unsigned idx = col * MAX_COL + row;
 			CRect rect;
-			rect.left  = col * width + col * horizontal_padding();
-			rect.top   = row * height + row * vertical_padding();
+			rect.left  = col * width + col * horizontal_padding_;
+			rect.top   = row * height + row * vertical_padding_;
 			rect.right = rect.left + width;
 			rect.bottom = rect.top + height;
 
-			screens()[idx]->Refresh(rect);
+			screens_[idx]->Refresh(rect);
 		}
 	}
 }
@@ -150,32 +209,32 @@ void ScreenMgr::Refresh_1x5(pj_uint32_t width, pj_uint32_t height)
 	unsigned idx = 0;
 
 	pj_int32_t left = 0, top = 0, right, bottom;
-	right = width * 2 + horizontal_padding();
-	bottom = height * 2 + vertical_padding();
-	screens()[idx ++]->Refresh(CRect(left, top, right, bottom));
+	right = width * 2 + horizontal_padding_;
+	bottom = height * 2 + vertical_padding_;
+	screens_[idx ++]->Refresh(CRect(left, top, right, bottom));
 
-	left = right + horizontal_padding();
+	left = right + horizontal_padding_;
 	right = left + width;
 	bottom = height;
-	screens()[idx ++]->Refresh(CRect(left, top, right, bottom));
+	screens_[idx ++]->Refresh(CRect(left, top, right, bottom));
 
-	top = bottom + vertical_padding();
+	top = bottom + vertical_padding_;
 	bottom = top + height;
-	screens()[idx ++]->Refresh(CRect(left, top, right, bottom));
+	screens_[idx ++]->Refresh(CRect(left, top, right, bottom));
 
 	left = 0;
 	right = width;
-	top = bottom + vertical_padding();
+	top = bottom + vertical_padding_;
 	bottom = top + height;
-	screens()[idx ++]->Refresh(CRect(left, top, right, bottom));
+	screens_[idx ++]->Refresh(CRect(left, top, right, bottom));
 
-	left = right + horizontal_padding();
+	left = right + horizontal_padding_;
 	right = left + width;
-	screens()[idx ++]->Refresh(CRect(left, top, right, bottom));
+	screens_[idx ++]->Refresh(CRect(left, top, right, bottom));
 
-	left = right + horizontal_padding();
+	left = right + horizontal_padding_;
 	right = left + width;
-	screens()[idx ++]->Refresh(CRect(left, top, right, bottom));
+	screens_[idx ++]->Refresh(CRect(left, top, right, bottom));
 }
 
 void ScreenMgr::Refresh_3x3(pj_uint32_t width, pj_uint32_t height)
@@ -187,20 +246,47 @@ void ScreenMgr::Refresh_3x3(pj_uint32_t width, pj_uint32_t height)
 		{
 			unsigned idx = col * MAX_COL + row;
 			CRect rect;
-			rect.left  = col * width + col * horizontal_padding();
-			rect.top   = row * height + row * vertical_padding();
+			rect.left  = col * width + col * horizontal_padding_;
+			rect.top   = row * height + row * vertical_padding_;
 			rect.right = rect.left + width;
 			rect.bottom = rect.top + height;
 
-			screens()[idx]->Refresh(rect);
+			screens_[idx]->Refresh(rect);
 		}
 	}
 }
 
 void ScreenMgr::HideAll()
 {
-	for(pj_uint8_t idx = 0; idx < screens().size(); ++ idx)
+	for(pj_uint8_t idx = 0; idx < screens_.size(); ++ idx)
 	{
-		screens()[idx]->Hide();
+		screens_[idx]->Hide();
+	}
+}
+
+void ScreenMgr::EventOnTcpRead(evutil_socket_t fd, short event)
+{
+	
+}
+
+void ScreenMgr::EventOnUdpRead(evutil_socket_t fd, short event)
+{
+	
+}
+
+void ScreenMgr::EventThread()
+{
+	pj_thread_desc rtpdesc;
+	pj_thread_t *thread = 0;
+	
+	if ( !pj_thread_is_registered() )
+	{
+		if ( pj_thread_register(NULL, rtpdesc, &thread) == PJ_SUCCESS )
+		{
+			while ( active_ )
+			{
+				event_base_loop(evbase_, EVLOOP_ONCE);
+			}
+		}
 	}
 }

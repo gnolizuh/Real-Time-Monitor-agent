@@ -3,17 +3,12 @@
 
 #include <thread>
 #include <mutex>
-#include "MessageQueue.hpp"
+#include "PoolThread.hpp"
 #include "ScreenMgr.h"
-#include "UtilPacket.h"
-#include "common.h"
 
 using std::lock_guard;
 using std::mutex;
 using std::thread;
-using sinashow::MessageQueue;
-using sinashow::util_packet_t;
-using sinashow::util_sip_packet_type_t;
 
 class Screen
 	: public CWnd
@@ -21,18 +16,13 @@ class Screen
 public:
 	Screen(pj_uint32_t);
 	virtual ~Screen();
-	void Prepare(const CRect &, const CWnd *, pj_uint32_t);
+	pj_status_t Prepare(const CRect &, const CWnd *, pj_uint32_t);
+	pj_status_t Launch();
 	void Refresh(const CRect &);
 	void Hide();
 	void Painting(const SDL_Rect &, const void *, int);
-	void PushPacket(util_packet_t *);
-	MessageQueue<util_packet_t *> *GetMessageQueue();
 
 protected:
-	void MessageQueueThread();
-	void ProcessMessage(util_packet_t *);
-	void ProcessSipMessage(util_packet_t *);
-	void ProcessMediaMessage(util_packet_t *);
 	afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
 	DECLARE_MESSAGE_MAP()
 
@@ -44,7 +34,6 @@ private:
 	inline SDL_Window *window() const { return window_; }
 	inline SDL_Renderer *render() const { return render_; }
 	inline SDL_Texture *texture() const { return texture_; }
-	inline MessageQueue<util_packet_t *> &msg_queue() { return msg_queue_; }
 
 	inline void set_wrapper(const CWnd *wrapper) { wrapper_ = wrapper; }
 	inline void set_rect(CRect rect) { rect_ = rect; }
@@ -62,8 +51,7 @@ private:
 	SDL_Window       *window_;
 	SDL_Renderer     *render_;
 	SDL_Texture      *texture_;
-	std::thread       thread_;
-	MessageQueue<util_packet_t *> msg_queue_;
+	PoolThread<std::function<void ()>> sync_thread_pool_;
 
 	pj_uint32_t       call_status;
 };

@@ -1873,3 +1873,51 @@ Call #0: DISCONNCTD [duration: 00:00:11.500]
 17:45:02.267 colorbar_dev.c  Colorbar video src initialized with 1 device(s):
 17:45:02.288 colorbar_dev.c   0: Colorbar generator
 17:45:02.312      sdl_dev.c  SDL 2.0 initialized
+17:09:21.402 sip_endpoint.c  Creating endpoint instance...
+17:09:21.512          pjlib  select() I/O Queue created (00529FC0)
+17:09:21.527 sip_endpoint.c  Module "mod-msg-print" registered
+17:09:21.544 sip_transport.  Transport manager created.
+17:09:21.577    udp00531400  SIP UDP transport started, published address is 192.168.6.53:5060
+17:09:21.594 c:\users\admin  SIP UDP listening on 192.168.6.53:5060
+17:09:21.617 sip_endpoint.c  Module "mod-tsx-layer" registered
+17:09:21.635 sip_endpoint.c  Module "mod-stateful-util" registered
+17:09:21.652 sip_endpoint.c  Module "mod-ua" registered
+17:09:21.669 sip_endpoint.c  Module "mod-100rel" registered
+17:09:21.685 sip_endpoint.c  Module "mod-invite" registered
+17:09:21.710 sip_endpoint.c  Module "monitor_modul" registered
+17:09:21.727 sip_endpoint.c  Module "logger_module" registered
+17:09:21.783     wmme_dev.c  WMME found 2 devices:
+17:09:21.793     wmme_dev.c   dev_id 0: Wave mapper  (in=0, out=2)
+17:09:21.810     wmme_dev.c   dev_id 1: ÑïÉùÆ÷ (Realtek High Definition  (in=0, out=2)
+17:09:21.827     wmme_dev.c  WMME initialized
+17:09:21.844          pjlib  select() I/O Queue created (0054566C)
+17:09:21.960    dshow_dev.c  DShow has 2 devices:
+17:09:21.985    dshow_dev.c   dev_id 0: PC Camera (capture)
+17:09:22.001    dshow_dev.c   dev_id 1: SinaCapture (capture)
+17:09:22.027 colorbar_dev.c  Colorbar video src initialized with 1 device(s):
+17:09:22.043 colorbar_dev.c   0: Colorbar generator
+17:09:22.065      sdl_dev.c  SDL 2.0 initialized
+17:11:14.312 sip_endpoint.c  Creating endpoint instance...
+17:11:14.352          pjlib  select() I/O Queue created (0053A330)
+17:11:14.378 sip_endpoint.c  Module "mod-msg-print" registered
+17:11:14.406 sip_transport.  Transport manager created.
+17:11:14.444    udp00540990  SIP UDP transport started, published address is 192.168.6.53:5060
+17:11:14.465 c:\users\admin  SIP UDP listening on 192.168.6.53:5060
+17:11:14.486 sip_endpoint.c  Module "mod-tsx-layer" registered
+17:11:14.506 sip_endpoint.c  Module "mod-stateful-util" registered
+17:11:14.528 sip_endpoint.c  Module "mod-ua" registered
+17:11:14.548 sip_endpoint.c  Module "mod-100rel" registered
+17:11:14.569 sip_endpoint.c  Module "mod-invite" registered
+17:11:14.589 sip_endpoint.c  Module "monitor_modul" registered
+17:11:14.611 sip_endpoint.c  Module "logger_module" registered
+17:11:14.662     wmme_dev.c  WMME found 2 devices:
+17:11:14.678     wmme_dev.c   dev_id 0: Wave mapper  (in=0, out=2)
+17:11:14.698     wmme_dev.c   dev_id 1: ÑïÉùÆ÷ (Realtek High Definition  (in=0, out=2)
+17:11:14.720     wmme_dev.c  WMME initialized
+17:11:14.740          pjlib  select() I/O Queue created (00555A24)
+17:11:14.827    dshow_dev.c  DShow has 2 devices:
+17:11:14.847    dshow_dev.c   dev_id 0: PC Camera (capture)
+17:11:14.869    dshow_dev.c   dev_id 1: SinaCapture (capture)
+17:11:14.889 colorbar_dev.c  Colorbar video src initialized with 1 device(s):
+17:11:14.910 colorbar_dev.c   0: Colorbar generator
+17:11:14.936      sdl_dev.c  SDL 2.0 initialized

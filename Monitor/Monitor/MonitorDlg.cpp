@@ -62,6 +62,7 @@ BEGIN_MESSAGE_MAP(CMonitorDlg, CDialogEx)
 	ON_WM_SYSCOMMAND()
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
+	ON_WM_SIZING()
 	ON_WM_SIZE()
 	ON_WM_GETMINMAXINFO()
 	ON_BN_CLICKED(IDC_BUTTON1, &CMonitorDlg::OnBnClickedButton1)
@@ -69,7 +70,7 @@ END_MESSAGE_MAP()
 
 
 // CMonitorDlg 消息处理程序
-
+static ScreenMgr *g_screen_mgr = NULL;
 BOOL CMonitorDlg::OnInitDialog()
 {
 	CDialogEx::OnInitDialog();
@@ -110,17 +111,19 @@ BOOL CMonitorDlg::OnInitDialog()
 	av_register_all();
 	pj_init();
 
-	ScreenMgr::GetInstance()->Prepare(this);
-	ScreenMgr::GetInstance()->Launch();
-	ScreenMgr::GetInstance()->Adjest(width, height);
+	pj_str_t avsproxy_ip = pj_str("192.168.6.53");
+	pj_str_t local_ip = pj_str("192.168.6.53");
+	g_screen_mgr = new ScreenMgr(this, avsproxy_ip, 13000, local_ip, 15000);
 
-	SessionMgr::GetInstance()->Prepare(pj_str("192.168.6.44"), 5060u, 12000u);
-	SessionMgr::GetInstance()->Launch();
-
+	pj_str_t log_file_name = pj_str("avs_proxy_client.log");
+	g_screen_mgr->Prepare(log_file_name);
+	g_screen_mgr->Launch();
+	g_screen_mgr->Adjest(width, height);
+	
 	this->MoveWindow(CRect(0, 0, width, height));
 	this->ShowWindow(SW_SHOW);
 
-	//GetDlgItem(IDC_BUTTON1)->ShowWindow(SW_HIDE);
+	GetDlgItem(IDC_BUTTON1)->ShowWindow(SW_HIDE);
 
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
 }
@@ -132,6 +135,7 @@ void CMonitorDlg::OnSysCommand(UINT nID, LPARAM lParam)
 		CAboutDlg dlgAbout;
 		dlgAbout.DoModal();
 	}
+
 	else
 	{
 		CDialogEx::OnSysCommand(nID, lParam);
@@ -177,16 +181,22 @@ HCURSOR CMonitorDlg::OnQueryDragIcon()
 void CMonitorDlg::OnGetMinMaxInfo(MINMAXINFO* lpMMI)
 {
 	pj_assert(lpMMI != NULL);
-	lpMMI->ptMinTrackSize.x = ScreenMgr::GetInstance()->GetDefaultResolution().x;
-	lpMMI->ptMinTrackSize.y = ScreenMgr::GetInstance()->GetDefaultResolution().y;
+	lpMMI->ptMinTrackSize.x = g_screen_mgr->GetDefaultResolution().x;
+	lpMMI->ptMinTrackSize.y = g_screen_mgr->GetDefaultResolution().y;
 
 	CDialog::OnGetMinMaxInfo(lpMMI);
 }
 
-// cx, cy means client area's width and height.
+void CMonitorDlg::OnSizing(UINT nSide, LPRECT lpRect)
+{
+	g_screen_mgr->GetFlexSize(lpRect);
+
+	CDialogEx::OnSizing(nSide, lpRect);
+}
+
 void CMonitorDlg::OnSize(UINT nType, int cx, int cy)
 {
-	ScreenMgr::GetInstance()->Adjest( cx, cy );
+	g_screen_mgr->Adjest( cx, cy );
 
 	CDialogEx::OnSize(nType, cx, cy);
 }
@@ -197,7 +207,7 @@ void CMonitorDlg::OnBnClickedButton1()
 	{
 		pj_uint32_t width;
 		pj_uint32_t height;
-		screen_mgr_res_t res;
+		enum_screen_mgr_resolution_t res;
 	} ress[4] = 
 	{
 		{ 400, 400, SCREEN_RES_1x1 },
@@ -206,9 +216,9 @@ void CMonitorDlg::OnBnClickedButton1()
 		{ 100, 100, SCREEN_RES_3x3 },
 	};
 
-	static screen_mgr_res_t g_res_type = SCREEN_RES_1x1;
+	static enum_screen_mgr_resolution_t g_res_type = SCREEN_RES_1x1;
 
-	ScreenMgr::GetInstance()->Refresh(ress[g_res_type].res);
+	g_screen_mgr->Refresh(ress[g_res_type].res);
 
-	g_res_type = (screen_mgr_res_t)(( g_res_type + 1 ) % 4);
+	g_res_type = (enum_screen_mgr_resolution_t)(( g_res_type + 1 ) % 4);
 }
