@@ -189,7 +189,7 @@ void CMonitorDlg::OnGetMinMaxInfo(MINMAXINFO* lpMMI)
 
 void CMonitorDlg::OnSizing(UINT nSide, LPRECT lpRect)
 {
-	g_screen_mgr->GetFlexSize(lpRect);
+	g_screen_mgr->GetSuitedSize(lpRect);
 
 	CDialogEx::OnSizing(nSide, lpRect);
 }

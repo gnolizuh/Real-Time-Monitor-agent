@@ -54,14 +54,14 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_WINDOWS;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>C:\Users\Administrator\Documents\GitHub\pjsip-lib-support-video\pjlib\include;C:\Users\Administrator\Documents\GitHub\pjsip-lib-support-video\pjlib-util\include;C:\Users\Administrator\Documents\GitHub\pjsip-lib-support-video\pjnath\include;C:\Users\Administrator\Documents\GitHub\pjsip-lib-support-video\pjmedia\include;C:\Users\Administrator\Documents\GitHub\pjsip-lib-support-video\pjsip\include;D:\Codes\SDL2-2.0.3\include;D:\Codes\ffmpeg-lib\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\Administrator\Documents\GitHub\pjsip-lib-support-video\pjlib\include;C:\Users\Administrator\Documents\GitHub\pjsip-lib-support-video\pjlib-util\include;C:\Users\Administrator\Documents\GitHub\pjsip-lib-support-video\pjnath\include;C:\Users\Administrator\Documents\GitHub\pjsip-lib-support-video\pjmedia\include;C:\Users\Administrator\Documents\GitHub\pjsip-lib-support-video\pjsip\include;D:\Codes\SDL2-2.0.3\include;D:\Codes\ffmpeg-lib\include;D:\Codes\libevent-lib\libevent-2.0.21-stable\include;D:\Codes\libevent-lib\libevent-2.0.21-stable\WIN32-Code;D:\Codes\libevent-lib\libevent-2.0.21-stable;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\Users\Administrator\Documents\GitHub\pjsip-lib-support-video\pjlib\lib;C:\Users\Administrator\Documents\GitHub\pjsip-lib-support-video\pjlib-util\lib;C:\Users\Administrator\Documents\GitHub\pjsip-lib-support-video\pjnath\lib;C:\Users\Administrator\Documents\GitHub\pjsip-lib-support-video\pjmedia\lib;C:\Users\Administrator\Documents\GitHub\pjsip-lib-support-video\pjsip\lib;C:\Users\Administrator\Documents\GitHub\pjsip-lib-support-video\third_party\lib;D:\Codes\SDL2-2.0.3\lib\x86;D:\Codes\ffmpeg-lib\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>SDL2.lib;pjlib-i386-Win32-vc8-Debug-Dynamic.lib;pjlib-util-i386-Win32-vc8-Debug-Dynamic.lib;pjnath-i386-Win32-vc8-Debug-Dynamic.lib;pjmedia-i386-Win32-vc8-Debug-Dynamic.lib;pjmedia-codec-i386-Win32-vc8-Debug-Dynamic.lib;pjmedia-audiodev-i386-Win32-vc8-Debug-Dynamic.lib;pjmedia-videodev-i386-Win32-vc8-Debug-Dynamic.lib;pjsip-core-i386-Win32-vc8-Debug-Dynamic.lib;pjsip-ua-i386-Win32-vc8-Debug-Dynamic.lib;pjsip-simple-i386-Win32-vc8-Debug-Dynamic.lib;pjsua-lib-i386-Win32-vc8-Debug-Dynamic.lib;libgsmcodec-i386-Win32-vc8-Debug-Dynamic.lib;libilbccodec-i386-Win32-vc8-Debug-Dynamic.lib;libportaudio-i386-Win32-vc8-Debug-Dynamic.lib;libresample-i386-Win32-vc8-Debug-Dynamic.lib;libspeex-i386-Win32-vc8-Debug-Dynamic.lib;libsrtp-i386-Win32-vc8-Debug-Dynamic.lib;libg7221codec-i386-Win32-vc8-Debug-Dynamic.lib;libbaseclasses-i386-Win32-vc8-Debug-Dynamic.lib;avcodec.lib;avformat.lib;avutil.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\Users\Administrator\Documents\GitHub\pjsip-lib-support-video\pjlib\lib;C:\Users\Administrator\Documents\GitHub\pjsip-lib-support-video\pjlib-util\lib;C:\Users\Administrator\Documents\GitHub\pjsip-lib-support-video\pjnath\lib;C:\Users\Administrator\Documents\GitHub\pjsip-lib-support-video\pjmedia\lib;C:\Users\Administrator\Documents\GitHub\pjsip-lib-support-video\pjsip\lib;C:\Users\Administrator\Documents\GitHub\pjsip-lib-support-video\third_party\lib;D:\Codes\SDL2-2.0.3\lib\x86;D:\Codes\ffmpeg-lib\lib;D:\Codes\libevent-lib\libevent-2.0.21-stable;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>SDL2.lib;pjlib-i386-Win32-vc8-Debug-Dynamic.lib;pjlib-util-i386-Win32-vc8-Debug-Dynamic.lib;pjnath-i386-Win32-vc8-Debug-Dynamic.lib;pjmedia-i386-Win32-vc8-Debug-Dynamic.lib;pjmedia-codec-i386-Win32-vc8-Debug-Dynamic.lib;pjmedia-audiodev-i386-Win32-vc8-Debug-Dynamic.lib;pjmedia-videodev-i386-Win32-vc8-Debug-Dynamic.lib;pjsip-core-i386-Win32-vc8-Debug-Dynamic.lib;pjsip-ua-i386-Win32-vc8-Debug-Dynamic.lib;pjsip-simple-i386-Win32-vc8-Debug-Dynamic.lib;pjsua-lib-i386-Win32-vc8-Debug-Dynamic.lib;libgsmcodec-i386-Win32-vc8-Debug-Dynamic.lib;libilbccodec-i386-Win32-vc8-Debug-Dynamic.lib;libportaudio-i386-Win32-vc8-Debug-Dynamic.lib;libresample-i386-Win32-vc8-Debug-Dynamic.lib;libspeex-i386-Win32-vc8-Debug-Dynamic.lib;libsrtp-i386-Win32-vc8-Debug-Dynamic.lib;libg7221codec-i386-Win32-vc8-Debug-Dynamic.lib;libbaseclasses-i386-Win32-vc8-Debug-Dynamic.lib;avcodec.lib;avformat.lib;avutil.lib;libevent.dll.a;libevent_core.dll.a;libevent_extra.dll.a;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Midl>
       <MkTypLibCompatible>false</MkTypLibCompatible>
@@ -105,19 +105,34 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="common.h" />
+    <ClInclude Include="AddUserScene.h" />
+    <ClInclude Include="Com.h" />
+    <ClInclude Include="command.h" />
+    <ClInclude Include="DelUserScene.h" />
     <ClInclude Include="MessageQueue.hpp" />
+    <ClInclude Include="ModMediaScene.h" />
     <ClInclude Include="Monitor.h" />
     <ClInclude Include="MonitorDlg.h" />
+    <ClInclude Include="Parameter.h" />
+    <ClInclude Include="PoolThread.hpp" />
     <ClInclude Include="Resource.h" />
+    <ClInclude Include="RoomsInfoScene.h" />
+    <ClInclude Include="RTPScene.h" />
+    <ClInclude Include="Scene.h" />
     <ClInclude Include="Screen.h" />
     <ClInclude Include="ScreenMgr.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="AddUserScene.cpp" />
+    <ClCompile Include="Com.cpp" />
+    <ClCompile Include="DelUserScene.cpp" />
+    <ClCompile Include="ModMediaScene.cpp" />
     <ClCompile Include="Monitor.cpp" />
     <ClCompile Include="MonitorDlg.cpp" />
+    <ClCompile Include="RoomsInfoScene.cpp" />
+    <ClCompile Include="RTPScene.cpp" />
     <ClCompile Include="ScreenMgr.cpp" />
     <ClCompile Include="Screen.cpp" />
     <ClCompile Include="stdafx.cpp">

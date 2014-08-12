@@ -13,6 +13,18 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Scene">
+      <UniqueIdentifier>{c35b75ce-715f-43e5-b601-483c2bb4abb3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scene\AvsProxyScene">
+      <UniqueIdentifier>{997bf851-e83e-40e5-b66c-933cec0c595b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scene\AvsProxyScene\inc">
+      <UniqueIdentifier>{cd064776-6c43-40bb-b7f7-368a10655d54}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scene\AvsProxyScene\src">
+      <UniqueIdentifier>{e878c97f-4ce3-4fe7-b8ea-020b7c3aef5e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
@@ -39,11 +51,38 @@
     <ClInclude Include="ScreenMgr.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="common.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="MessageQueue.hpp">
       <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Com.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="command.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="PoolThread.hpp">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Parameter.h">
+      <Filter>Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="Scene.h">
+      <Filter>Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="RoomsInfoScene.h">
+      <Filter>Scene\AvsProxyScene\inc</Filter>
+    </ClInclude>
+    <ClInclude Include="ModMediaScene.h">
+      <Filter>Scene\AvsProxyScene\inc</Filter>
+    </ClInclude>
+    <ClInclude Include="AddUserScene.h">
+      <Filter>Scene\AvsProxyScene\inc</Filter>
+    </ClInclude>
+    <ClInclude Include="DelUserScene.h">
+      <Filter>Scene\AvsProxyScene\inc</Filter>
+    </ClInclude>
+    <ClInclude Include="RTPScene.h">
+      <Filter>Scene\AvsProxyScene\inc</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -61,6 +100,24 @@
     </ClCompile>
     <ClCompile Include="ScreenMgr.cpp">
       <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Com.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="RoomsInfoScene.cpp">
+      <Filter>Scene\AvsProxyScene\src</Filter>
+    </ClCompile>
+    <ClCompile Include="ModMediaScene.cpp">
+      <Filter>Scene\AvsProxyScene\src</Filter>
+    </ClCompile>
+    <ClCompile Include="AddUserScene.cpp">
+      <Filter>Scene\AvsProxyScene\src</Filter>
+    </ClCompile>
+    <ClCompile Include="DelUserScene.cpp">
+      <Filter>Scene\AvsProxyScene\src</Filter>
+    </ClCompile>
+    <ClCompile Include="RTPScene.cpp">
+      <Filter>Scene\AvsProxyScene\src</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -4,9 +4,18 @@
 #include <vector>
 #include <thread>
 #include <mutex>
+#include <map>
+
 #include "MessageQueue.hpp"
 #include "Resource.h"
+#include "Parameter.h"
+#include "Scene.h"
 #include "Screen.h"
+#include "RoomsInfoScene.h"
+#include "ModMediaScene.h"
+#include "AddUserScene.h"
+#include "DelUserScene.h"
+#include "RTPScene.h"
 
 #define TOP_SIDE_SIZE         30
 #define SIDE_SIZE             8
@@ -26,11 +35,11 @@ using std::thread;
 using std::mutex;
 using std::lock_guard;
 using std::vector;
+using std::map;
 
 class ScreenMgr;
 typedef void (ScreenMgr::*screenmgr_func_t)(pj_uint32_t, pj_uint32_t);
-
-class Screen;
+typedef map<pj_uint32_t, pj_uint8_t> index_map_t;
 
 class ScreenMgr
 	: public Noncopyable
@@ -54,9 +63,12 @@ protected:
 
 	void EventOnTcpRead(evutil_socket_t, short);
 	void EventOnUdpRead(evutil_socket_t, short);
+	void ConnectorThread();
 	void EventThread();
 
 private:
+	void TcpParamScene(const pj_uint8_t *, pj_uint16_t);
+	void UdpParamScene(const pjmedia_rtp_hdr *, const pj_uint8_t *, pj_uint16_t);
 	void Refresh_1x1(pj_uint32_t, pj_uint32_t);
 	void Refresh_2x2(pj_uint32_t, pj_uint32_t);
 	void Refresh_1x5(pj_uint32_t, pj_uint32_t);
@@ -65,6 +77,7 @@ private:
 private:
 	const CWnd         *wrapper_;
 	vector<Screen *>    screens_;
+	vector<index_map_t> av_index_map_;
 	pj_uint32_t         width_;
 	pj_uint32_t         height_;
 	pj_uint32_t         vertical_padding_;
@@ -81,10 +94,9 @@ private:
 	struct event_base  *evbase_;
 	pj_uint8_t          tcp_storage_[MAX_STORAGE_SIZE];
 	pj_uint16_t         tcp_storage_offset_;
-	pjmedia_rtp_session rtp_in_session_;
+	thread              connector_thread_;
 	thread              event_thread_;
 	pj_bool_t           active_;
-	PoolThread<std::function<void()>> async_thread_pool_;
 	vector<screenmgr_func_t> screenmgr_func_array_;
 	vector<pj_uint32_t> num_blocks_;
 	enum_screen_mgr_resolution_t screen_mgr_res_;

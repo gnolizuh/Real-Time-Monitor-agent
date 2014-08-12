@@ -4,7 +4,6 @@
 #include <thread>
 #include <mutex>
 #include "PoolThread.hpp"
-#include "ScreenMgr.h"
 
 using std::lock_guard;
 using std::mutex;

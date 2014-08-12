@@ -1,5 +1,5 @@
-#ifndef __AVS_PROXY_COM__
-#define __AVS_PROXY_COM__
+#ifndef __AVS_PROXY_CLIENT_COM__
+#define __AVS_PROXY_CLIENT_COM__
 
 #include <event.h>
 #include <memory>

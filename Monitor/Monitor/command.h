@@ -29,6 +29,7 @@ typedef enum __enum_from_client_to_avsproxy_request_type__
 typedef enum __enum_from_avsproxy_to_client_request_type__
 {
 	REQUEST_FROM_AVSPROXY_TO_CLIENT_ROOMS_INFO,
+	REQUEST_FROM_AVSPROXY_TO_CLIENT_ROOM_MOD_MEDIA,
 	REQUEST_FROM_AVSPROXY_TO_CLIENT_ROOM_ADD_USER,
 	REQUEST_FROM_AVSPROXY_TO_CLIENT_ROOM_DEL_USER
 } enum_from_avsproxy_to_client_request_t;
@@ -41,6 +42,8 @@ typedef enum __enum_media_mask_type__
 
 typedef enum __enum_rtp_payload_type__
 {
+	RTP_MEDIA_AUDIO_TYPE = 11,
+	RTP_MEDIA_VIDEO_TYPE = 29,
 	RTP_EXPAND_PAYLOAD_TYPE = 110,
 } enum_rtp_payload_t;
 

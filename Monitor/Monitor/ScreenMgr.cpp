@@ -24,6 +24,7 @@ ScreenMgr::ScreenMgr(CWnd *wrapper,
 	: Noncopyable()
 	, wrapper_(wrapper)
 	, screens_(MAXIMAL_SCREEN_NUM)
+	, av_index_map_(2)
 	, width_(MININUM_SCREEN_WIDTH)
 	, height_(NIMINUM_SCREEN_HEIGHT)
 	, screen_mgr_res_(SCREEN_RES_3x3)
@@ -40,7 +41,8 @@ ScreenMgr::ScreenMgr(CWnd *wrapper,
 	, tcp_ev_(nullptr)
 	, udp_ev_(nullptr)
 	, evbase_(nullptr)
-	, rtp_in_session_()
+	, tcp_storage_offset_(0)
+	, connector_thread_()
 	, event_thread_()
 	, active_(PJ_FALSE)
 	, screenmgr_func_array_()
@@ -73,8 +75,6 @@ resolution_t ScreenMgr::GetDefaultResolution()
 pj_status_t ScreenMgr::Prepare(const pj_str_t &log_file_name)
 {
 	pj_status_t status;
-	status = pj_open_tcp_clientport(&avsproxy_ip_, avsproxy_tcp_port_, local_tcp_sock_);
-	// RETURN_VAL_IF_FAIL( status == PJ_SUCCESS, status );
 
 	pj_uint8_t retrys = 50;
 	do
@@ -92,11 +92,12 @@ pj_status_t ScreenMgr::Prepare(const pj_str_t &log_file_name)
 	evbase_ = event_base_new();
 	RETURN_VAL_IF_FAIL( evbase_ != nullptr, -1 );
 
-	/*tcp_ev_ = event_new(evbase_, local_tcp_sock_, EV_READ | EV_PERSIST, event_on_tcp_read, this);
-	RETURN_VAL_IF_FAIL( tcp_ev_ != nullptr, -1 );*/
-
 	udp_ev_ = event_new(evbase_, local_udp_sock_, EV_READ | EV_PERSIST, event_on_udp_read, this);
 	RETURN_VAL_IF_FAIL( udp_ev_ != nullptr, -1 );
+
+	int ret;
+	ret = event_add(udp_ev_, NULL);
+	RETURN_VAL_IF_FAIL( ret == 0, -1 );
 
 	for(pj_uint32_t idx = 0; idx < screens_.size(); ++ idx)
 	{
@@ -113,6 +114,7 @@ pj_status_t ScreenMgr::Launch()
 	active_ = PJ_TRUE;
 
 	event_thread_ = thread(std::bind(&ScreenMgr::EventThread, this));
+	connector_thread_ = thread(std::bind(&ScreenMgr::ConnectorThread, this));
 
 	for(pj_uint32_t idx = 0; idx < screens_.size(); ++ idx)
 	{
@@ -264,6 +266,71 @@ void ScreenMgr::HideAll()
 	}
 }
 
+void ScreenMgr::TcpParamScene(const pj_uint8_t *storage,
+							  pj_uint16_t storage_len)
+{
+	RETURN_IF_FAIL(storage && (storage_len > 0));
+
+	TcpParameter *param = NULL;
+	TcpScene     *scene = NULL;
+	pj_uint16_t type = (pj_uint16_t)ntohs(*(pj_uint16_t *)(storage + sizeof(param->length_)));
+
+	switch(type)
+	{
+		case REQUEST_FROM_AVSPROXY_TO_CLIENT_ROOMS_INFO:
+		{
+			param = new RoomsInfoParameter(storage, storage_len);
+			scene = new RoomsInfoScene();
+			return;
+		}
+		case REQUEST_FROM_AVSPROXY_TO_CLIENT_ROOM_MOD_MEDIA:
+		{
+			param = new ModMediaParameter(storage, storage_len);
+			scene = new ModMediaScene();
+		    break;
+		}
+		case REQUEST_FROM_AVSPROXY_TO_CLIENT_ROOM_ADD_USER:
+		{
+			param = new AddUserParameter(storage, storage_len);
+			scene = new AddUserScene();
+			break;
+		}
+		case REQUEST_FROM_AVSPROXY_TO_CLIENT_ROOM_DEL_USER:
+		{
+			param = new DelUserParameter(storage, storage_len);
+			scene = new DelUserScene();
+			break;
+		}
+	}
+}
+
+void ScreenMgr::UdpParamScene(const pjmedia_rtp_hdr *rtp_hdr,
+							  const pj_uint8_t *payload,
+							  pj_uint16_t payload_len)
+{
+	RETURN_IF_FAIL(rtp_hdr && payload);
+
+	UdpParameter *param = new RTPParameter();
+	UdpScene     *scene = new RTPScene();
+	Screen       *screen = nullptr;
+
+	const pj_uint8_t media_index = (rtp_hdr->pt == RTP_MEDIA_VIDEO_TYPE) ? 1 : 
+		(rtp_hdr->pt == RTP_MEDIA_AUDIO_TYPE ? 0 : -1);
+	RETURN_IF_FAIL(media_index != -1);
+
+	index_map_t::iterator pscreen_idx = av_index_map_[media_index].find(rtp_hdr->ssrc);
+	if ( pscreen_idx != av_index_map_[media_index].end() )
+	{
+		index_map_t::mapped_type screen_idx = pscreen_idx->second;
+		if(screen_idx >= 0 && screen_idx < screens_.size())
+		{
+			screen = screens_[screen_idx];
+		}
+	}
+
+	RETURN_IF_FAIL(screen != nullptr);
+}
+
 void ScreenMgr::EventOnTcpRead(evutil_socket_t fd, short event)
 {
 	pj_status_t status;
@@ -280,50 +347,54 @@ void ScreenMgr::EventOnTcpRead(evutil_socket_t fd, short event)
 	if (recvlen > 0)
 	{
 		tcp_storage_offset_ += (pj_uint16_t)recvlen;
-		pj_uint16_t packet_len = ntohs(*(pj_uint16_t *)termination->tcp_storage_);
+		pj_uint16_t packet_len = ntohs(*(pj_uint16_t *)tcp_storage_);
 		pj_uint16_t total_len = packet_len + sizeof(packet_len);
 
 		if (total_len > MAX_STORAGE_SIZE)
 		{
 			tcp_storage_offset_ = 0;
 		}
-		else if (total_len > termination->tcp_storage_offset_)
+		else if (total_len > tcp_storage_offset_)
 		{
 			return;
 		}
-		else if (total_len <= termination->tcp_storage_offset_)
+		else if (total_len <= tcp_storage_offset_)
 		{
 			tcp_storage_offset_ -= total_len;
 
 			TcpParamScene(tcp_storage_, total_len);
 
-			sync_thread_pool_.Schedule([=]()
+			/*sync_thread_pool_.Schedule([=]()
 			{
 				scene->Maintain(param, termination, room);
 				delete scene;
 				delete param;
-			});
+			});*/
 
-			if (termination->tcp_storage_offset_ > 0)
+			if (tcp_storage_offset_ > 0)
 			{
-				memcpy(termination->tcp_storage_,
-					termination->tcp_storage_ + total_len,
-					termination->tcp_storage_offset_);
+				memcpy(tcp_storage_, tcp_storage_ + total_len, tcp_storage_offset_);
 			}
 		}
 	}
 	else if (recvlen == 0)
 	{
-		DelTermination(client_tcp_sock);
+		pj_sock_close( local_tcp_sock_ );
+		event_del( tcp_ev_ );
+		connector_thread_ = thread(std::bind(&ScreenMgr::ConnectorThread, this));
 	}
 	else /* if ( recvlen < 0 ) */
 	{
-		DelTermination(client_tcp_sock);
+		pj_sock_close( local_tcp_sock_ );
+		event_del( tcp_ev_ );
+		connector_thread_ = thread(std::bind(&ScreenMgr::ConnectorThread, this));
 	}
 }
 
 void ScreenMgr::EventOnUdpRead(evutil_socket_t fd, short event)
 {
+	RETURN_IF_FAIL(event & EV_READ);
+
 	pj_uint8_t datagram[MAX_UDP_DATA_SIZE];
 	pj_ssize_t datalen = MAX_UDP_DATA_SIZE;
 	pj_sock_t local_udp_sock = fd;
@@ -341,21 +412,19 @@ void ScreenMgr::EventOnUdpRead(evutil_socket_t fd, short event)
 
 	if (datalen >= sizeof(*rtp_hdr))
 	{
-		status = pjmedia_rtp_decode_rtp(&rtp_in_session_,
+		status = pjmedia_rtp_decode_rtp(NULL,
 			datagram, (int)datalen,
 			&rtp_hdr, (const void **)&payload, &payload_len);
 		RETURN_IF_FAIL(status == PJ_SUCCESS);
 
-		UdpParamScene(payload, payload_len, param, scene, room);
+		/*UdpParamScene(&rtp_hdr, payload, payload_len);
 
 		async_thread_pool_.Schedule([=]()
 		{
 			scene->Maintain(param, room);
 			delete scene;
 			delete param;
-		});
-		
-		pjmedia_rtp_session_update(&rtp_in_session_, rtp_hdr, NULL);
+		});*/
 	}
 }
 
@@ -371,6 +440,33 @@ void ScreenMgr::EventThread()
 			while ( active_ )
 			{
 				event_base_loop(evbase_, EVLOOP_ONCE);
+			}
+		}
+	}
+}
+
+void ScreenMgr::ConnectorThread()
+{
+	pj_thread_desc rtpdesc;
+	pj_thread_t *thread = 0;
+	
+	if ( !pj_thread_is_registered() )
+	{
+		if ( pj_thread_register(NULL,rtpdesc,&thread) == PJ_SUCCESS )
+		{
+			unsigned sleep_msec = 5000;
+			while(1)
+			{
+				if ( pj_open_tcp_clientport(&avsproxy_ip_, avsproxy_tcp_port_, local_tcp_sock_) == PJ_SUCCESS )
+				{
+					tcp_ev_ = event_new(evbase_, local_tcp_sock_, EV_READ | EV_PERSIST, event_on_tcp_read, this);
+					if ( tcp_ev_ != nullptr && (event_add(tcp_ev_, NULL) == 0) )
+					{
+						break;
+					}
+				}
+
+				pj_thread_sleep( sleep_msec );
 			}
 		}
 	}
