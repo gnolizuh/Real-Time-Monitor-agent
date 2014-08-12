@@ -105,28 +105,19 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="call_back.h" />
     <ClInclude Include="common.h" />
     <ClInclude Include="MessageQueue.hpp" />
     <ClInclude Include="Monitor.h" />
     <ClInclude Include="MonitorDlg.h" />
-    <ClInclude Include="Session.h" />
-    <ClInclude Include="SessionMgr.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="Screen.h" />
     <ClInclude Include="ScreenMgr.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
-    <ClInclude Include="UtilPacket.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="call_back.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Use</PrecompiledHeader>
-    </ClCompile>
     <ClCompile Include="Monitor.cpp" />
     <ClCompile Include="MonitorDlg.cpp" />
-    <ClCompile Include="Session.cpp" />
-    <ClCompile Include="SessionMgr.cpp" />
     <ClCompile Include="ScreenMgr.cpp" />
     <ClCompile Include="Screen.cpp" />
     <ClCompile Include="stdafx.cpp">

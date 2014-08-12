@@ -45,18 +45,6 @@
     <ClInclude Include="MessageQueue.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="SessionMgr.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="Session.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="UtilPacket.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="call_back.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Monitor.cpp">
@@ -72,15 +60,6 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="ScreenMgr.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="SessionMgr.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="Session.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="call_back.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
