@@ -305,17 +305,19 @@ void ScreenMgr::TcpParamScene(const pj_uint8_t *storage,
 }
 
 void ScreenMgr::UdpParamScene(const pjmedia_rtp_hdr *rtp_hdr,
-							  const pj_uint8_t *payload,
-							  pj_uint16_t payload_len)
+							  const pj_uint8_t *datagram,
+							  pj_uint16_t datalen)
 {
-	RETURN_IF_FAIL(rtp_hdr && payload);
+	enum { AUDIO_INDEX, VIDEO_INDEX };
+
+	RETURN_IF_FAIL(rtp_hdr && datagram && datalen > 0);
 
 	UdpParameter *param = new RTPParameter();
 	UdpScene     *scene = new RTPScene();
 	Screen       *screen = nullptr;
 
-	const pj_uint8_t media_index = (rtp_hdr->pt == RTP_MEDIA_VIDEO_TYPE) ? 1 : 
-		(rtp_hdr->pt == RTP_MEDIA_AUDIO_TYPE ? 0 : -1);
+	const pj_uint8_t media_index = (rtp_hdr->pt == RTP_MEDIA_VIDEO_TYPE) ? VIDEO_INDEX : 
+		(rtp_hdr->pt == RTP_MEDIA_AUDIO_TYPE ? AUDIO_INDEX : -1);
 	RETURN_IF_FAIL(media_index != -1);
 
 	index_map_t::iterator pscreen_idx = av_index_map_[media_index].find(rtp_hdr->ssrc);
@@ -329,6 +331,10 @@ void ScreenMgr::UdpParamScene(const pjmedia_rtp_hdr *rtp_hdr,
 	}
 
 	RETURN_IF_FAIL(screen != nullptr);
+
+	media_index == AUDIO_INDEX ?
+		screen->OnRxAudio(datagram, datalen) :
+		screen->OnRxVideo(datagram, datalen);
 }
 
 void ScreenMgr::EventOnTcpRead(evutil_socket_t fd, short event)
@@ -364,13 +370,6 @@ void ScreenMgr::EventOnTcpRead(evutil_socket_t fd, short event)
 
 			TcpParamScene(tcp_storage_, total_len);
 
-			/*sync_thread_pool_.Schedule([=]()
-			{
-				scene->Maintain(param, termination, room);
-				delete scene;
-				delete param;
-			});*/
-
 			if (tcp_storage_offset_ > 0)
 			{
 				memcpy(tcp_storage_, tcp_storage_ + total_len, tcp_storage_offset_);
@@ -400,9 +399,6 @@ void ScreenMgr::EventOnUdpRead(evutil_socket_t fd, short event)
 	pj_sock_t local_udp_sock = fd;
 	const pjmedia_rtp_hdr *rtp_hdr;
 
-	const pj_uint8_t *payload;
-	unsigned payload_len;
-
 	pj_sockaddr_in addr;
 	int addrlen = sizeof(addr);
 
@@ -410,21 +406,15 @@ void ScreenMgr::EventOnUdpRead(evutil_socket_t fd, short event)
 	status = pj_sock_recvfrom(local_udp_sock_, datagram, &datalen, 0, &addr, &addrlen);
 	RETURN_IF_FAIL(status == PJ_SUCCESS);
 
-	if (datalen >= sizeof(*rtp_hdr))
+	if (datalen >= sizeof(*rtp_hdr)
+		&& datalen < (1 << 16))  // max data size is 2^16
 	{
 		status = pjmedia_rtp_decode_rtp(NULL,
 			datagram, (int)datalen,
-			&rtp_hdr, (const void **)&payload, &payload_len);
+			&rtp_hdr, nullptr, nullptr);
 		RETURN_IF_FAIL(status == PJ_SUCCESS);
 
-		/*UdpParamScene(&rtp_hdr, payload, payload_len);
-
-		async_thread_pool_.Schedule([=]()
-		{
-			scene->Maintain(param, room);
-			delete scene;
-			delete param;
-		});*/
+		UdpParamScene(rtp_hdr, datagram, (pj_uint16_t)datalen);
 	}
 }
 
