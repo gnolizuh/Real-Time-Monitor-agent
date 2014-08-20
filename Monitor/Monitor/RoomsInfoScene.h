@@ -39,7 +39,7 @@ public:
 	RoomsInfoScene() {}
 	virtual ~RoomsInfoScene() {}
 
-	virtual void Maintain(TcpParameter *);
+	virtual void Maintain(TcpParameter *, RoomTreeCtl *);
 };
 
 #endif

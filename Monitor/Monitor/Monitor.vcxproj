@@ -106,6 +106,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AddUserScene.h" />
+    <ClInclude Include="AvsProxyStructs.h" />
+    <ClInclude Include="KeepAliveScene.h" />
     <ClInclude Include="Com.h" />
     <ClInclude Include="command.h" />
     <ClInclude Include="DelUserScene.h" />
@@ -116,6 +118,7 @@
     <ClInclude Include="Parameter.h" />
     <ClInclude Include="PoolThread.hpp" />
     <ClInclude Include="Resource.h" />
+    <ClInclude Include="RoomTreeCtl.h" />
     <ClInclude Include="RoomsInfoScene.h" />
     <ClInclude Include="RTPScene.h" />
     <ClInclude Include="Scene.h" />
@@ -126,11 +129,13 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AddUserScene.cpp" />
+    <ClCompile Include="KeepAliveScene.cpp" />
     <ClCompile Include="Com.cpp" />
     <ClCompile Include="DelUserScene.cpp" />
     <ClCompile Include="ModMediaScene.cpp" />
     <ClCompile Include="Monitor.cpp" />
     <ClCompile Include="MonitorDlg.cpp" />
+    <ClCompile Include="RoomTreeCtl.cpp" />
     <ClCompile Include="RoomsInfoScene.cpp" />
     <ClCompile Include="RTPScene.cpp" />
     <ClCompile Include="ScreenMgr.cpp" />

@@ -5,6 +5,7 @@
 
 #include "Com.h"
 #include "Parameter.h"
+#include "RoomTreeCtl.h"
 
 class TcpScene
 {
@@ -12,7 +13,7 @@ public:
 	TcpScene() {}
 	virtual ~TcpScene() {}
 
-	virtual void Maintain(TcpParameter *) {}
+	virtual void Maintain(TcpParameter *, RoomTreeCtl *) {}
 };
 
 class UdpScene

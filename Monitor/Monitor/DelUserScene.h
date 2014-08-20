@@ -21,7 +21,7 @@ public:
 	DelUserScene() {}
 	virtual ~DelUserScene() {}
 
-	virtual void Maintain(TcpParameter *);
+	virtual void Maintain(TcpParameter *, RoomTreeCtl *);
 };
 
 #endif

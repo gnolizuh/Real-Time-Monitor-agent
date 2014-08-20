@@ -1,5 +1,5 @@
-#ifndef __MONITOR_SCREEN_MGR__
-#define __MONITOR_SCREEN_MGR__
+#ifndef __AVS_PROXY_CLIENT_SCREEN_MGR__
+#define __AVS_PROXY_CLIENT_SCREEN_MGR__
 
 #include <vector>
 #include <thread>
@@ -16,12 +16,16 @@
 #include "AddUserScene.h"
 #include "DelUserScene.h"
 #include "RTPScene.h"
+#include "KeepAliveScene.h"
+#include "AvsProxyStructs.h"
+#include "RoomTreeCtl.h"
 
-#define TOP_SIDE_SIZE         30
-#define SIDE_SIZE             8
-#define MININUM_PADDING       0
-#define MININUM_SCREEN_WIDTH  176
-#define NIMINUM_SCREEN_HEIGHT 144
+#define TOP_SIDE_SIZE          30
+#define SIDE_SIZE              8
+#define MININUM_PADDING        0
+#define MININUM_TREE_CTL_WIDTH 170
+#define MININUM_SCREEN_WIDTH   176
+#define NIMINUM_SCREEN_HEIGHT  144
 #define ROUND(num, fraction) (num) /= (fraction), (num) *= (fraction), (num) / (fraction)
 #define GET_FUNC_INDEX(idx) ((idx) < 0 || (idx) >= SCREEN_RES_END ? SCREEN_RES_END : (idx))
 
@@ -45,15 +49,22 @@ class ScreenMgr
 	: public Noncopyable
 {
 public:
-	ScreenMgr(CWnd *, const pj_str_t &, pj_uint16_t, const pj_str_t &, pj_uint16_t);
+	ScreenMgr(CWnd *wrapper,
+		pj_uint16_t avsproxy_id,
+		const pj_str_t &avsproxy_ip,
+		pj_uint16_t avsproxy_tcp_port,
+		pj_uint16_t client_id,
+		const pj_str_t &local_ip,
+		pj_uint16_t local_udp_port);
 	~ScreenMgr();
 
-	pj_status_t Prepare(const pj_str_t &);
+	pj_status_t LoginProxy();
+	pj_status_t Prepare(const pj_str_t &log_file_name);
 	pj_status_t Launch();
 	void        Destory();
-	void        Refresh(enum_screen_mgr_resolution_t);
-	void        GetSuitedSize(LPRECT);
-	void        Adjest(pj_int32_t &, pj_int32_t &);
+	void        ChangeLayout(enum_screen_mgr_resolution_t resolution);
+	void        GetSuitedSize(LPRECT lpRect);
+	void        Adjest(pj_int32_t &cx, pj_int32_t &cy);
 	void        HideAll();
 	static resolution_t GetDefaultResolution();
 
@@ -67,22 +78,26 @@ protected:
 	void EventThread();
 
 private:
+	pj_status_t SendTCPPacket(const void *buf, pj_ssize_t *len);
 	void TcpParamScene(const pj_uint8_t *, pj_uint16_t);
 	void UdpParamScene(const pjmedia_rtp_hdr *, const pj_uint8_t *, pj_uint16_t);
-	void Refresh_1x1(pj_uint32_t, pj_uint32_t);
-	void Refresh_2x2(pj_uint32_t, pj_uint32_t);
-	void Refresh_1x5(pj_uint32_t, pj_uint32_t);
-	void Refresh_3x3(pj_uint32_t, pj_uint32_t);
+	void ChangeLayout_1x1(pj_uint32_t width, pj_uint32_t height);
+	void ChangeLayout_2x2(pj_uint32_t width, pj_uint32_t height);
+	void ChangeLayout_1x5(pj_uint32_t width, pj_uint32_t height);
+	void ChangeLayout_3x3(pj_uint32_t width, pj_uint32_t height);
 
 private:
 	const CWnd         *wrapper_;
 	vector<Screen *>    screens_;
 	vector<index_map_t> av_index_map_;
+	pj_uint16_t         avsproxy_id_;
 	pj_uint32_t         width_;
 	pj_uint32_t         height_;
 	pj_uint32_t         vertical_padding_;
 	pj_uint32_t         horizontal_padding_;
+	pj_uint16_t         client_id_;
 	pj_sock_t           local_tcp_sock_;
+	mutex               local_tcp_lock_;
 	pj_sock_t           local_udp_sock_;
 	pj_str_t		    avsproxy_ip_;
 	pj_uint16_t         avsproxy_tcp_port_;
@@ -97,9 +112,11 @@ private:
 	thread              connector_thread_;
 	thread              event_thread_;
 	pj_bool_t           active_;
+	RoomTreeCtl         rooms_tree_ctl_;
 	vector<screenmgr_func_t> screenmgr_func_array_;
 	vector<pj_uint32_t> num_blocks_;
 	enum_screen_mgr_resolution_t screen_mgr_res_;
+	PoolThread<std::function<void ()>> sync_thread_pool_;
 
 	static const resolution_t DEFAULT_RESOLUTION;
 };

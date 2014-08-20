@@ -111,13 +111,19 @@ BOOL CMonitorDlg::OnInitDialog()
 	av_register_all();
 	pj_init();
 
-	pj_str_t avsproxy_ip = pj_str("192.168.6.53");
-	pj_str_t local_ip = pj_str("192.168.6.53");
-	g_screen_mgr = new ScreenMgr(this, avsproxy_ip, 13000, local_ip, 15000);
+	pj_str_t avsproxy_ip = pj_str("192.168.6.54");
+	pj_str_t local_ip = pj_str("192.168.6.54");
+	g_screen_mgr = new ScreenMgr(this, 1, avsproxy_ip, 12000, 10, local_ip, 15000);
 
+	pj_status_t status;
 	pj_str_t log_file_name = pj_str("avs_proxy_client.log");
-	g_screen_mgr->Prepare(log_file_name);
-	g_screen_mgr->Launch();
+
+	status = g_screen_mgr->Prepare(log_file_name);
+	pj_assert(status == PJ_SUCCESS);
+
+	status = g_screen_mgr->Launch();
+	pj_assert(status == PJ_SUCCESS);
+
 	g_screen_mgr->Adjest(width, height);
 	
 	this->MoveWindow(CRect(0, 0, width, height));
@@ -218,7 +224,7 @@ void CMonitorDlg::OnBnClickedButton1()
 
 	static enum_screen_mgr_resolution_t g_res_type = SCREEN_RES_1x1;
 
-	g_screen_mgr->Refresh(ress[g_res_type].res);
+	g_screen_mgr->ChangeLayout(ress[g_res_type].res);
 
 	g_res_type = (enum_screen_mgr_resolution_t)(( g_res_type + 1 ) % 4);
 }

@@ -18,7 +18,7 @@ public:
 	RTPScene() {}
 	virtual ~RTPScene() {}
 
-	virtual void Maintain(TcpParameter *);
+	virtual void Maintain(UdpParameter *);
 };
 
 #endif

@@ -6,7 +6,7 @@ RTPParameter::RTPParameter()
 {
 }
 
-void RTPScene::Maintain(TcpParameter *parameter)
+void RTPScene::Maintain(UdpParameter *parameter)
 {
 	RTPParameter *param = reinterpret_cast<RTPParameter *>(parameter);
 

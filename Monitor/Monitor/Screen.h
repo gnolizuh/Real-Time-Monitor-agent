@@ -1,6 +1,7 @@
-#ifndef __MONITOR_SCREEN__
-#define __MONITOR_SCREEN__
+#ifndef __AVS_PROXY_CLIENT_SCREEN__
+#define __AVS_PROXY_CLIENT_SCREEN__
 
+#include <vector>
 #include <thread>
 #include <mutex>
 #include "PoolThread.hpp"
@@ -8,6 +9,7 @@
 using std::lock_guard;
 using std::mutex;
 using std::thread;
+using std::vector;
 
 typedef struct vid_channel
 {
@@ -31,42 +33,52 @@ typedef struct vid_stream
 	pjmedia_frame      dec_frame;	    /**< Current decoded frame.     */
 	unsigned           rx_frame_cnt;    /**< # of array in rx_frames    */
     pjmedia_frame     *rx_frames;	    /**< Temp. buffer for incoming frame assembly.	    */
+	pj_uint32_t		   last_dec_ts;   /**< Last decoded timestamp.    */
+    int			       last_dec_seq;  /**< Last decoded sequence.     */
 } vid_stream_t;
 
 class Screen
 	: public CWnd
 {
 public:
-	Screen(pj_uint32_t);
+	Screen(pj_uint32_t index,
+		pj_sock_t &ref_tcp_sock,
+		mutex &ref_tcp_lock);
 	virtual ~Screen();
 	pj_status_t Prepare(const CRect &, const CWnd *, pj_uint32_t);
 	pj_status_t Launch();
-	void Refresh(const CRect &);
-	void Hide();
+	void MoveToRect(const CRect &);
+	void HideWindow();
 	void Painting(const SDL_Rect &, const void *, int);
-	void OnRxAudio(const pj_uint8_t *, pj_uint16_t);
-	void OnRxVideo(const pj_uint8_t *, pj_uint16_t);
+	void AudioScene(const pj_uint8_t *rtp_frame, pj_uint16_t framelen);
+	void OnRxAudio(vector<pj_uint8_t> &audio_frame);
+	void VideoScene(const pj_uint8_t *rtp_frame, pj_uint16_t framelen);
+	void OnRxVideo(vector<pj_uint8_t> &video_frame);
 
 protected:
 	afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
 	DECLARE_MESSAGE_MAP()
 
 private:
+	pj_status_t SendTCPPacket(const void *buf, pj_ssize_t *len);
 	pj_status_t decode_vid_frame();
 
 private:
 	const CWnd       *wrapper_;
 	const pj_uint32_t index_;
-	std::mutex        mutex_;
+	mutex             render_mutex_;
 	CRect             rect_;
 	pj_uint32_t       uid_;
 	SDL_Window       *window_;
 	SDL_Renderer     *render_;
 	SDL_Texture      *texture_;
 	pj_bool_t         active_;
-	pj_uint32_t       call_status;
-	vid_stream_t      stream;
-	PoolThread<std::function<void ()>> sync_thread_pool_;
+	pj_uint32_t       call_status_;
+	vid_stream_t      stream_;
+	pj_sock_t        &ref_tcp_sock_;
+	mutex            &ref_tcp_lock_;
+	PoolThread<std::function<void ()>> audio_thread_pool_;
+	PoolThread<std::function<void ()>> video_thread_pool_;
 };
 
 #endif

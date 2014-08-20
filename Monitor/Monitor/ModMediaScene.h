@@ -23,7 +23,7 @@ public:
 	ModMediaScene() {}
 	virtual ~ModMediaScene() {}
 
-	virtual void Maintain(TcpParameter *);
+	virtual void Maintain(TcpParameter *, RoomTreeCtl *);
 };
 
 #endif

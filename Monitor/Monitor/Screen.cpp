@@ -6,7 +6,9 @@ BEGIN_MESSAGE_MAP(Screen, CWnd)
 	ON_WM_LBUTTONDOWN()
 END_MESSAGE_MAP()
 
-Screen::Screen(pj_uint32_t index)
+Screen::Screen(pj_uint32_t index,
+			   pj_sock_t &ref_tcp_sock,
+			   mutex &ref_tcp_lock)
 	: CWnd()
 	, rect_(0, 0, 0, 0)
 	, wrapper_(NULL)
@@ -15,10 +17,13 @@ Screen::Screen(pj_uint32_t index)
 	, window_(NULL)
 	, render_(NULL)
 	, texture_(NULL)
+	, render_mutex_()
+	, audio_thread_pool_(1)
+	, video_thread_pool_(1)
 	, active_(PJ_FALSE)
-	, mutex_()
-	, sync_thread_pool_(1)
-	, call_status(0)
+	, call_status_(0)
+	, ref_tcp_sock_(ref_tcp_sock)
+	, ref_tcp_lock_(ref_tcp_lock)
 {
 }
 
@@ -35,14 +40,10 @@ pj_status_t Screen::Prepare(const CRect &rect, const CWnd *wrapper, pj_uint32_t 
 	wrapper_ = wrapper;
 	uid_ = uid;
 
-	pj_bool_t ret = this->Create(
-		nullptr,
-		nullptr,
-		WS_BORDER | WS_VISIBLE | WS_CHILD,
-		rect,
-		(CWnd *)wrapper,
-		uid_);
-	pj_assert(ret == PJ_TRUE);
+	BOOL result;
+	result = this->Create(nullptr, nullptr, WS_BORDER | WS_VISIBLE | WS_CHILD,
+		rect, (CWnd *)wrapper, uid_);
+	pj_assert(result == PJ_TRUE);
 
 	window_ = SDL_CreateWindowFrom(GetSafeHwnd());
 	RETURN_VAL_IF_FAIL(window_ != nullptr, PJ_EINVAL);
@@ -68,59 +69,76 @@ pj_status_t Screen::Prepare(const CRect &rect, const CWnd *wrapper, pj_uint32_t 
 
 pj_status_t Screen::Launch()
 {
-
-	sync_thread_pool_.Start();
+	audio_thread_pool_.Start();
+	video_thread_pool_.Start();
 
 	return PJ_SUCCESS;
 }
 
-void Screen::Refresh(const CRect &rect)
+void Screen::MoveToRect(const CRect &rect)
 {
-	lock_guard<std::mutex> internal_lock(mutex_);
+	lock_guard<std::mutex> internal_lock(render_mutex_);
 	rect_ = rect;
 
 	this->MoveWindow(rect);
 	this->ShowWindow(SW_SHOW);
 }
 
-void Screen::Hide()
+void Screen::HideWindow()
 {
-	lock_guard<std::mutex> internal_lock(mutex_);
-	SDL_HideWindow(window_);
+	lock_guard<std::mutex> internal_lock(render_mutex_);
+	this->ShowWindow(SW_HIDE);
 }
 
 void Screen::Painting(const SDL_Rect &rect, const void *pixels, int pitch)
 {
-	lock_guard<std::mutex> internal_lock(mutex_);
+	lock_guard<std::mutex> internal_lock(render_mutex_);
 	SDL_UpdateTexture(texture_, &rect, pixels, pitch);
 	SDL_RenderClear(render_);
 	SDL_RenderCopy(render_, texture_, NULL, NULL);
 	SDL_RenderPresent(render_);
 }
 
-void Screen::OnRxAudio(const pj_uint8_t *rtp_frame, pj_uint16_t framelen)
+void Screen::AudioScene(const pj_uint8_t *rtp_frame, pj_uint16_t framelen)
 {
 	RETURN_IF_FAIL(framelen > 0);
 
-	pj_uint8_t *frame_copy = (pj_uint8_t *)malloc(framelen);
-	RETURN_IF_FAIL(frame_copy != nullptr);
-
-	pj_memcpy(frame_copy, rtp_frame, framelen);
-
-	sync_thread_pool_.Schedule([=]()
+	audio_thread_pool_.Schedule([=]()
 	{
-		
+		vector<pj_uint8_t> frame_copy;
+		frame_copy.assign(rtp_frame, rtp_frame + framelen);
+
+		OnRxAudio(frame_copy);
 	});
 }
 
-void Screen::OnRxVideo(const pj_uint8_t *rtp_frame, pj_uint16_t framelen)
+void Screen::OnRxAudio(vector<pj_uint8_t> &audio_frame)
+{
+	
+}
+
+void Screen::VideoScene(const pj_uint8_t *rtp_frame, pj_uint16_t framelen)
 {
 	RETURN_IF_FAIL(framelen > 0);
 
-	pj_uint8_t *frame_copy = (pj_uint8_t *)malloc(framelen);
-	RETURN_IF_FAIL(frame_copy != nullptr);
+	video_thread_pool_.Schedule([=]()
+	{
+		vector<pj_uint8_t> frame_copy;
+		frame_copy.assign(rtp_frame, rtp_frame + framelen);
 
-	pj_memcpy(frame_copy, rtp_frame, framelen);
+		OnRxVideo(frame_copy);
+
+		if (stream_.dec_frame.type == PJMEDIA_FRAME_TYPE_VIDEO &&
+			stream_.dec_frame.size > 0)
+		{
+			// Painting();
+		}
+	});
+}
+
+void Screen::OnRxVideo(vector<pj_uint8_t> &video_frame)
+{
+	RETURN_IF_FAIL(video_frame.size() > 0);
 
 	pj_status_t status;
 	const pjmedia_rtp_hdr *hdr;
@@ -128,54 +146,51 @@ void Screen::OnRxVideo(const pj_uint8_t *rtp_frame, pj_uint16_t framelen)
 	unsigned payloadlen;
 	pjmedia_rtp_status seq_st;
 
-	status = pjmedia_rtp_decode_rtp(&stream.dec->rtp, frame_copy, (int)framelen,
+	status = pjmedia_rtp_decode_rtp(&stream_.dec->rtp, &video_frame, (int)video_frame.size(),
 				&hdr, &payload, &payloadlen);
 	if(status == PJ_SUCCESS)
 	{
-		pjmedia_rtp_session_update2(&stream.dec->rtp, hdr, &seq_st, PJ_TRUE);
+		pjmedia_rtp_session_update2(&stream_.dec->rtp, hdr, &seq_st, PJ_TRUE);
 		if (seq_st.status.flag.bad || payloadlen == 0)
-			goto on_return;
+			return;
 
-		if (stream.dec->paused)
-			goto on_return;
+		if (stream_.dec->paused)
+			return;
 
-		pj_mutex_lock(stream.jb_mutex);
+		pj_mutex_lock(stream_.jb_mutex);
 
-		if ((pj_ntohl(hdr->ts) != stream.dec_frame.timestamp.u32.lo) || hdr->m) {
+		if ((pj_ntohl(hdr->ts) != stream_.dec_frame.timestamp.u32.lo) || hdr->m) {
 			/* Only decode if we don't already have decoded one,
 				* unless the jb is full.
 				*/
 			pj_bool_t can_decode = PJ_FALSE;
 
-			if (pjmedia_jbuf_is_full(stream.jb)) {
+			if (pjmedia_jbuf_is_full(stream_.jb)) {
 				can_decode = PJ_TRUE;
 			}
-			else if (stream.dec_frame.size == 0) {
+			else if (stream_.dec_frame.size == 0) {
 				can_decode = PJ_TRUE;
 			}
 
 			if (can_decode) {
-				stream.dec_frame.size = 176 * 144 * 4;  // Width * Height * max_color_depth(4)
+				stream_.dec_frame.size = 176 * 144 * 4;  // Width * Height * max_color_depth(4)
 				if (decode_vid_frame() != PJ_SUCCESS) {
-					stream.dec_frame.size = 0;
+					stream_.dec_frame.size = 0;
 				}
 			}
 		}
 
 		if (seq_st.status.flag.restart) {
-			status = pjmedia_jbuf_reset(stream.jb);
+			status = pjmedia_jbuf_reset(stream_.jb);
 			PJ_LOG(4,(__FILE__, "Jitter buffer reset"));
 		} else {
 			/* Just put the payload into jitter buffer */
-			pjmedia_jbuf_put_frame3(stream.jb, payload, payloadlen, 0, 
+			pjmedia_jbuf_put_frame3(stream_.jb, payload, payloadlen, 0, 
 				pj_ntohs(hdr->seq), pj_ntohl(hdr->ts), NULL);
 		}
 		
-		pj_mutex_unlock(stream.jb_mutex);
+		pj_mutex_unlock(stream_.jb_mutex);
 	}
-
-on_return :
-	free(frame_copy);
 }
 
 pj_status_t Screen::decode_vid_frame()
@@ -193,7 +208,7 @@ pj_status_t Screen::decode_vid_frame()
 	int seq;
 
 	/* Peek frame from jitter buffer. */
-	pjmedia_jbuf_peek_frame(stream.jb, cnt, NULL, NULL,
+	pjmedia_jbuf_peek_frame(stream_.jb, cnt, NULL, NULL,
 				&ptype, NULL, &ts, &seq);
 	if (ptype == PJMEDIA_JB_NORMAL_FRAME) {
 	    if (last_ts == 0) {
@@ -215,57 +230,71 @@ pj_status_t Screen::decode_vid_frame()
 	unsigned i;
 
 	/* Generate frame bitstream from the payload */
-	if (cnt > stream.rx_frame_cnt) {
-		PJ_LOG(1,(stream.dec->port.info.name.ptr,
+	if (cnt > stream_.rx_frame_cnt) {
+		PJ_LOG(1,(stream_.dec->port.info.name.ptr,
 		      "Discarding %u frames because array is full!",
-		      cnt - stream.rx_frame_cnt));
-	    pjmedia_jbuf_remove_frame(stream.jb, cnt - stream.rx_frame_cnt);
-	    cnt = stream.rx_frame_cnt;
+		      cnt - stream_.rx_frame_cnt));
+	    pjmedia_jbuf_remove_frame(stream_.jb, cnt - stream_.rx_frame_cnt);
+	    cnt = stream_.rx_frame_cnt;
 	}
 
 	for (i = 0; i < cnt; ++i) {
 	    char ptype;
 
-	    stream.rx_frames[i].type = PJMEDIA_FRAME_TYPE_VIDEO;
-	    stream.rx_frames[i].timestamp.u64 = last_ts;
-	    stream.rx_frames[i].bit_info = 0;
+	    stream_.rx_frames[i].type = PJMEDIA_FRAME_TYPE_VIDEO;
+	    stream_.rx_frames[i].timestamp.u64 = last_ts;
+	    stream_.rx_frames[i].bit_info = 0;
 
 	    /* We use jbuf_peek_frame() as it will returns the pointer of
 	     * the payload (no buffer and memcpy needed), just as we need.
 	     */
-	    pjmedia_jbuf_peek_frame(stream.jb, i,
-				    (const void**)&stream.rx_frames[i].buf,
-				    &stream.rx_frames[i].size, &ptype,
+	    pjmedia_jbuf_peek_frame(stream_.jb, i,
+				    (const void**)&stream_.rx_frames[i].buf,
+				    &stream_.rx_frames[i].size, &ptype,
 				    NULL, NULL, NULL);
 
 	    if (ptype != PJMEDIA_JB_NORMAL_FRAME) {
 		/* Packet lost, must set payload to NULL and keep going */
-		stream.rx_frames[i].buf = NULL;
-		stream.rx_frames[i].size = 0;
-		stream.rx_frames[i].type = PJMEDIA_FRAME_TYPE_NONE;
+		stream_.rx_frames[i].buf = NULL;
+		stream_.rx_frames[i].size = 0;
+		stream_.rx_frames[i].type = PJMEDIA_FRAME_TYPE_NONE;
 		continue;
 	    }
 	}
 
 	/* Decode */
-	status = pjmedia_vid_codec_decode(stream.codec, cnt,
-	                                  stream.rx_frames,
-									  (unsigned)stream.dec_frame.size, &stream.dec_frame);
+	status = pjmedia_vid_codec_decode(stream_.codec, cnt,
+	                                  stream_.rx_frames,
+									  (unsigned)stream_.dec_frame.size, &stream_.dec_frame);
 	if (status != PJ_SUCCESS) {
-		stream.dec_frame.type = PJMEDIA_FRAME_TYPE_NONE;
-	    stream.dec_frame.size = 0;
+		stream_.dec_frame.type = PJMEDIA_FRAME_TYPE_NONE;
+	    stream_.dec_frame.size = 0;
 	}
 
-	pjmedia_jbuf_remove_frame(stream.jb, cnt);
+	pjmedia_jbuf_remove_frame(stream_.jb, cnt);
     }
 
+	/* Learn remote frame rate after successful decoding */
+    if (stream_.dec_frame.type == PJMEDIA_FRAME_TYPE_VIDEO
+		&& stream_.dec_frame.size)
+    {
+		stream_.last_dec_seq = frm_last_seq;
+		stream_.last_dec_ts = last_ts;
+	}
+
 	return PJ_SUCCESS;
+}
+
+pj_status_t Screen::SendTCPPacket(const void *buf, pj_ssize_t *len)
+{
+	lock_guard<mutex> lock(ref_tcp_lock_);
+	return pj_sock_send(ref_tcp_sock_, buf, len, 0);
 }
 
 void Screen::OnLButtonDown(UINT nFlags, CPoint point)
 {
 	pj_str_t remote_uri = pj_str("sip:192.168.6.40:6080");/*"sip:192.168.4.108:5060"*/
-	if ( ( call_status ++ ) % 2 == 0 )
+	if ( ( call_status_ ++ ) % 2 == 0 )
 	{
 		/*SessionMgr::GetInstance()->StartSession(&remote_uri, index());*/
 	}

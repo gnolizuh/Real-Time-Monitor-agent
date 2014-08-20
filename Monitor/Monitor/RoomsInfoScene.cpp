@@ -20,8 +20,17 @@ RoomsInfoParameter::RoomsInfoParameter(const pj_uint8_t *storage, pj_uint16_t st
 	}
 }
 
-void RoomsInfoScene::Maintain(TcpParameter *parameter)
+void RoomsInfoScene::Maintain(TcpParameter *parameter, RoomTreeCtl *room_ctl)
 {
 	RoomsInfoParameter *param = reinterpret_cast<RoomsInfoParameter *>(parameter);
-
+	for(pj_uint32_t i = 0; i < param->room_count_; ++ i)
+	{
+		Room *room = room_ctl->AddRoom(param->rooms_info_[i].room_id_);
+		for(pj_uint8_t j = 0; j < param->rooms_info_[i].user_count_; ++ j)
+		{
+			User *user = room_ctl->AddUser(room, param->rooms_info_[i].users_info_[j].user_id_);
+			room_ctl->ModMedia(user, param->rooms_info_[i].users_info_[j].audio_ssrc_,
+				param->rooms_info_[i].users_info_[j].video_ssrc_);
+		}
+	}
 }

@@ -85,6 +85,33 @@ pj_uint64_t pj_ntohll(pj_uint64_t netlonglong);
  */
 pj_uint64_t pj_htonll(pj_uint64_t hostlonglong);
 
+
+template<typename Type>
+inline Type serialize(Type t)
+{
+	if ( sizeof(t) == sizeof(pj_uint8_t) )
+	{
+		return t;
+	}
+	else if ( sizeof(t) == sizeof(pj_uint16_t) )
+	{
+		return (Type)pj_htons((pj_uint16_t)t);
+	}
+	else if ( sizeof(t) == sizeof(pj_uint32_t) )
+	{
+		return (Type)pj_htonl((pj_uint32_t)t);
+	}
+	else if ( sizeof(t) == sizeof(pj_uint64_t) )
+	{
+		return (Type)pj_htonll((pj_uint64_t)t);
+	}
+	else
+	{
+		pj_assert(!"Don't serialize a number which value is more then 64bit!!");
+		return (Type)0;
+	}
+}
+
 /**
  * Convert value from network byte order to host byte order arbitrarily. 
  *

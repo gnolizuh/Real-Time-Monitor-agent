@@ -84,6 +84,15 @@
     <ClInclude Include="RTPScene.h">
       <Filter>Scene\AvsProxyScene\inc</Filter>
     </ClInclude>
+    <ClInclude Include="KeepAliveScene.h">
+      <Filter>Scene\AvsProxyScene\inc</Filter>
+    </ClInclude>
+    <ClInclude Include="AvsProxyStructs.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="RoomTreeCtl.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Monitor.cpp">
@@ -118,6 +127,12 @@
     </ClCompile>
     <ClCompile Include="RTPScene.cpp">
       <Filter>Scene\AvsProxyScene\src</Filter>
+    </ClCompile>
+    <ClCompile Include="KeepAliveScene.cpp">
+      <Filter>Scene\AvsProxyScene\src</Filter>
+    </ClCompile>
+    <ClCompile Include="RoomTreeCtl.cpp">
+      <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
