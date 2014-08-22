@@ -86,6 +86,9 @@ pj_status_t ScreenMgr::Prepare(const pj_str_t &log_file_name)
 	pj_status_t status;
 
 	pj_uint8_t retrys = 50;
+	status = pj_open_tcp_clientport(&avsproxy_ip_, avsproxy_tcp_port_, local_tcp_sock_);
+	RETURN_VAL_IF_FAIL( status == PJ_SUCCESS, status );
+
 	do
 	{
 		status = pj_open_udp_transport(&local_ip_, local_udp_port_, local_udp_sock_);
@@ -104,13 +107,19 @@ pj_status_t ScreenMgr::Prepare(const pj_str_t &log_file_name)
 	udp_ev_ = event_new(evbase_, local_udp_sock_, EV_READ | EV_PERSIST, event_on_udp_read, this);
 	RETURN_VAL_IF_FAIL( udp_ev_ != nullptr, -1 );
 
+	tcp_ev_ = event_new(evbase_, local_tcp_sock_, EV_READ | EV_PERSIST, event_on_tcp_read, this);
+	RETURN_VAL_IF_FAIL( tcp_ev_ != nullptr, -1 );
+
 	int ret;
 	ret = event_add(udp_ev_, NULL);
 	RETURN_VAL_IF_FAIL( ret == 0, -1 );
 
+	ret = event_add(tcp_ev_, NULL);
+	RETURN_VAL_IF_FAIL( ret == 0, -1 );
+
 	rooms_tree_ctl_.Prepare(wrapper_, IDC_ROOM_TREE_CTL_INDEX);
 
-	Room *room;
+	/*Room *room;
 	room = rooms_tree_ctl_.AddRoom(100000);
 	rooms_tree_ctl_.AddUser(room, 1);
 	rooms_tree_ctl_.AddUser(room, 2);
@@ -121,7 +130,7 @@ pj_status_t ScreenMgr::Prepare(const pj_str_t &log_file_name)
 
 	room = rooms_tree_ctl_.AddRoom(100002);
 	rooms_tree_ctl_.AddUser(room, 21);
-	rooms_tree_ctl_.AddUser(room, 22);
+	rooms_tree_ctl_.AddUser(room, 22);*/
 
 	for(pj_uint32_t idx = 0; idx < screens_.size(); ++ idx)
 	{
@@ -138,7 +147,7 @@ pj_status_t ScreenMgr::Launch()
 	active_ = PJ_TRUE;
 
 	event_thread_ = thread(std::bind(&ScreenMgr::EventThread, this));
-	connector_thread_ = thread(std::bind(&ScreenMgr::ConnectorThread, this));
+	//connector_thread_ = thread(std::bind(&ScreenMgr::ConnectorThread, this));
 	sync_thread_pool_.Start();
 
 	for(pj_uint32_t idx = 0; idx < screens_.size(); ++ idx)
@@ -169,7 +178,8 @@ void ScreenMgr::ChangeLayout(enum_screen_mgr_resolution_t resolution)
 	pj_uint32_t divisor = num_blocks_[GET_FUNC_INDEX(screen_mgr_res_)];
 	pj_uint32_t width = width_, height = height_;
 	pj_uint32_t round_width, round_height;
-	round_width = ROUND(width, divisor);
+	pj_uint32_t tmp_width = width - MININUM_TREE_CTL_WIDTH;
+	round_width = ROUND(tmp_width, divisor);
 	round_height = ROUND(height, divisor);
 
 	HideAll();
@@ -211,19 +221,27 @@ void ScreenMgr::Adjest(pj_int32_t &cx, pj_int32_t &cy)
 
 void ScreenMgr::ChangeLayout_1x1(pj_uint32_t width, pj_uint32_t height)
 {
-	screens_[0]->MoveToRect(CRect(0, 0, width, height));
+	CRect rect(0, 0, MININUM_TREE_CTL_WIDTH, height * num_blocks_[0]);
+	rooms_tree_ctl_.MoveToRect(rect);
+
+	screens_[0]->MoveToRect(CRect(MININUM_TREE_CTL_WIDTH, 0, MININUM_TREE_CTL_WIDTH + width, height));
 }
 
 void ScreenMgr::ChangeLayout_2x2(pj_uint32_t width, pj_uint32_t height)
 {
+	CRect rect(0, 0, MININUM_TREE_CTL_WIDTH, height * num_blocks_[1]);
+	rooms_tree_ctl_.MoveToRect(rect);
+
+	pj_uint32_t lstart = MININUM_TREE_CTL_WIDTH;
+
 	const unsigned MAX_COL = 2, MAX_ROW = 2;
-	for ( unsigned col = 0; col < MAX_COL; ++ col )
+	for ( unsigned row = 0; row < MAX_COL; ++ row )
 	{
-		for ( unsigned row = 0; row < MAX_ROW; ++ row )
+		for ( unsigned col = 0; col < MAX_ROW; ++ col )
 		{
-			unsigned idx = col * MAX_COL + row;
+			unsigned idx = col + row * MAX_COL;
 			CRect rect;
-			rect.left  = col * width + col * horizontal_padding_;
+			rect.left  = col * width + col * horizontal_padding_ + lstart;
 			rect.top   = row * height + row * vertical_padding_;
 			rect.right = rect.left + width;
 			rect.bottom = rect.top + height;
@@ -235,10 +253,14 @@ void ScreenMgr::ChangeLayout_2x2(pj_uint32_t width, pj_uint32_t height)
 
 void ScreenMgr::ChangeLayout_1x5(pj_uint32_t width, pj_uint32_t height)
 {
+	CRect rect(0, 0, MININUM_TREE_CTL_WIDTH, height * num_blocks_[2]);
+	rooms_tree_ctl_.MoveToRect(rect);
+
+	pj_uint32_t lstart = MININUM_TREE_CTL_WIDTH;
 	unsigned idx = 0;
 
-	pj_int32_t left = 0, top = 0, right, bottom;
-	right = width * 2 + horizontal_padding_;
+	pj_int32_t left = lstart, top = 0, right, bottom;
+	right = left + width * 2 + horizontal_padding_;
 	bottom = height * 2 + vertical_padding_;
 	screens_[idx ++]->MoveToRect(CRect(left, top, right, bottom));
 
@@ -251,8 +273,8 @@ void ScreenMgr::ChangeLayout_1x5(pj_uint32_t width, pj_uint32_t height)
 	bottom = top + height;
 	screens_[idx ++]->MoveToRect(CRect(left, top, right, bottom));
 
-	left = 0;
-	right = width;
+	left = lstart;
+	right = left + width;
 	top = bottom + vertical_padding_;
 	bottom = top + height;
 	screens_[idx ++]->MoveToRect(CRect(left, top, right, bottom));
@@ -274,11 +296,11 @@ void ScreenMgr::ChangeLayout_3x3(pj_uint32_t width, pj_uint32_t height)
 	pj_uint32_t lstart = MININUM_TREE_CTL_WIDTH;
 
 	const unsigned MAX_COL = 3, MAX_ROW = 3;
-	for ( unsigned col = 0; col < MAX_COL; ++ col )
+	for ( unsigned row = 0; row < MAX_COL; ++ row )
 	{
-		for ( unsigned row = 0; row < MAX_ROW; ++ row )
+		for ( unsigned col = 0; col < MAX_ROW; ++ col )
 		{
-			unsigned idx = col * MAX_COL + row;
+			unsigned idx = col + row * MAX_COL;
 			CRect rect;
 			rect.left  = col * width + col * horizontal_padding_ + lstart;
 			rect.top   = row * height + row * vertical_padding_;
@@ -313,7 +335,7 @@ void ScreenMgr::TcpParamScene(const pj_uint8_t *storage,
 		{
 			param = new RoomsInfoParameter(storage, storage_len);
 			scene = new RoomsInfoScene();
-			return;
+			break;
 		}
 		case REQUEST_FROM_AVSPROXY_TO_CLIENT_ROOM_MOD_MEDIA:
 		{
@@ -446,6 +468,9 @@ void ScreenMgr::EventOnUdpRead(evutil_socket_t fd, short event)
 	pj_sock_t local_udp_sock = fd;
 	const pjmedia_rtp_hdr *rtp_hdr;
 
+	const pj_uint8_t *payload;
+    unsigned payload_len;
+
 	pj_sockaddr_in addr;
 	int addrlen = sizeof(addr);
 
@@ -458,7 +483,7 @@ void ScreenMgr::EventOnUdpRead(evutil_socket_t fd, short event)
 	{
 		status = pjmedia_rtp_decode_rtp(NULL,
 			datagram, (int)datalen,
-			&rtp_hdr, nullptr, nullptr);
+			&rtp_hdr, (const void **)&payload, &payload_len);
 		RETURN_IF_FAIL(status == PJ_SUCCESS);
 
 		UdpParamScene(rtp_hdr, datagram, (pj_uint16_t)datalen);
@@ -500,7 +525,7 @@ void ScreenMgr::ConnectorThread()
 					if ( tcp_ev_ != nullptr && (event_add(tcp_ev_, NULL) == 0) )
 					{
 						LoginProxy();
-						break;
+						return;
 					}
 				}
 
@@ -516,6 +541,7 @@ pj_status_t ScreenMgr::LoginProxy()
 	login.client_request_type = REQUEST_FROM_CLIENT_TO_AVSPROXY_LOGIN;
 	login.proxy_id = avsproxy_id_;
 	login.client_id = client_id_;
+	pj_inet_aton(&local_ip_, &login.media_ip);
 	login.media_port = local_udp_port_;
 	login.Serialize();
 

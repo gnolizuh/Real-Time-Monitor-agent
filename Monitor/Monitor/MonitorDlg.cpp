@@ -49,6 +49,8 @@ END_MESSAGE_MAP()
 
 CMonitorDlg::CMonitorDlg(CWnd* pParent /*=NULL*/)
 	: CDialogEx(CMonitorDlg::IDD, pParent)
+	, is_draging_(PJ_FALSE)
+	, draging_user_(nullptr)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 }
@@ -65,7 +67,9 @@ BEGIN_MESSAGE_MAP(CMonitorDlg, CDialogEx)
 	ON_WM_SIZING()
 	ON_WM_SIZE()
 	ON_WM_GETMINMAXINFO()
-	ON_BN_CLICKED(IDC_BUTTON1, &CMonitorDlg::OnBnClickedButton1)
+	ON_BN_CLICKED(IDC_BUTTON1, &CMonitorDlg::OnChangeLayout)
+	ON_MESSAGE(WM_BEGINDRAGITEM, &CMonitorDlg::OnBeginDragItem)
+	ON_MESSAGE(WM_ENDDRAGITEM, &CMonitorDlg::OnEndDragItem)
 END_MESSAGE_MAP()
 
 
@@ -113,7 +117,7 @@ BOOL CMonitorDlg::OnInitDialog()
 
 	pj_str_t avsproxy_ip = pj_str("192.168.6.54");
 	pj_str_t local_ip = pj_str("192.168.6.54");
-	g_screen_mgr = new ScreenMgr(this, 1, avsproxy_ip, 12000, 10, local_ip, 15000);
+	g_screen_mgr = new ScreenMgr(this, 100, avsproxy_ip, 12000, 10, local_ip, 15000);
 
 	pj_status_t status;
 	pj_str_t log_file_name = pj_str("avs_proxy_client.log");
@@ -122,6 +126,9 @@ BOOL CMonitorDlg::OnInitDialog()
 	pj_assert(status == PJ_SUCCESS);
 
 	status = g_screen_mgr->Launch();
+	pj_assert(status == PJ_SUCCESS);
+
+	status = g_screen_mgr->LoginProxy();
 	pj_assert(status == PJ_SUCCESS);
 
 	g_screen_mgr->Adjest(width, height);
@@ -207,7 +214,7 @@ void CMonitorDlg::OnSize(UINT nType, int cx, int cy)
 	CDialogEx::OnSize(nType, cx, cy);
 }
 
-void CMonitorDlg::OnBnClickedButton1()
+void CMonitorDlg::OnChangeLayout()
 {
 	struct resolution
 	{
@@ -227,4 +234,31 @@ void CMonitorDlg::OnBnClickedButton1()
 	g_screen_mgr->ChangeLayout(ress[g_res_type].res);
 
 	g_res_type = (enum_screen_mgr_resolution_t)(( g_res_type + 1 ) % 4);
+}
+
+LRESULT CMonitorDlg::OnBeginDragItem(WPARAM wParam, LPARAM lParam)
+{
+	User *user = reinterpret_cast<User *>(lParam);
+	if(user)
+	{
+		TRACE("CMonitorDlg::OnBeginDragItem user_id:%ld\n", user->user_id_);
+		is_draging_ = PJ_TRUE;
+		draging_user_ = user;
+	}
+
+	return true;
+}
+
+LRESULT CMonitorDlg::OnEndDragItem(WPARAM wParam, LPARAM lParam)
+{
+	Screen *screen = reinterpret_cast<Screen *>(lParam);
+	if(screen && draging_user_ && is_draging_)
+	{
+		screen->LinkRoomUser(draging_user_);
+
+		is_draging_ = PJ_FALSE;
+		draging_user_ = nullptr;
+	}
+
+	return true;
 }

@@ -8,6 +8,7 @@
 
 using std::vector;
 
+#pragma pack(1)
 typedef struct
 {
 	pj_int64_t  user_id_;
@@ -18,7 +19,7 @@ typedef struct
 typedef struct
 {
 	pj_int32_t room_id_;
-	pj_uint8_t user_count_;
+	pj_uint32_t user_count_;
 	vector<user_info_t> users_info_;
 } room_info_t;
 
@@ -31,6 +32,7 @@ public:
 	pj_uint32_t room_count_;
 	vector<room_info_t> rooms_info_;
 };
+#pragma pack()
 
 class RoomsInfoScene
 	: public TcpScene

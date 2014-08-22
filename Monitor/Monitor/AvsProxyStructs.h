@@ -23,6 +23,7 @@ public:
 	pj_uint16_t client_request_type;
 	pj_uint16_t proxy_id;
 	pj_uint16_t client_id;
+	pj_in_addr  media_ip;      // MUST manual convert media_ip from host to network.
 	pj_uint16_t media_port;
 } request_to_avs_proxy_login_t;
 

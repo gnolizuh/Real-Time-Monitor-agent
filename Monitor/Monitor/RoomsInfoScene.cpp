@@ -5,14 +5,14 @@ RoomsInfoParameter::RoomsInfoParameter(const pj_uint8_t *storage, pj_uint16_t st
 	: TcpParameter(storage, storage_len)
 {
 	pj_ntoh_assign(storage, storage_len, room_count_);
-	rooms_info_.reserve(room_count_);
 	for(pj_uint32_t i = 0; i < room_count_; ++ i)
 	{
+		rooms_info_.push_back(room_info_t());
 		pj_ntoh_assign(storage, storage_len, rooms_info_[i].room_id_);
 		pj_ntoh_assign(storage, storage_len, rooms_info_[i].user_count_);
-		rooms_info_[i].users_info_.reserve(rooms_info_[i].user_count_);
 		for(pj_uint8_t j = 0; j < rooms_info_[i].user_count_; ++ j)
 		{
+			rooms_info_[i].users_info_.push_back(user_info_t());
 			pj_ntoh_assign(storage, storage_len, rooms_info_[i].users_info_[j].user_id_);
 			pj_ntoh_assign(storage, storage_len, rooms_info_[i].users_info_[j].audio_ssrc_);
 			pj_ntoh_assign(storage, storage_len, rooms_info_[i].users_info_[j].video_ssrc_);

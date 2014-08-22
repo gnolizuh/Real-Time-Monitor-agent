@@ -4,7 +4,10 @@
 #include <vector>
 #include <thread>
 #include <mutex>
+#include "resource.h"
+#include "RoomTreeCtl.h"
 #include "PoolThread.hpp"
+#include "AvsProxyStructs.h"
 
 using std::lock_guard;
 using std::mutex;
@@ -47,6 +50,8 @@ public:
 	virtual ~Screen();
 	pj_status_t Prepare(const CRect &, const CWnd *, pj_uint32_t);
 	pj_status_t Launch();
+	void        Destory();
+	pj_status_t LinkRoomUser(User *user);
 	void MoveToRect(const CRect &);
 	void HideWindow();
 	void Painting(const SDL_Rect &, const void *, int);
@@ -57,6 +62,7 @@ public:
 
 protected:
 	afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
+	afx_msg void OnLButtonUp(UINT nFlags, CPoint point);
 	DECLARE_MESSAGE_MAP()
 
 private:

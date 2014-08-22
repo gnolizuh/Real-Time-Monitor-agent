@@ -2,11 +2,12 @@
 #include "RoomTreeCtl.h"
 
 BEGIN_MESSAGE_MAP(RoomTreeCtl, CListBox)
+	ON_NOTIFY_REFLECT(TVN_BEGINDRAG, OnTvnBeginDrag)
 END_MESSAGE_MAP()
 
 RoomTreeCtl::RoomTreeCtl()
 	: CTreeCtrl()
-	, tree_item_(nullptr)
+	, root_item_(nullptr)
 	, rooms_mutex_()
 	, rooms_()
 {
@@ -16,18 +17,19 @@ pj_status_t RoomTreeCtl::Prepare(const CWnd *wrapper, pj_uint32_t uid)
 {
 	BOOL result;
 	result = Create(WS_VISIBLE | WS_TABSTOP | WS_CHILD | WS_BORDER
-		| TVS_HASBUTTONS | TVS_LINESATROOT | TVS_HASLINES
-		| TVS_DISABLEDRAGDROP | TVS_NOTOOLTIPS,
+		| TVS_HASBUTTONS | TVS_LINESATROOT | TVS_HASLINES | TVS_NOTOOLTIPS,
 		CRect(10, 10, 210, 410), (CWnd *)wrapper, uid);
-	pj_assert(result == PJ_TRUE);
+	RETURN_VAL_IF_FAIL(result, PJ_EINVAL);
 
 	TVINSERTSTRUCT tvInsert;
-	tvInsert.hParent = NULL;
-	tvInsert.hInsertAfter = NULL;
-	tvInsert.item.mask = TVIF_TEXT;
+	tvInsert.hParent = root_item_;
+	tvInsert.hInsertAfter = TVI_LAST;
+	tvInsert.item.lParam = (LPARAM)this;
 	tvInsert.item.pszText = _T("房间号");
+	tvInsert.item.mask = LVIF_TEXT | TVIF_PARAM;
 
-	tree_item_ = InsertItem(&tvInsert);
+	root_item_ = InsertItem(_T("房间号"), NULL, NULL);
+	RETURN_VAL_IF_FAIL(root_item_, PJ_EINVAL);
 
 	return PJ_SUCCESS;
 }
@@ -53,11 +55,20 @@ Room *RoomTreeCtl::AddRoom(pj_int32_t room_id)
 	else
 	{
 		room = new Room();
+		room->room_id_ = room_id;
 		rooms_[room_id] = room;
 
-		CString room_str;
-		room_str.Format(_T("%d"), room_id);
-		room->tree_item_ = InsertItem(room_str, tree_item_, TVI_LAST);
+		wchar_t str_room_id[32];
+		swprintf(str_room_id, sizeof(str_room_id) - 1, L"%u", room_id);
+
+		TVINSERTSTRUCT tvInsert;
+		tvInsert.hParent = root_item_;
+		tvInsert.hInsertAfter = TVI_LAST;
+		tvInsert.item.lParam = (LPARAM)room;
+		tvInsert.item.pszText = str_room_id;
+		tvInsert.item.mask = LVIF_TEXT | TVIF_PARAM;
+
+		room->tree_item_ = InsertItem(&tvInsert);
 	}
 
 	return room;
@@ -107,11 +118,21 @@ User *RoomTreeCtl::AddUser(Room *room, pj_int64_t user_id)
 	else
 	{
 		user = new User();
+		user->user_id_ = user_id;
+		user->room_id_ = room->room_id_;
 		room->users_[user_id] = user;
 
-		CString user_str;
-		user_str.Format(_T("%d"), user_id);
-		user->tree_item_ = InsertItem(user_str, room->tree_item_, TVI_LAST);
+		wchar_t str_user_id[32];
+		swprintf(str_user_id, sizeof(str_user_id) - 1, L"%u", user_id);
+
+		TVINSERTSTRUCT tvInsert;
+		tvInsert.hParent = room->tree_item_;
+		tvInsert.hInsertAfter = TVI_LAST;
+		tvInsert.item.lParam = (LPARAM)user;
+		tvInsert.item.pszText = str_user_id;
+		tvInsert.item.mask = LVIF_TEXT | TVIF_PARAM;
+
+		user->tree_item_ = InsertItem(&tvInsert);
 	}
 
 	return user;
@@ -154,6 +175,30 @@ void RoomTreeCtl::ModMedia(User *user, pj_uint32_t audio_ssrc, pj_uint32_t video
 	lock_guard<mutex> lock(rooms_mutex_);
 	user->audio_ssrc_ = audio_ssrc;
 	user->video_ssrc_ = video_ssrc;
+}
+
+void RoomTreeCtl::OnTvnBeginDrag(NMHDR *pNMHDR, LRESULT *pResult)
+{
+	LPNMTREEVIEW pNMTreeView = reinterpret_cast<LPNMTREEVIEW>(pNMHDR);
+
+	HTREEITEM pTreeItem = reinterpret_cast<HTREEITEM>(pNMTreeView->itemNew.hItem);
+
+	if(!ItemHasChildren(pTreeItem))
+	{
+		CString str;
+		str.Format(_T("The currently selected item is \"%s\"\n"),
+			(LPCTSTR)GetItemText(pTreeItem));
+		TRACE(str);
+
+		User *user = reinterpret_cast<User *>(GetItemData(pTreeItem));
+		if(user)
+		{
+			::SendMessage(AfxGetMainWnd()->m_hWnd, WM_BEGINDRAGITEM, 0, (LPARAM)user); // let Mainframe knowns.
+			TRACE("user_id:%ld\n", user->user_id_);
+		}
+	}
+
+	TRACE("TvnBeginDrag x:%ld y:%ld\n", pNMTreeView->ptDrag.x, pNMTreeView->ptDrag.y);
 }
 
 void RoomTreeCtl::MoveToRect(const CRect &rect)

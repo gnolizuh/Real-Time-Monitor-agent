@@ -23,7 +23,7 @@
 #define TOP_SIDE_SIZE          30
 #define SIDE_SIZE              8
 #define MININUM_PADDING        0
-#define MININUM_TREE_CTL_WIDTH 170
+#define MININUM_TREE_CTL_WIDTH 130
 #define MININUM_SCREEN_WIDTH   176
 #define NIMINUM_SCREEN_HEIGHT  144
 #define ROUND(num, fraction) (num) /= (fraction), (num) *= (fraction), (num) / (fraction)

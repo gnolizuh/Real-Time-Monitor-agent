@@ -3,6 +3,7 @@
 
 #include "Com.h"
 
+#pragma pack(1)
 class TcpParameter
 {
 public:
@@ -19,6 +20,7 @@ public:
 	pj_uint16_t proxy_id_;
 	pj_uint16_t client_id_;
 };
+#pragma pack()
 
 class UdpParameter
 {

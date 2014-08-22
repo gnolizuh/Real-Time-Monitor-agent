@@ -4,6 +4,7 @@
 #include <mutex>
 #include <map>
 #include "Com.h"
+#include "resource.h"
 
 using std::lock_guard;
 using std::mutex;
@@ -13,6 +14,8 @@ class User
 {
 public:
 	HTREEITEM   tree_item_;
+	pj_int64_t  user_id_;
+	pj_int32_t  room_id_;
 	pj_uint32_t audio_ssrc_;
 	pj_uint32_t video_ssrc_;
 };
@@ -21,8 +24,9 @@ typedef map<pj_int64_t, User *> users_map_t;
 class Room
 {
 public:
-	HTREEITEM    tree_item_;
-	users_map_t  users_;
+	HTREEITEM   tree_item_;
+	pj_int32_t  room_id_;
+	users_map_t users_;
 };
 
 typedef map<pj_int32_t, Room *> rooms_map_t;
@@ -47,10 +51,11 @@ public:
 	void        HideWindow();
 
 protected:
+	afx_msg void OnTvnBeginDrag(NMHDR *pNMHDR, LRESULT *pResult);
 	DECLARE_MESSAGE_MAP()
 
 private:
-	HTREEITEM   tree_item_;
+	HTREEITEM   root_item_;
 	mutex       rooms_mutex_;
 	rooms_map_t rooms_;
 };

@@ -4,6 +4,7 @@
 
 BEGIN_MESSAGE_MAP(Screen, CWnd)
 	ON_WM_LBUTTONDOWN()
+	ON_WM_LBUTTONUP()
 END_MESSAGE_MAP()
 
 Screen::Screen(pj_uint32_t index,
@@ -43,7 +44,7 @@ pj_status_t Screen::Prepare(const CRect &rect, const CWnd *wrapper, pj_uint32_t 
 	BOOL result;
 	result = this->Create(nullptr, nullptr, WS_BORDER | WS_VISIBLE | WS_CHILD,
 		rect, (CWnd *)wrapper, uid_);
-	pj_assert(result == PJ_TRUE);
+	RETURN_VAL_IF_FAIL(result, PJ_EINVAL);
 
 	window_ = SDL_CreateWindowFrom(GetSafeHwnd());
 	RETURN_VAL_IF_FAIL(window_ != nullptr, PJ_EINVAL);
@@ -69,10 +70,18 @@ pj_status_t Screen::Prepare(const CRect &rect, const CWnd *wrapper, pj_uint32_t 
 
 pj_status_t Screen::Launch()
 {
+	active_ = PJ_TRUE;
 	audio_thread_pool_.Start();
 	video_thread_pool_.Start();
 
 	return PJ_SUCCESS;
+}
+
+void Screen::Destory()
+{
+	active_ = PJ_FALSE;
+	audio_thread_pool_.Stop();
+	video_thread_pool_.Stop();
 }
 
 void Screen::MoveToRect(const CRect &rect)
@@ -285,6 +294,21 @@ pj_status_t Screen::decode_vid_frame()
 	return PJ_SUCCESS;
 }
 
+pj_status_t Screen::LinkRoomUser(User *user)
+{
+	request_to_avs_proxy_link_room_user_t link_room_user;
+	link_room_user.client_request_type = REQUEST_FROM_CLIENT_TO_AVSPROXY_LINK_ROOM_USER;
+	link_room_user.proxy_id = 100;
+	link_room_user.client_id = 10;
+	link_room_user.room_id = user->room_id_;
+	link_room_user.user_id = user->user_id_;
+	link_room_user.link_media_mask = MEDIA_MASK_VIDEO;
+	link_room_user.Serialize();
+
+	pj_ssize_t sndlen = sizeof(link_room_user);
+	return SendTCPPacket(&link_room_user, &sndlen);
+}
+
 pj_status_t Screen::SendTCPPacket(const void *buf, pj_ssize_t *len)
 {
 	lock_guard<mutex> lock(ref_tcp_lock_);
@@ -302,4 +326,11 @@ void Screen::OnLButtonDown(UINT nFlags, CPoint point)
 	{
 		/*SessionMgr::GetInstance()->StopSession(index());*/
 	}
+}
+
+void Screen::OnLButtonUp(UINT nFlags, CPoint point)
+{
+	TRACE("Screen[%u] LButtonUp x:%ld y:%ld\n", index_, point.x, point.y);
+
+	::SendMessage(AfxGetMainWnd()->m_hWnd, WM_ENDDRAGITEM, 0, (LPARAM)this); // let Mainframe knowns.
 }
