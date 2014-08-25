@@ -43,7 +43,6 @@ using std::map;
 
 class ScreenMgr;
 typedef void (ScreenMgr::*screenmgr_func_t)(pj_uint32_t, pj_uint32_t);
-typedef map<pj_uint32_t, pj_uint8_t> index_map_t;
 
 class ScreenMgr
 	: public Noncopyable
@@ -62,6 +61,7 @@ public:
 	pj_status_t Prepare(const pj_str_t &log_file_name);
 	pj_status_t Launch();
 	void        Destory();
+	void        LinkScreenUser(Screen *screen, User *user);
 	void        ChangeLayout(enum_screen_mgr_resolution_t resolution);
 	void        GetSuitedSize(LPRECT lpRect);
 	void        Adjest(pj_int32_t &cx, pj_int32_t &cy);

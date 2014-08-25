@@ -4,6 +4,8 @@
 #include <event.h>
 #include <memory>
 #include <iostream>
+#include <vector>
+#include <map>
 
 #include <pjlib.h>
 #include <pjmedia.h>
@@ -21,6 +23,8 @@ extern "C"
 #include "command.h"
 
 typedef uint32_t room_id_t;
+typedef std::map<pj_uint32_t, pj_uint8_t> index_map_t;
+typedef std::vector<index_map_t> av_index_map_t;
 
 #define MAXIMAL_SCREEN_NUM         9
 #define MAXIMAL_THREAD_NUM         1

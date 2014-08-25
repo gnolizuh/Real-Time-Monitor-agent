@@ -12,17 +12,18 @@ Screen::Screen(pj_uint32_t index,
 			   mutex &ref_tcp_lock)
 	: CWnd()
 	, rect_(0, 0, 0, 0)
-	, wrapper_(NULL)
+	, user_(nullptr)
+	, wrapper_(nullptr)
 	, index_(index)
-	, uid_(0)
-	, window_(NULL)
-	, render_(NULL)
-	, texture_(NULL)
+	, window_(nullptr)
+	, render_(nullptr)
+	, texture_(nullptr)
 	, render_mutex_()
 	, audio_thread_pool_(1)
 	, video_thread_pool_(1)
-	, active_(PJ_FALSE)
+	, media_active_(PJ_FALSE)
 	, call_status_(0)
+	, stream_(nullptr)
 	, ref_tcp_sock_(ref_tcp_sock)
 	, ref_tcp_lock_(ref_tcp_lock)
 {
@@ -32,18 +33,22 @@ Screen::~Screen()
 {
 }
 
-pj_status_t Screen::Prepare(const CRect &rect, const CWnd *wrapper, pj_uint32_t uid)
+pj_status_t Screen::Prepare(pj_pool_t *pool,
+							const CRect &rect,
+							const CWnd *wrapper,
+							pj_uint32_t uid)
 {
+	enum { M = 32 };
+
 	pj_uint32_t width = PJ_ABS(rect.right - rect.left);
 	pj_uint32_t height = PJ_ABS(rect.bottom - rect.top);
 
 	rect_ = rect;
 	wrapper_ = wrapper;
-	uid_ = uid;
 
 	BOOL result;
 	result = this->Create(nullptr, nullptr, WS_BORDER | WS_VISIBLE | WS_CHILD,
-		rect, (CWnd *)wrapper, uid_);
+		rect, (CWnd *)wrapper, uid);
 	RETURN_VAL_IF_FAIL(result, PJ_EINVAL);
 
 	window_ = SDL_CreateWindowFrom(GetSafeHwnd());
@@ -55,22 +60,44 @@ pj_status_t Screen::Prepare(const CRect &rect, const CWnd *wrapper, pj_uint32_t 
 	texture_ = SDL_CreateTexture(render_, SDL_PIXELFORMAT_IYUV, SDL_TEXTUREACCESS_STREAMING, width, height);
 	RETURN_VAL_IF_FAIL(texture_ != nullptr, PJ_EINVAL);
 
-	/*pj_status_t status;
-	pj_uint32_t audio_ssrc = pj_rand();
-	status = pjmedia_rtp_session_init(&audio_session_, RTP_MEDIA_AUDIO_TYPE, audio_ssrc);
-	RETURN_VAL_IF_FAIL(status == PJ_SUCCESS, status);
+	/* Allocate stream */
+    stream_ = PJ_POOL_ZALLOC_T(pool, vid_stream_t);
+    PJ_ASSERT_RETURN(stream_ != NULL, PJ_ENOMEM);
 
-	pj_uint32_t video_ssrc;
-	do{ video_ssrc = pj_rand(); } while(video_ssrc == audio_ssrc);
-	status = pjmedia_rtp_session_init(&video_session_, RTP_MEDIA_VIDEO_TYPE, video_ssrc);
-	RETURN_VAL_IF_FAIL(status == PJ_SUCCESS, status);*/
+	stream_->dec = PJ_POOL_ZALLOC_T(pool, vid_channel_t);
+    PJ_ASSERT_RETURN(stream_->dec != NULL, PJ_ENOMEM);
+
+	stream_->dec_max_size = 264 * 216 * 4;
+
+	unsigned chunks_per_frm = PJMEDIA_MAX_VIDEO_ENC_FRAME_SIZE / PJMEDIA_MAX_MRU;
+	int frm_ptime = 1000 * 1 / 25;
+	unsigned jb_max = 500 * chunks_per_frm / frm_ptime;
+
+	stream_->rx_frame_cnt = chunks_per_frm * 2;
+    stream_->rx_frames = (pjmedia_frame *)pj_pool_calloc(pool, stream_->rx_frame_cnt,
+                                       sizeof(stream_->rx_frames[0]));
+	pj_str_t name;
+	name.ptr = (char*) pj_pool_alloc(pool, M);
+    name.slen = pj_ansi_snprintf(name.ptr, M, "%s%p", "vstenc", stream_);
+
+	pj_status_t status;
+	status = pjmedia_jbuf_create(pool, &name,
+		PJMEDIA_MAX_MRU,
+		1000 * 1 / 25,
+		jb_max, &stream_->jb);
+	PJ_ASSERT_RETURN(status == PJ_SUCCESS, PJ_EINVAL);
+
+	status = pjmedia_rtp_session_init(&stream_->dec->rtp, RTP_MEDIA_AUDIO_TYPE, 0);
+	PJ_ASSERT_RETURN(status == PJ_SUCCESS, PJ_EINVAL);
+
+	status = pj_mutex_create_simple(pool, NULL, &stream_->jb_mutex);
+	PJ_ASSERT_RETURN(status == PJ_SUCCESS, PJ_EINVAL);
 
 	return PJ_SUCCESS;
 }
 
 pj_status_t Screen::Launch()
 {
-	active_ = PJ_TRUE;
 	audio_thread_pool_.Start();
 	video_thread_pool_.Start();
 
@@ -79,7 +106,6 @@ pj_status_t Screen::Launch()
 
 void Screen::Destory()
 {
-	active_ = PJ_FALSE;
 	audio_thread_pool_.Stop();
 	video_thread_pool_.Stop();
 }
@@ -110,6 +136,7 @@ void Screen::Painting(const SDL_Rect &rect, const void *pixels, int pitch)
 
 void Screen::AudioScene(const pj_uint8_t *rtp_frame, pj_uint16_t framelen)
 {
+	RETURN_IF_FAIL(media_active_);
 	RETURN_IF_FAIL(framelen > 0);
 
 	audio_thread_pool_.Schedule([=]()
@@ -123,11 +150,11 @@ void Screen::AudioScene(const pj_uint8_t *rtp_frame, pj_uint16_t framelen)
 
 void Screen::OnRxAudio(vector<pj_uint8_t> &audio_frame)
 {
-	
 }
 
 void Screen::VideoScene(const pj_uint8_t *rtp_frame, pj_uint16_t framelen)
 {
+	RETURN_IF_FAIL(media_active_);
 	RETURN_IF_FAIL(framelen > 0);
 
 	video_thread_pool_.Schedule([=]()
@@ -137,8 +164,8 @@ void Screen::VideoScene(const pj_uint8_t *rtp_frame, pj_uint16_t framelen)
 
 		OnRxVideo(frame_copy);
 
-		if (stream_.dec_frame.type == PJMEDIA_FRAME_TYPE_VIDEO &&
-			stream_.dec_frame.size > 0)
+		if (stream_->dec_frame.type == PJMEDIA_FRAME_TYPE_VIDEO &&
+			stream_->dec_frame.size > 0)
 		{
 			// Painting();
 		}
@@ -155,50 +182,49 @@ void Screen::OnRxVideo(vector<pj_uint8_t> &video_frame)
 	unsigned payloadlen;
 	pjmedia_rtp_status seq_st;
 
-	status = pjmedia_rtp_decode_rtp(&stream_.dec->rtp, &video_frame, (int)video_frame.size(),
+	status = pjmedia_rtp_decode_rtp(&stream_->dec->rtp, &video_frame[0], (int)video_frame.size(),
 				&hdr, &payload, &payloadlen);
 	if(status == PJ_SUCCESS)
 	{
-		pjmedia_rtp_session_update2(&stream_.dec->rtp, hdr, &seq_st, PJ_TRUE);
-		if (seq_st.status.flag.bad || payloadlen == 0)
+		pjmedia_rtp_session_update2(&stream_->dec->rtp, hdr, &seq_st, PJ_TRUE);
+		if (payloadlen == 0)
 			return;
 
-		if (stream_.dec->paused)
-			return;
+		TRACE("pt:%u ssrc:%u seq:%u ts:%u payloadlen:%u\n", hdr->pt, hdr->ssrc, hdr->seq, hdr->ts, payloadlen);
 
-		pj_mutex_lock(stream_.jb_mutex);
+		pj_mutex_lock(stream_->jb_mutex);
 
-		if ((pj_ntohl(hdr->ts) != stream_.dec_frame.timestamp.u32.lo) || hdr->m) {
+		if ((pj_ntohl(hdr->ts) != stream_->dec_frame.timestamp.u32.lo) || hdr->m) {
 			/* Only decode if we don't already have decoded one,
 				* unless the jb is full.
 				*/
 			pj_bool_t can_decode = PJ_FALSE;
 
-			if (pjmedia_jbuf_is_full(stream_.jb)) {
+			if (pjmedia_jbuf_is_full(stream_->jb)) {
 				can_decode = PJ_TRUE;
 			}
-			else if (stream_.dec_frame.size == 0) {
+			else if (stream_->dec_frame.size == 0) {
 				can_decode = PJ_TRUE;
 			}
 
 			if (can_decode) {
-				stream_.dec_frame.size = 176 * 144 * 4;  // Width * Height * max_color_depth(4)
+				stream_->dec_frame.size = stream_->dec_max_size;  // Width * Height * max_color_depth(4)
 				if (decode_vid_frame() != PJ_SUCCESS) {
-					stream_.dec_frame.size = 0;
+					stream_->dec_frame.size = 0;
 				}
 			}
 		}
 
 		if (seq_st.status.flag.restart) {
-			status = pjmedia_jbuf_reset(stream_.jb);
+			status = pjmedia_jbuf_reset(stream_->jb);
 			PJ_LOG(4,(__FILE__, "Jitter buffer reset"));
 		} else {
 			/* Just put the payload into jitter buffer */
-			pjmedia_jbuf_put_frame3(stream_.jb, payload, payloadlen, 0, 
-				pj_ntohs(hdr->seq), pj_ntohl(hdr->ts), NULL);
+			pjmedia_jbuf_put_frame3(stream_->jb, payload, payloadlen, 0, 
+				hdr->seq, hdr->ts, NULL);
 		}
-		
-		pj_mutex_unlock(stream_.jb_mutex);
+
+		pj_mutex_unlock(stream_->jb_mutex);
 	}
 }
 
@@ -217,7 +243,7 @@ pj_status_t Screen::decode_vid_frame()
 	int seq;
 
 	/* Peek frame from jitter buffer. */
-	pjmedia_jbuf_peek_frame(stream_.jb, cnt, NULL, NULL,
+	pjmedia_jbuf_peek_frame(stream_->jb, cnt, NULL, NULL,
 				&ptype, NULL, &ts, &seq);
 	if (ptype == PJMEDIA_JB_NORMAL_FRAME) {
 	    if (last_ts == 0) {
@@ -239,63 +265,95 @@ pj_status_t Screen::decode_vid_frame()
 	unsigned i;
 
 	/* Generate frame bitstream from the payload */
-	if (cnt > stream_.rx_frame_cnt) {
-		PJ_LOG(1,(stream_.dec->port.info.name.ptr,
-		      "Discarding %u frames because array is full!",
-		      cnt - stream_.rx_frame_cnt));
-	    pjmedia_jbuf_remove_frame(stream_.jb, cnt - stream_.rx_frame_cnt);
-	    cnt = stream_.rx_frame_cnt;
+	if (cnt > stream_->rx_frame_cnt) {
+		PJ_LOG(1,(__FILE__, "Discarding %u frames because array is full!",
+		      cnt - stream_->rx_frame_cnt));
+	    pjmedia_jbuf_remove_frame(stream_->jb, cnt - stream_->rx_frame_cnt);
+	    cnt = stream_->rx_frame_cnt;
 	}
 
 	for (i = 0; i < cnt; ++i) {
 	    char ptype;
 
-	    stream_.rx_frames[i].type = PJMEDIA_FRAME_TYPE_VIDEO;
-	    stream_.rx_frames[i].timestamp.u64 = last_ts;
-	    stream_.rx_frames[i].bit_info = 0;
+	    stream_->rx_frames[i].type = PJMEDIA_FRAME_TYPE_VIDEO;
+	    stream_->rx_frames[i].timestamp.u64 = last_ts;
+	    stream_->rx_frames[i].bit_info = 0;
 
 	    /* We use jbuf_peek_frame() as it will returns the pointer of
 	     * the payload (no buffer and memcpy needed), just as we need.
 	     */
-	    pjmedia_jbuf_peek_frame(stream_.jb, i,
-				    (const void**)&stream_.rx_frames[i].buf,
-				    &stream_.rx_frames[i].size, &ptype,
+	    pjmedia_jbuf_peek_frame(stream_->jb, i,
+				    (const void**)&stream_->rx_frames[i].buf,
+				    &stream_->rx_frames[i].size, &ptype,
 				    NULL, NULL, NULL);
 
 	    if (ptype != PJMEDIA_JB_NORMAL_FRAME) {
 		/* Packet lost, must set payload to NULL and keep going */
-		stream_.rx_frames[i].buf = NULL;
-		stream_.rx_frames[i].size = 0;
-		stream_.rx_frames[i].type = PJMEDIA_FRAME_TYPE_NONE;
+		stream_->rx_frames[i].buf = NULL;
+		stream_->rx_frames[i].size = 0;
+		stream_->rx_frames[i].type = PJMEDIA_FRAME_TYPE_NONE;
 		continue;
 	    }
 	}
 
 	/* Decode */
-	status = pjmedia_vid_codec_decode(stream_.codec, cnt,
-	                                  stream_.rx_frames,
-									  (unsigned)stream_.dec_frame.size, &stream_.dec_frame);
+	/*status = pjmedia_vid_codec_decode(stream_->codec, cnt,
+	                                  stream_->rx_frames,
+									  (unsigned)stream_->dec_frame.size, &stream_->dec_frame);
 	if (status != PJ_SUCCESS) {
-		stream_.dec_frame.type = PJMEDIA_FRAME_TYPE_NONE;
-	    stream_.dec_frame.size = 0;
-	}
+		stream_->dec_frame.type = PJMEDIA_FRAME_TYPE_NONE;
+	    stream_->dec_frame.size = 0;
+	}*/
 
-	pjmedia_jbuf_remove_frame(stream_.jb, cnt);
+	stream_->dec_frame.timestamp.u32.lo = last_ts;
+	stream_->dec_frame.size = 0;
+
+	TRACE("decode a frame success ts:%u frame_cnt:%u\n", last_ts, cnt);
+
+	pjmedia_jbuf_remove_frame(stream_->jb, cnt);
     }
 
 	/* Learn remote frame rate after successful decoding */
-    if (stream_.dec_frame.type == PJMEDIA_FRAME_TYPE_VIDEO
-		&& stream_.dec_frame.size)
+    if (stream_->dec_frame.type == PJMEDIA_FRAME_TYPE_VIDEO
+		&& stream_->dec_frame.size)
     {
-		stream_.last_dec_seq = frm_last_seq;
-		stream_.last_dec_ts = last_ts;
+		stream_->last_dec_seq = frm_last_seq;
+		stream_->last_dec_ts = last_ts;
 	}
 
-	return PJ_SUCCESS;
+	return got_frame ? PJ_SUCCESS : PJ_ENOTFOUND;
 }
 
-pj_status_t Screen::LinkRoomUser(User *user)
+pj_status_t Screen::LinkRoomUser(av_index_map_t &av_index_map, User *user)
 {
+	enum {AUDIO_INDEX, VIDEO_INDEX};
+
+	RETURN_VAL_IF_FAIL(user, PJ_EINVAL);
+
+	pj_status_t status;
+	pj_ssize_t sndlen;
+	if(user_ != nullptr)
+	{
+		request_to_avs_proxy_unlink_room_user_t unlink_room_user;
+		unlink_room_user.client_request_type = REQUEST_FROM_CLIENT_TO_AVSPROXY_LINK_ROOM_USER;
+		unlink_room_user.proxy_id = 100;
+		unlink_room_user.client_id = 10;
+		unlink_room_user.room_id = user_->room_id_;
+		unlink_room_user.user_id = user_->user_id_;
+		unlink_room_user.unlink_media_mask = MEDIA_MASK_VIDEO;
+		unlink_room_user.Serialize();
+
+		av_index_map[AUDIO_INDEX].erase(user_->audio_ssrc_);
+		av_index_map[VIDEO_INDEX].erase(user_->video_ssrc_);
+
+		sndlen = sizeof(unlink_room_user);
+		status = SendTCPPacket(&unlink_room_user, &sndlen);
+		RETURN_VAL_IF_FAIL(status == PJ_SUCCESS, status);
+	}
+
+	media_active_ = PJ_TRUE;
+	user_ = user;
+
 	request_to_avs_proxy_link_room_user_t link_room_user;
 	link_room_user.client_request_type = REQUEST_FROM_CLIENT_TO_AVSPROXY_LINK_ROOM_USER;
 	link_room_user.proxy_id = 100;
@@ -305,8 +363,31 @@ pj_status_t Screen::LinkRoomUser(User *user)
 	link_room_user.link_media_mask = MEDIA_MASK_VIDEO;
 	link_room_user.Serialize();
 
-	pj_ssize_t sndlen = sizeof(link_room_user);
+	av_index_map[AUDIO_INDEX].insert(index_map_t::value_type(user->audio_ssrc_, index_));
+	av_index_map[VIDEO_INDEX].insert(index_map_t::value_type(user->video_ssrc_, index_));
+
+	sndlen = sizeof(link_room_user);
 	return SendTCPPacket(&link_room_user, &sndlen);
+}
+
+pj_status_t Screen::UnlinkRoomUser(av_index_map_t &av_index_map)
+{
+	RETURN_VAL_IF_FAIL(user_, PJ_EINVAL);
+
+	request_to_avs_proxy_unlink_room_user_t unlink_room_user;
+	unlink_room_user.client_request_type = REQUEST_FROM_CLIENT_TO_AVSPROXY_LINK_ROOM_USER;
+	unlink_room_user.proxy_id = 100;
+	unlink_room_user.client_id = 10;
+	unlink_room_user.room_id = user_->room_id_;
+	unlink_room_user.user_id = user_->user_id_;
+	unlink_room_user.unlink_media_mask = MEDIA_MASK_VIDEO;
+	unlink_room_user.Serialize();
+
+	media_active_ = PJ_FALSE;
+	user_ = nullptr;
+
+	pj_ssize_t sndlen = sizeof(unlink_room_user);
+	return SendTCPPacket(&unlink_room_user, &sndlen);
 }
 
 pj_status_t Screen::SendTCPPacket(const void *buf, pj_ssize_t *len)

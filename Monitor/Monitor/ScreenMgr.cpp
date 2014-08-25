@@ -134,7 +134,7 @@ pj_status_t ScreenMgr::Prepare(const pj_str_t &log_file_name)
 
 	for(pj_uint32_t idx = 0; idx < screens_.size(); ++ idx)
 	{
-		status = screens_[idx]->Prepare(CRect(0, 0, width_, height_), wrapper_, IDC_WALL_BASE_INDEX + idx);
+		status = screens_[idx]->Prepare(pool_, CRect(0, 0, width_, height_), wrapper_, IDC_WALL_BASE_INDEX + idx);
 	}
 
 	return status;
@@ -166,6 +166,11 @@ void ScreenMgr::Destory()
 
 	pj_sock_close(local_tcp_sock_);
 	pj_sock_close(local_udp_sock_);
+}
+
+void ScreenMgr::LinkScreenUser(Screen *screen, User *user)
+{
+	screen->LinkRoomUser(av_index_map_, user);
 }
 
 void ScreenMgr::ChangeLayout(enum_screen_mgr_resolution_t resolution)

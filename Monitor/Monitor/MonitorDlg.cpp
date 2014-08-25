@@ -115,8 +115,8 @@ BOOL CMonitorDlg::OnInitDialog()
 	av_register_all();
 	pj_init();
 
-	pj_str_t avsproxy_ip = pj_str("192.168.6.54");
-	pj_str_t local_ip = pj_str("192.168.6.54");
+	pj_str_t avsproxy_ip = pj_str("192.168.6.39");
+	pj_str_t local_ip = pj_str("192.168.6.39");
 	g_screen_mgr = new ScreenMgr(this, 100, avsproxy_ip, 12000, 10, local_ip, 15000);
 
 	pj_status_t status;
@@ -239,12 +239,11 @@ void CMonitorDlg::OnChangeLayout()
 LRESULT CMonitorDlg::OnBeginDragItem(WPARAM wParam, LPARAM lParam)
 {
 	User *user = reinterpret_cast<User *>(lParam);
-	if(user)
-	{
-		TRACE("CMonitorDlg::OnBeginDragItem user_id:%ld\n", user->user_id_);
-		is_draging_ = PJ_TRUE;
-		draging_user_ = user;
-	}
+	RETURN_VAL_IF_FAIL(user, true);
+
+	TRACE("CMonitorDlg::OnBeginDragItem user_id:%ld\n", user->user_id_);
+	is_draging_ = PJ_TRUE;
+	draging_user_ = user;
 
 	return true;
 }
@@ -252,13 +251,12 @@ LRESULT CMonitorDlg::OnBeginDragItem(WPARAM wParam, LPARAM lParam)
 LRESULT CMonitorDlg::OnEndDragItem(WPARAM wParam, LPARAM lParam)
 {
 	Screen *screen = reinterpret_cast<Screen *>(lParam);
-	if(screen && draging_user_ && is_draging_)
-	{
-		screen->LinkRoomUser(draging_user_);
+	RETURN_VAL_IF_FAIL((screen && draging_user_ && is_draging_), true);
 
-		is_draging_ = PJ_FALSE;
-		draging_user_ = nullptr;
-	}
+	g_screen_mgr->LinkScreenUser(screen, draging_user_);
+
+	is_draging_ = PJ_FALSE;
+	draging_user_ = nullptr;
 
 	return true;
 }

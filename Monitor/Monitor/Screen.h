@@ -16,8 +16,6 @@ using std::vector;
 
 typedef struct vid_channel
 {
-    pjmedia_dir		    dir;	    /**< Channel direction.	    */
-    pjmedia_port	    port;	    /**< Port interface.	    */
     unsigned		    pt;		    /**< Payload type.		    */
     pj_bool_t		    paused;	    /**< Paused?.		    */
     void		       *buf;	    /**< Output buffer.		    */
@@ -27,7 +25,6 @@ typedef struct vid_channel
 
 typedef struct vid_stream
 {
-	pj_pool_t         *own_pool;        /**< Internal pool.		    */
 	vid_channel_t     *dec;	            /**< Decoding channel.	    */
 	pj_mutex_t        *jb_mutex;
     pjmedia_jbuf      *jb;	            /**< Jitter buffer.		    */
@@ -36,8 +33,8 @@ typedef struct vid_stream
 	pjmedia_frame      dec_frame;	    /**< Current decoded frame.     */
 	unsigned           rx_frame_cnt;    /**< # of array in rx_frames    */
     pjmedia_frame     *rx_frames;	    /**< Temp. buffer for incoming frame assembly.	    */
-	pj_uint32_t		   last_dec_ts;   /**< Last decoded timestamp.    */
-    int			       last_dec_seq;  /**< Last decoded sequence.     */
+	pj_uint32_t		   last_dec_ts;     /**< Last decoded timestamp.    */
+    int			       last_dec_seq;    /**< Last decoded sequence.     */
 } vid_stream_t;
 
 class Screen
@@ -48,10 +45,12 @@ public:
 		pj_sock_t &ref_tcp_sock,
 		mutex &ref_tcp_lock);
 	virtual ~Screen();
-	pj_status_t Prepare(const CRect &, const CWnd *, pj_uint32_t);
+	pj_status_t Prepare(pj_pool_t *pool, const CRect &rect, const CWnd *wrapper, pj_uint32_t);
 	pj_status_t Launch();
 	void        Destory();
-	pj_status_t LinkRoomUser(User *user);
+	pj_status_t LinkRoomUser(av_index_map_t &av_index_map, User *user);
+	pj_status_t UnlinkRoomUser(av_index_map_t &av_index_map);
+	inline pj_bool_t HasLinkedUser() { return user_ != nullptr; }
 	void MoveToRect(const CRect &);
 	void HideWindow();
 	void Painting(const SDL_Rect &, const void *, int);
@@ -74,13 +73,13 @@ private:
 	const pj_uint32_t index_;
 	mutex             render_mutex_;
 	CRect             rect_;
-	pj_uint32_t       uid_;
+	const User       *user_;
 	SDL_Window       *window_;
 	SDL_Renderer     *render_;
 	SDL_Texture      *texture_;
-	pj_bool_t         active_;
+	pj_bool_t         media_active_;
 	pj_uint32_t       call_status_;
-	vid_stream_t      stream_;
+	vid_stream_t     *stream_;
 	pj_sock_t        &ref_tcp_sock_;
 	mutex            &ref_tcp_lock_;
 	PoolThread<std::function<void ()>> audio_thread_pool_;
