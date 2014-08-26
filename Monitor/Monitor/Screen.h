@@ -4,6 +4,8 @@
 #include <vector>
 #include <thread>
 #include <mutex>
+#include <pjmedia-codec.h>
+
 #include "resource.h"
 #include "RoomTreeCtl.h"
 #include "PoolThread.hpp"
@@ -82,6 +84,7 @@ private:
 	vid_stream_t     *stream_;
 	pj_sock_t        &ref_tcp_sock_;
 	mutex            &ref_tcp_lock_;
+	mutex             video_mutex_;
 	PoolThread<std::function<void ()>> audio_thread_pool_;
 	PoolThread<std::function<void ()>> video_thread_pool_;
 };

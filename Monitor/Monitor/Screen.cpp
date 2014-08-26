@@ -26,6 +26,7 @@ Screen::Screen(pj_uint32_t index,
 	, stream_(nullptr)
 	, ref_tcp_sock_(ref_tcp_sock)
 	, ref_tcp_lock_(ref_tcp_lock)
+	, video_mutex_()
 {
 }
 
@@ -85,13 +86,44 @@ pj_status_t Screen::Prepare(pj_pool_t *pool,
 		PJMEDIA_MAX_MRU,
 		1000 * 1 / 25,
 		jb_max, &stream_->jb);
-	PJ_ASSERT_RETURN(status == PJ_SUCCESS, PJ_EINVAL);
+	PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
 
 	status = pjmedia_rtp_session_init(&stream_->dec->rtp, RTP_MEDIA_AUDIO_TYPE, 0);
-	PJ_ASSERT_RETURN(status == PJ_SUCCESS, PJ_EINVAL);
+	PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
 
 	status = pj_mutex_create_simple(pool, NULL, &stream_->jb_mutex);
-	PJ_ASSERT_RETURN(status == PJ_SUCCESS, PJ_EINVAL);
+	PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
+
+	pjmedia_vid_codec_mgr *codec_mgr = pjmedia_vid_codec_mgr_instance();
+
+	pj_str_t h264_id = pj_str("H264");
+	unsigned info_cnt;
+	const pjmedia_vid_codec_info *codec_info;
+	status = pjmedia_vid_codec_mgr_find_codecs_by_id(codec_mgr,
+		&h264_id, 
+		&info_cnt, 
+		&codec_info,
+		NULL);
+	PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
+
+	status = pjmedia_vid_codec_mgr_alloc_codec(codec_mgr, 
+		codec_info,
+		&stream_->codec);
+	PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
+
+	 /* Init and open the codec. */
+    status = pjmedia_vid_codec_init(stream_->codec, pool);
+    PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
+
+	pjmedia_vid_codec_param info_param;
+	status = pjmedia_vid_codec_mgr_get_default_param(codec_mgr,
+		codec_info,
+		&info_param);
+	PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
+
+    status = pjmedia_vid_codec_open(stream_->codec, &info_param);
+    if (status != PJ_SUCCESS)
+	return status;
 
 	return PJ_SUCCESS;
 }
@@ -157,8 +189,9 @@ void Screen::VideoScene(const pj_uint8_t *rtp_frame, pj_uint16_t framelen)
 	RETURN_IF_FAIL(media_active_);
 	RETURN_IF_FAIL(framelen > 0);
 
-	video_thread_pool_.Schedule([=]()
-	{
+	/*video_thread_pool_.Schedule([=]()
+	{*/
+		lock_guard<mutex> lock(video_mutex_);
 		vector<pj_uint8_t> frame_copy;
 		frame_copy.assign(rtp_frame, rtp_frame + framelen);
 
@@ -169,7 +202,7 @@ void Screen::VideoScene(const pj_uint8_t *rtp_frame, pj_uint16_t framelen)
 		{
 			// Painting();
 		}
-	});
+	/*});*/
 }
 
 void Screen::OnRxVideo(vector<pj_uint8_t> &video_frame)
@@ -222,6 +255,16 @@ void Screen::OnRxVideo(vector<pj_uint8_t> &video_frame)
 			/* Just put the payload into jitter buffer */
 			pjmedia_jbuf_put_frame3(stream_->jb, payload, payloadlen, 0, 
 				hdr->seq, hdr->ts, NULL);
+
+			pj_uint8_t *ppayload = (pj_uint8_t *)payload;
+			if(payloadlen > 11)
+			{
+				TRACE("payload bitinfo: [%x %x %x %x %x %x %x %x %x %x %x %x] seq:%u ts:%u\n",
+					ppayload[0], ppayload[1], ppayload[2], ppayload[3],
+					ppayload[4], ppayload[5], ppayload[6], ppayload[7],
+					ppayload[8], ppayload[9], ppayload[10], ppayload[11],
+					hdr->seq, hdr->ts);
+			}
 		}
 
 		pj_mutex_unlock(stream_->jb_mutex);
@@ -297,18 +340,22 @@ pj_status_t Screen::decode_vid_frame()
 	}
 
 	/* Decode */
-	/*status = pjmedia_vid_codec_decode(stream_->codec, cnt,
+	status = pjmedia_vid_codec_decode(stream_->codec, cnt,
 	                                  stream_->rx_frames,
 									  (unsigned)stream_->dec_frame.size, &stream_->dec_frame);
 	if (status != PJ_SUCCESS) {
 		stream_->dec_frame.type = PJMEDIA_FRAME_TYPE_NONE;
 	    stream_->dec_frame.size = 0;
-	}*/
+	}
+
+	TRACE("%u frames need to be decode:\n", cnt);
+	for(unsigned i = 0; i < cnt; ++ i)
+	{
+		TRACE("\t[%u]frame ts:%u size:%u \n", i, stream_->rx_frames[i].timestamp.u32.lo, stream_->rx_frames[i].size);
+	}
 
 	stream_->dec_frame.timestamp.u32.lo = last_ts;
 	stream_->dec_frame.size = 0;
-
-	TRACE("decode a frame success ts:%u frame_cnt:%u\n", last_ts, cnt);
 
 	pjmedia_jbuf_remove_frame(stream_->jb, cnt);
     }

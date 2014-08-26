@@ -52,8 +52,6 @@ public:
 					package();
 				} while ( !msg_queue_.Empty() );
 			}
-
-			std::cout<<"thread:"<<thread_index_<<" quit!!\n";
 		});
 	}
 

@@ -101,6 +101,25 @@ pj_status_t ScreenMgr::Prepare(const pj_str_t &log_file_name)
 
 	status = log_open(pool_, log_file_name);
 
+	/* Init video format manager */
+    status = pjmedia_video_format_mgr_create(pool_, 64, 0, NULL);
+	PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
+
+	/* Init video converter manager */
+    status = pjmedia_converter_mgr_create(pool_, NULL);
+	PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
+
+    /* Init event manager */
+    status = pjmedia_event_mgr_create(pool_, 0, NULL);
+	PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
+
+	/* Init video codec manager */
+    status = pjmedia_vid_codec_mgr_create(pool_, NULL);
+	PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
+
+	status = pjmedia_codec_ffmpeg_vid_init(NULL, &caching_pool_.factory);
+	PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
+
 	evbase_ = event_base_new();
 	RETURN_VAL_IF_FAIL( evbase_ != nullptr, -1 );
 
