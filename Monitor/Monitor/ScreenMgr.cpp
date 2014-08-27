@@ -405,14 +405,11 @@ void ScreenMgr::UdpParamScene(const pjmedia_rtp_hdr *rtp_hdr,
 
 	RETURN_IF_FAIL(rtp_hdr && datagram && datalen > 0);
 
-	UdpParameter *param  = new RTPParameter();
-	UdpScene     *scene  = new RTPScene();
-	Screen       *screen = nullptr;
-
 	const pj_uint8_t media_index = (rtp_hdr->pt == RTP_MEDIA_VIDEO_TYPE) ? VIDEO_INDEX : 
 		(rtp_hdr->pt == RTP_MEDIA_AUDIO_TYPE ? AUDIO_INDEX : -1);
 	RETURN_IF_FAIL(media_index != -1);
 
+	Screen *screen = nullptr;
 	index_map_t::iterator pscreen_idx = av_index_map_[media_index].find(rtp_hdr->ssrc);
 	if ( pscreen_idx != av_index_map_[media_index].end() )
 	{
@@ -440,8 +437,6 @@ void ScreenMgr::EventOnTcpRead(evutil_socket_t fd, short event)
 		(char *)(tcp_storage_ + tcp_storage_offset_),
 		&recvlen,
 		0);
-
-	RETURN_IF_FAIL(status == PJ_SUCCESS);
 
 	if (recvlen > 0)
 	{

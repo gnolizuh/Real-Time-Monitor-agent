@@ -13,6 +13,19 @@ using std::map;
 class User
 {
 public:
+	inline bool operator!=(const User &user) const
+	{
+		return !operator==(user);
+	}
+
+	inline bool operator==(const User &user) const
+	{
+		return (this->user_id_ == user.user_id_
+			&& this->room_id_ == user.room_id_
+			&& this->audio_ssrc_ == user.audio_ssrc_
+			&& this->video_ssrc_ == user.video_ssrc_);
+	}
+
 	HTREEITEM   tree_item_;
 	pj_int64_t  user_id_;
 	pj_int32_t  room_id_;

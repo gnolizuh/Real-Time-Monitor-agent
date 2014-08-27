@@ -15,7 +15,6 @@
 #include "ModMediaScene.h"
 #include "AddUserScene.h"
 #include "DelUserScene.h"
-#include "RTPScene.h"
 #include "KeepAliveScene.h"
 #include "AvsProxyStructs.h"
 #include "RoomTreeCtl.h"

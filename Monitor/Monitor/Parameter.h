@@ -15,6 +15,8 @@ public:
 		pj_ntoh_assign(storage, storage_len, client_id_);
 	}
 
+	virtual ~TcpParameter() {}
+
 	pj_uint16_t length_;
 	pj_uint16_t client_request_type_;
 	pj_uint16_t proxy_id_;
@@ -24,6 +26,8 @@ public:
 
 class UdpParameter
 {
+public:
+	virtual ~UdpParameter() {}
 };
 
 #endif

@@ -55,14 +55,13 @@ public:
 	inline pj_bool_t HasLinkedUser() { return user_ != nullptr; }
 	void MoveToRect(const CRect &);
 	void HideWindow();
-	void Painting(const SDL_Rect &, const void *, int);
+	void Painting(const void *pixels);
 	void AudioScene(const pj_uint8_t *rtp_frame, pj_uint16_t framelen);
-	void OnRxAudio(vector<pj_uint8_t> &audio_frame);
+	void OnRxAudio(const vector<pj_uint8_t> &audio_frame);
 	void VideoScene(const pj_uint8_t *rtp_frame, pj_uint16_t framelen);
-	void OnRxVideo(vector<pj_uint8_t> &video_frame);
+	void OnRxVideo(const vector<pj_uint8_t> &video_frame);
 
 protected:
-	afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
 	afx_msg void OnLButtonUp(UINT nFlags, CPoint point);
 	DECLARE_MESSAGE_MAP()
 
@@ -71,10 +70,8 @@ private:
 	pj_status_t decode_vid_frame();
 
 private:
-	const CWnd       *wrapper_;
 	const pj_uint32_t index_;
 	mutex             render_mutex_;
-	CRect             rect_;
 	const User       *user_;
 	SDL_Window       *window_;
 	SDL_Renderer     *render_;

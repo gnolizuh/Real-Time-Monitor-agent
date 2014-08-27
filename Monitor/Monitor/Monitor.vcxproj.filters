@@ -81,9 +81,6 @@
     <ClInclude Include="DelUserScene.h">
       <Filter>Scene\AvsProxyScene\inc</Filter>
     </ClInclude>
-    <ClInclude Include="RTPScene.h">
-      <Filter>Scene\AvsProxyScene\inc</Filter>
-    </ClInclude>
     <ClInclude Include="KeepAliveScene.h">
       <Filter>Scene\AvsProxyScene\inc</Filter>
     </ClInclude>
@@ -123,9 +120,6 @@
       <Filter>Scene\AvsProxyScene\src</Filter>
     </ClCompile>
     <ClCompile Include="DelUserScene.cpp">
-      <Filter>Scene\AvsProxyScene\src</Filter>
-    </ClCompile>
-    <ClCompile Include="RTPScene.cpp">
       <Filter>Scene\AvsProxyScene\src</Filter>
     </ClCompile>
     <ClCompile Include="KeepAliveScene.cpp">
