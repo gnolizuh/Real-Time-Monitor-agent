@@ -138,19 +138,6 @@ pj_status_t ScreenMgr::Prepare(const pj_str_t &log_file_name)
 
 	rooms_tree_ctl_.Prepare(wrapper_, IDC_ROOM_TREE_CTL_INDEX);
 
-	/*Room *room;
-	room = rooms_tree_ctl_.AddRoom(100000);
-	rooms_tree_ctl_.AddUser(room, 1);
-	rooms_tree_ctl_.AddUser(room, 2);
-
-	room = rooms_tree_ctl_.AddRoom(100001);
-	rooms_tree_ctl_.AddUser(room, 11);
-	rooms_tree_ctl_.AddUser(room, 12);
-
-	room = rooms_tree_ctl_.AddRoom(100002);
-	rooms_tree_ctl_.AddUser(room, 21);
-	rooms_tree_ctl_.AddUser(room, 22);*/
-
 	for(pj_uint32_t idx = 0; idx < screens_.size(); ++ idx)
 	{
 		status = screens_[idx]->Prepare(pool_, CRect(0, 0, width_, height_), wrapper_, IDC_WALL_BASE_INDEX + idx);

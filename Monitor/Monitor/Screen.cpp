@@ -62,7 +62,7 @@ pj_status_t Screen::Prepare(pj_pool_t *pool,
 	stream_->dec = PJ_POOL_ZALLOC_T(pool, vid_channel_t);
     PJ_ASSERT_RETURN(stream_->dec != NULL, PJ_ENOMEM);
 
-	stream_->dec_max_size = 264 * 216 * 4;
+	stream_->dec_max_size = WIDTH * HEIGHT * 4;
 	stream_->dec_frame.buf = pj_pool_alloc(pool, stream_->dec_max_size);
 
 	unsigned chunks_per_frm = PJMEDIA_MAX_VIDEO_ENC_FRAME_SIZE / PJMEDIA_MAX_MRU;
@@ -83,7 +83,7 @@ pj_status_t Screen::Prepare(pj_pool_t *pool,
 		jb_max, &stream_->jb);
 	PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
 
-	status = pjmedia_rtp_session_init(&stream_->dec->rtp, RTP_MEDIA_AUDIO_TYPE, 0);
+	status = pjmedia_rtp_session_init(&stream_->dec->rtp, RTP_MEDIA_VIDEO_TYPE, 0);
 	PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
 
 	status = pj_mutex_create_simple(pool, NULL, &stream_->jb_mutex);
@@ -165,15 +165,9 @@ void Screen::Painting(const void *pixels)
 void Screen::AudioScene(const pj_uint8_t *rtp_frame, pj_uint16_t framelen)
 {
 	RETURN_IF_FAIL(media_active_);
-	RETURN_IF_FAIL(framelen > 0);
+	RETURN_IF_FAIL(rtp_frame && framelen > 0);
 
-	audio_thread_pool_.Schedule([=]()
-	{
-		vector<pj_uint8_t> frame_copy;
-		frame_copy.assign(rtp_frame, rtp_frame + framelen);
-
-		OnRxAudio(frame_copy);
-	});
+	audio_thread_pool_.Schedule(std::bind(&Screen::OnRxVideo, this, vector<pj_uint8_t>(rtp_frame, rtp_frame + framelen)));
 }
 
 void Screen::OnRxAudio(const vector<pj_uint8_t> &audio_frame)
@@ -183,22 +177,9 @@ void Screen::OnRxAudio(const vector<pj_uint8_t> &audio_frame)
 void Screen::VideoScene(const pj_uint8_t *rtp_frame, pj_uint16_t framelen)
 {
 	RETURN_IF_FAIL(media_active_);
-	RETURN_IF_FAIL(framelen > 0);
+	RETURN_IF_FAIL(rtp_frame && framelen > 0);
 
-	vector<pj_uint8_t> frame_copy;
-	frame_copy.assign(rtp_frame, rtp_frame + framelen);
-
-	video_thread_pool_.Schedule([frame_copy, this]()
-	{
-		OnRxVideo(frame_copy);
-
-		if (stream_->dec_frame.type == PJMEDIA_FRAME_TYPE_VIDEO
-			&& stream_->dec_frame.size > 0)
-		{
-			Painting(stream_->dec_frame.buf);
-			stream_->dec_frame.size = 0;
-		}
-	});
+	video_thread_pool_.Schedule(std::bind(&Screen::OnRxVideo, this, vector<pj_uint8_t>(rtp_frame, rtp_frame + framelen)));
 }
 
 void Screen::OnRxVideo(const vector<pj_uint8_t> &video_frame)
@@ -254,6 +235,13 @@ void Screen::OnRxVideo(const vector<pj_uint8_t> &video_frame)
 		}
 
 		pj_mutex_unlock(stream_->jb_mutex);
+	}
+
+	if (stream_->dec_frame.type == PJMEDIA_FRAME_TYPE_VIDEO
+		&& stream_->dec_frame.size > 0)
+	{
+		Painting(stream_->dec_frame.buf);
+		stream_->dec_frame.size = 0;
 	}
 }
 
