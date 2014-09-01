@@ -42,7 +42,7 @@ pj_status_t Screen::Prepare(pj_pool_t *pool,
 	enum { M = 32 };
 
 	BOOL result;
-	result = this->Create(nullptr, nullptr, WS_BORDER | WS_VISIBLE | WS_CHILD,
+	result = Create(nullptr, nullptr, WS_BORDER | WS_VISIBLE | WS_CHILD,
 		rect, (CWnd *)wrapper, uid);
 	RETURN_VAL_IF_FAIL(result, PJ_EINVAL);
 
@@ -140,14 +140,14 @@ void Screen::Destory()
 void Screen::MoveToRect(const CRect &rect)
 {
 	lock_guard<std::mutex> internal_lock(render_mutex_);
-	this->MoveWindow(rect);
-	this->ShowWindow(SW_SHOW);
+	MoveWindow(rect);
+	ShowWindow(SW_SHOW);
 }
 
 void Screen::HideWindow()
 {
 	lock_guard<std::mutex> internal_lock(render_mutex_);
-	this->ShowWindow(SW_HIDE);
+	ShowWindow(SW_HIDE);
 }
 
 void Screen::Painting(const void *pixels)
@@ -199,8 +199,6 @@ void Screen::OnRxVideo(const vector<pj_uint8_t> &video_frame)
 		pjmedia_rtp_session_update2(&stream_->dec->rtp, hdr, &seq_st, PJ_TRUE);
 		if (payloadlen == 0)
 			return;
-
-		TRACE("pt:%u ssrc:%u seq:%u ts:%u payloadlen:%u\n", hdr->pt, hdr->ssrc, hdr->seq, hdr->ts, payloadlen);
 
 		pj_mutex_lock(stream_->jb_mutex);
 

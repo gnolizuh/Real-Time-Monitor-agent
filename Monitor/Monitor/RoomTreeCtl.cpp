@@ -203,11 +203,11 @@ void RoomTreeCtl::OnTvnBeginDrag(NMHDR *pNMHDR, LRESULT *pResult)
 
 void RoomTreeCtl::MoveToRect(const CRect &rect)
 {
-	this->MoveWindow(rect);
-	this->ShowWindow(SW_SHOW);
+	MoveWindow(rect);
+	ShowWindow(SW_SHOW);
 }
 
 void RoomTreeCtl::HideWindow()
 {
-	this->ShowWindow(SW_HIDE);
+	ShowWindow(SW_HIDE);
 }

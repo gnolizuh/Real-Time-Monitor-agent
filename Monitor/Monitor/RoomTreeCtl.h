@@ -20,10 +20,10 @@ public:
 
 	inline bool operator==(const User &user) const
 	{
-		return (this->user_id_ == user.user_id_
-			&& this->room_id_ == user.room_id_
-			&& this->audio_ssrc_ == user.audio_ssrc_
-			&& this->video_ssrc_ == user.video_ssrc_);
+		return (user_id_ == user.user_id_
+			&& room_id_ == user.room_id_
+			&& audio_ssrc_ == user.audio_ssrc_
+			&& video_ssrc_ == user.video_ssrc_);
 	}
 
 	HTREEITEM   tree_item_;

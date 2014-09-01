@@ -115,8 +115,8 @@ BOOL CMonitorDlg::OnInitDialog()
 	av_register_all();
 	pj_init();
 
-	pj_str_t avsproxy_ip = pj_str("192.168.6.39");
-	pj_str_t local_ip = pj_str("192.168.6.39");
+	pj_str_t avsproxy_ip = pj_str("192.168.6.40");
+	pj_str_t local_ip = pj_str("192.168.6.40");
 	g_screen_mgr = new ScreenMgr(this, 100, avsproxy_ip, 12000, 10, local_ip, 15000);
 
 	pj_status_t status;
@@ -133,8 +133,8 @@ BOOL CMonitorDlg::OnInitDialog()
 
 	g_screen_mgr->Adjest(width, height);
 	
-	this->MoveWindow(CRect(0, 0, width, height));
-	this->ShowWindow(SW_SHOW);
+	MoveWindow(CRect(0, 0, width, height));
+	ShowWindow(SW_SHOW);
 
 	GetDlgItem(IDC_BUTTON1)->ShowWindow(SW_HIDE);
 

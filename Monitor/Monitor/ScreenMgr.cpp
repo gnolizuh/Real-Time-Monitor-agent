@@ -517,7 +517,7 @@ void ScreenMgr::ConnectorThread()
 {
 	pj_thread_desc rtpdesc;
 	pj_thread_t *thread = 0;
-	
+
 	if ( !pj_thread_is_registered() )
 	{
 		if ( pj_thread_register(NULL,rtpdesc,&thread) == PJ_SUCCESS )
