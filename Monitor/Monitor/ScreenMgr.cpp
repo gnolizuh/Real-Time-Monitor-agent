@@ -376,12 +376,7 @@ void ScreenMgr::TcpParamScene(const pj_uint8_t *storage,
 
 	RETURN_IF_FAIL(param != nullptr && scene != nullptr);
 
-	sync_thread_pool_.Schedule([=]()
-	{
-		scene->Maintain(param, &rooms_tree_ctl_);
-		delete scene;
-		delete param;
-	});
+	sync_thread_pool_.Schedule(std::bind(&TcpScene::Maintain, shared_ptr<TcpScene>(scene), shared_ptr<TcpParameter>(param), &rooms_tree_ctl_));
 }
 
 void ScreenMgr::UdpParamScene(const pjmedia_rtp_hdr *rtp_hdr,

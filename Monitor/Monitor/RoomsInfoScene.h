@@ -41,7 +41,7 @@ public:
 	RoomsInfoScene() {}
 	virtual ~RoomsInfoScene() {}
 
-	virtual void Maintain(TcpParameter *, RoomTreeCtl *);
+	virtual void Maintain(shared_ptr<TcpParameter> ptr_tcp_param, RoomTreeCtl *room_ctl);
 };
 
 #endif

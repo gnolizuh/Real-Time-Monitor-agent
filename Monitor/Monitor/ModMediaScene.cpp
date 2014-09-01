@@ -10,9 +10,9 @@ ModMediaParameter::ModMediaParameter(const pj_uint8_t *storage, pj_uint16_t stor
 	pj_ntoh_assign(storage, storage_len, video_ssrc_);
 }
 
-void ModMediaScene::Maintain(TcpParameter *parameter, RoomTreeCtl *room_ctl)
+void ModMediaScene::Maintain(shared_ptr<TcpParameter> ptr_tcp_param, RoomTreeCtl *room_ctl)
 {
-	ModMediaParameter *param = reinterpret_cast<ModMediaParameter *>(parameter);
+	ModMediaParameter *param = reinterpret_cast<ModMediaParameter *>(ptr_tcp_param.get());
 
 	Room *room = room_ctl->GetRoom(param->room_id_);
 	RETURN_IF_FAIL(room != nullptr);

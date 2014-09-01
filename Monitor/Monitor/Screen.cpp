@@ -413,7 +413,5 @@ pj_status_t Screen::SendTCPPacket(const void *buf, pj_ssize_t *len)
 
 void Screen::OnLButtonUp(UINT nFlags, CPoint point)
 {
-	TRACE("Screen[%u] LButtonUp x:%ld y:%ld\n", index_, point.x, point.y);
-
 	::SendMessage(AfxGetMainWnd()->m_hWnd, WM_ENDDRAGITEM, 0, (LPARAM)this); // let Mainframe knowns.
 }

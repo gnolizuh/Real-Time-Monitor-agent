@@ -20,9 +20,9 @@ RoomsInfoParameter::RoomsInfoParameter(const pj_uint8_t *storage, pj_uint16_t st
 	}
 }
 
-void RoomsInfoScene::Maintain(TcpParameter *parameter, RoomTreeCtl *room_ctl)
+void RoomsInfoScene::Maintain(shared_ptr<TcpParameter> ptr_tcp_param, RoomTreeCtl *room_ctl)
 {
-	RoomsInfoParameter *param = reinterpret_cast<RoomsInfoParameter *>(parameter);
+	RoomsInfoParameter *param = reinterpret_cast<RoomsInfoParameter *>(ptr_tcp_param.get());
 	for(pj_uint32_t i = 0; i < param->room_count_; ++ i)
 	{
 		Room *room = room_ctl->AddRoom(param->rooms_info_[i].room_id_);

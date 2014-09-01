@@ -85,7 +85,7 @@ void RoomTreeCtl::DelRoom(pj_int32_t room_id)
 		room = proom->second;
 		DeleteItem(room->tree_item_);
 	}
-	
+
 	if(room != nullptr)
 	{
 		delete room;

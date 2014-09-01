@@ -6,8 +6,8 @@ KeepAliveParameter::KeepAliveParameter(const pj_uint8_t *storage, pj_uint16_t st
 {
 }
 
-void KeepAliveScene::Maintain(TcpParameter *parameter)
+void KeepAliveScene::Maintain(shared_ptr<TcpParameter> ptr_tcp_param)
 {
-	KeepAliveParameter *param = reinterpret_cast<KeepAliveParameter *>(parameter);
+	KeepAliveParameter *param = reinterpret_cast<KeepAliveParameter *>(ptr_tcp_param.get());
 
 }
