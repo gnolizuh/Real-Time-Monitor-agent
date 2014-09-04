@@ -110,7 +110,7 @@ pj_uint64_t pj_htonll(pj_uint64_t hostlonglong)
 }
 
 static pj_oshandle_t g_log_handle;
-pj_status_t log_open(pj_pool_t *pool, pj_str_t file_name)
+pj_status_t log_open(pj_pool_t *pool, const pj_str_t &file_name)
 {
 	pj_log_set_log_func(log_writer);
 
@@ -122,4 +122,31 @@ void log_writer(int level, const char *log, int loglen)
 	pj_ssize_t log_size = loglen;
 	pj_file_write(g_log_handle, log, &log_size);
 	pj_file_flush(g_log_handle);
+}
+
+static void OnData( const happyhttp::Response* r, void* userdata, const unsigned char* data, int n )
+{
+	std::vector<pj_uint8_t> &response = *(reinterpret_cast<std::vector<pj_uint8_t> *>(userdata));
+	response.insert(response.end(), data, data + n);
+}
+
+void http_get(const pj_str_t &host, const pj_str_t &url, pj_uint32_t node_id, std::vector<pj_uint8_t> &response)
+{
+#define ATTR_NODE_ID "&node_id="
+	std::stringstream ss_uri;
+	ss_uri << url.ptr << ATTR_NODE_ID << node_id;
+
+	TRACE(ss_uri.str().c_str());
+	happyhttp::Connection conn(host.ptr, 80);
+	conn.setcallbacks(0, OnData, 0, &response);
+	conn.request("GET", ss_uri.str().c_str(), 0, 0, 0);
+
+	while( conn.outstanding() )
+		conn.pump();
+}
+
+pj_status_t UTF8_to_GB2312(wchar_t *gb_dst, int gb_len, const pj_str_t &utf_src)
+{
+	int res = MultiByteToWideChar(CP_UTF8, 0, utf_src.ptr, utf_src.slen, gb_dst, gb_len);
+	return res != 0 ? PJ_SUCCESS : PJ_EINVAL;
 }

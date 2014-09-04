@@ -54,7 +54,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_WINDOWS;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>C:\Users\Administrator\Documents\GitHub\pjsip-lib-support-video\pjlib\include;C:\Users\Administrator\Documents\GitHub\pjsip-lib-support-video\pjlib-util\include;C:\Users\Administrator\Documents\GitHub\pjsip-lib-support-video\pjnath\include;C:\Users\Administrator\Documents\GitHub\pjsip-lib-support-video\pjmedia\include;C:\Users\Administrator\Documents\GitHub\pjsip-lib-support-video\pjsip\include;D:\Codes\SDL2-2.0.3\include;D:\Codes\ffmpeg-lib\include;D:\Codes\libevent-lib\libevent-2.0.21-stable\include;D:\Codes\libevent-lib\libevent-2.0.21-stable\WIN32-Code;D:\Codes\libevent-lib\libevent-2.0.21-stable;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\Administrator\Documents\GitHub\pjsip-lib-support-video\pjlib\include;C:\Users\Administrator\Documents\GitHub\pjsip-lib-support-video\pjlib-util\include;C:\Users\Administrator\Documents\GitHub\pjsip-lib-support-video\pjnath\include;C:\Users\Administrator\Documents\GitHub\pjsip-lib-support-video\pjmedia\include;C:\Users\Administrator\Documents\GitHub\pjsip-lib-support-video\pjsip\include;D:\Codes\SDL2-2.0.3\include;D:\Codes\ffmpeg-lib\include;D:\Codes\libevent-lib\libevent-2.0.21-stable\include;D:\Codes\libevent-lib\libevent-2.0.21-stable\WIN32-Code;D:\Codes\libevent-lib\libevent-2.0.21-stable;C:\Users\Administrator\Documents\Visual Studio 2012\Projects\Monitor\Monitor\Scene\AvsProxyScene\inc;C:\Users\Administrator\Documents\Visual Studio 2012\Projects\Monitor\Monitor\Scene;C:\Users\Administrator\Documents\Visual Studio 2012\Projects\Monitor\Monitor\pugixml;C:\Users\Administrator\Documents\Visual Studio 2012\Projects\Monitor\Monitor;C:\Users\Administrator\Documents\Visual Studio 2012\Projects\Monitor\Monitor\happyhttp;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
@@ -105,43 +105,60 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="AddUserScene.h" />
     <ClInclude Include="AvsProxyStructs.h" />
-    <ClInclude Include="KeepAliveScene.h" />
     <ClInclude Include="Com.h" />
     <ClInclude Include="command.h" />
-    <ClInclude Include="DelUserScene.h" />
+    <ClInclude Include="Config.h" />
+    <ClInclude Include="happyhttp\happyhttp.h" />
     <ClInclude Include="MessageQueue.hpp" />
-    <ClInclude Include="ModMediaScene.h" />
     <ClInclude Include="Monitor.h" />
     <ClInclude Include="MonitorDlg.h" />
-    <ClInclude Include="Parameter.h" />
+    <ClInclude Include="Node.h" />
     <ClInclude Include="PoolThread.hpp" />
+    <ClInclude Include="pugixml\pugiconfig.hpp" />
+    <ClInclude Include="pugixml\pugixml.hpp" />
     <ClInclude Include="Resource.h" />
-    <ClInclude Include="RoomTreeCtl.h" />
-    <ClInclude Include="RoomsInfoScene.h" />
-    <ClInclude Include="Scene.h" />
+    <ClInclude Include="Scene\AvsProxyScene\inc\AddUserScene.h" />
+    <ClInclude Include="Scene\AvsProxyScene\inc\DelUserScene.h" />
+    <ClInclude Include="Scene\AvsProxyScene\inc\KeepAliveScene.h" />
+    <ClInclude Include="Scene\AvsProxyScene\inc\ModMediaScene.h" />
+    <ClInclude Include="Scene\AvsProxyScene\inc\RoomsInfoScene.h" />
+    <ClInclude Include="Scene\Parameter.h" />
+    <ClInclude Include="Scene\Scene.h" />
     <ClInclude Include="Screen.h" />
     <ClInclude Include="ScreenMgr.h" />
     <ClInclude Include="stdafx.h" />
+    <ClInclude Include="Title.h" />
+    <ClInclude Include="TitleNode.h" />
+    <ClInclude Include="TitleRoom.h" />
+    <ClInclude Include="TitlesCtl.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="AddUserScene.cpp" />
-    <ClCompile Include="KeepAliveScene.cpp" />
     <ClCompile Include="Com.cpp" />
-    <ClCompile Include="DelUserScene.cpp" />
-    <ClCompile Include="ModMediaScene.cpp" />
+    <ClCompile Include="Config.cpp" />
+    <ClCompile Include="happyhttp\happyhttp.cpp" />
     <ClCompile Include="Monitor.cpp" />
     <ClCompile Include="MonitorDlg.cpp" />
-    <ClCompile Include="RoomTreeCtl.cpp" />
-    <ClCompile Include="RoomsInfoScene.cpp" />
+    <ClCompile Include="Node.cpp" />
+    <ClCompile Include="pugixml\pugixml.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="Scene\AvsProxyScene\src\AddUserScene.cpp" />
+    <ClCompile Include="Scene\AvsProxyScene\src\DelUserScene.cpp" />
+    <ClCompile Include="Scene\AvsProxyScene\src\KeepAliveScene.cpp" />
+    <ClCompile Include="Scene\AvsProxyScene\src\ModMediaScene.cpp" />
+    <ClCompile Include="Scene\AvsProxyScene\src\RoomsInfoScene.cpp" />
     <ClCompile Include="ScreenMgr.cpp" />
     <ClCompile Include="Screen.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="Title.cpp" />
+    <ClCompile Include="TitleNode.cpp" />
+    <ClCompile Include="TitleRoom.cpp" />
+    <ClCompile Include="TitlesCtl.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Monitor.rc" />

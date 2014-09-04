@@ -1,0 +1,4 @@
+<?xml version="1.0"?>
+<client ip="192.168.6.40" media_port="15000" log_file_name="client.log" tls_host="tls.show.sina.com.cn" tls_uri="/fcgi-bin/get_listinfo.fcgi?p_id=0&ver=1.0.0.0">
+
+</client>

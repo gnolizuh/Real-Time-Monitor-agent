@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include "ScreenMgr.h"
 
+extern Config g_client_config;
+
 const resolution_t ScreenMgr::DEFAULT_RESOLUTION = 
 {
 	MININUM_TREE_CTL_WIDTH + MININUM_SCREEN_WIDTH * 3 + MININUM_PADDING,
@@ -20,9 +22,6 @@ void ScreenMgr::event_on_udp_read(evutil_socket_t fd, short event, void *arg)
 }
 
 ScreenMgr::ScreenMgr(CWnd *wrapper,
-					 pj_uint16_t avsproxy_id,
-					 const pj_str_t &avsproxy_ip,
-					 pj_uint16_t avsproxy_tcp_port,
 					 pj_uint16_t client_id,
 					 const pj_str_t &local_ip,
 					 pj_uint16_t local_udp_port)
@@ -30,7 +29,6 @@ ScreenMgr::ScreenMgr(CWnd *wrapper,
 	, wrapper_(wrapper)
 	, screens_(MAXIMAL_SCREEN_NUM)
 	, av_index_map_(2)
-	, avsproxy_id_(avsproxy_id)
 	, width_(MININUM_SCREEN_WIDTH)
 	, height_(NIMINUM_SCREEN_HEIGHT)
 	, screen_mgr_res_(SCREEN_RES_3x3)
@@ -39,8 +37,6 @@ ScreenMgr::ScreenMgr(CWnd *wrapper,
 	, client_id_(client_id)
 	, local_tcp_sock_(-1)
 	, local_udp_sock_(-1)
-	, avsproxy_ip_(pj_str(avsproxy_ip.ptr))
-	, avsproxy_tcp_port_(avsproxy_tcp_port)
 	, local_ip_(local_ip)
 	, local_udp_port_(local_udp_port)
 	, caching_pool_()
@@ -52,7 +48,7 @@ ScreenMgr::ScreenMgr(CWnd *wrapper,
 	, connector_thread_()
 	, event_thread_()
 	, active_(PJ_FALSE)
-	, rooms_tree_ctl_()
+	, titles_()
 	, screenmgr_func_array_()
 	, sync_thread_pool_(1)
 	, num_blocks_()
@@ -85,10 +81,7 @@ pj_status_t ScreenMgr::Prepare(const pj_str_t &log_file_name)
 {
 	pj_status_t status;
 
-	pj_uint8_t retrys = 50;
-	status = pj_open_tcp_clientport(&avsproxy_ip_, avsproxy_tcp_port_, local_tcp_sock_);
-	RETURN_VAL_IF_FAIL( status == PJ_SUCCESS, status );
-
+	int retrys = 50;
 	do
 	{
 		status = pj_open_udp_transport(&local_ip_, local_udp_port_, local_udp_sock_);
@@ -136,7 +129,9 @@ pj_status_t ScreenMgr::Prepare(const pj_str_t &log_file_name)
 	ret = event_add(tcp_ev_, NULL);
 	RETURN_VAL_IF_FAIL( ret == 0, -1 );
 
-	rooms_tree_ctl_.Prepare(wrapper_, IDC_ROOM_TREE_CTL_INDEX);
+	titles_ = new TitlesCtl();
+	pj_assert(titles_ != nullptr);
+	titles_->Prepare(wrapper_, IDC_ROOM_TREE_CTL_INDEX);
 
 	for(pj_uint32_t idx = 0; idx < screens_.size(); ++ idx)
 	{
@@ -153,7 +148,7 @@ pj_status_t ScreenMgr::Launch()
 	active_ = PJ_TRUE;
 
 	event_thread_ = thread(std::bind(&ScreenMgr::EventThread, this));
-	//connector_thread_ = thread(std::bind(&ScreenMgr::ConnectorThread, this));
+	// connector_thread_ = thread(std::bind(&ScreenMgr::ConnectorThread, this));
 	sync_thread_pool_.Start();
 
 	for(pj_uint32_t idx = 0; idx < screens_.size(); ++ idx)
@@ -233,7 +228,7 @@ void ScreenMgr::Adjest(pj_int32_t &cx, pj_int32_t &cy)
 void ScreenMgr::ChangeLayout_1x1(pj_uint32_t width, pj_uint32_t height)
 {
 	CRect rect(0, 0, MININUM_TREE_CTL_WIDTH, height * num_blocks_[0]);
-	rooms_tree_ctl_.MoveToRect(rect);
+	titles_->MoveToRect(rect);
 
 	screens_[0]->MoveToRect(CRect(MININUM_TREE_CTL_WIDTH, 0, MININUM_TREE_CTL_WIDTH + width, height));
 }
@@ -241,7 +236,7 @@ void ScreenMgr::ChangeLayout_1x1(pj_uint32_t width, pj_uint32_t height)
 void ScreenMgr::ChangeLayout_2x2(pj_uint32_t width, pj_uint32_t height)
 {
 	CRect rect(0, 0, MININUM_TREE_CTL_WIDTH, height * num_blocks_[1]);
-	rooms_tree_ctl_.MoveToRect(rect);
+	titles_->MoveToRect(rect);
 
 	pj_uint32_t lstart = MININUM_TREE_CTL_WIDTH;
 
@@ -265,7 +260,7 @@ void ScreenMgr::ChangeLayout_2x2(pj_uint32_t width, pj_uint32_t height)
 void ScreenMgr::ChangeLayout_1x5(pj_uint32_t width, pj_uint32_t height)
 {
 	CRect rect(0, 0, MININUM_TREE_CTL_WIDTH, height * num_blocks_[2]);
-	rooms_tree_ctl_.MoveToRect(rect);
+	titles_->MoveToRect(rect);
 
 	pj_uint32_t lstart = MININUM_TREE_CTL_WIDTH;
 	unsigned idx = 0;
@@ -302,7 +297,7 @@ void ScreenMgr::ChangeLayout_1x5(pj_uint32_t width, pj_uint32_t height)
 void ScreenMgr::ChangeLayout_3x3(pj_uint32_t width, pj_uint32_t height)
 {
 	CRect rect(0, 0, MININUM_TREE_CTL_WIDTH, height * num_blocks_[3]);
-	rooms_tree_ctl_.MoveToRect(rect);
+	titles_->MoveToRect(rect);
 
 	pj_uint32_t lstart = MININUM_TREE_CTL_WIDTH;
 
@@ -376,7 +371,7 @@ void ScreenMgr::TcpParamScene(const pj_uint8_t *storage,
 
 	RETURN_IF_FAIL(param != nullptr && scene != nullptr);
 
-	sync_thread_pool_.Schedule(std::bind(&TcpScene::Maintain, shared_ptr<TcpScene>(scene), shared_ptr<TcpParameter>(param), &rooms_tree_ctl_));
+	// sync_thread_pool_.Schedule(std::bind(&TcpScene::Maintain, shared_ptr<TcpScene>(scene), shared_ptr<TcpParameter>(param), &rooms_tree_ctl_));
 }
 
 void ScreenMgr::UdpParamScene(const pjmedia_rtp_hdr *rtp_hdr,
@@ -520,7 +515,7 @@ void ScreenMgr::ConnectorThread()
 			unsigned sleep_msec = 5000;
 			while(1)
 			{
-				if ( pj_open_tcp_clientport(&avsproxy_ip_, avsproxy_tcp_port_, local_tcp_sock_) == PJ_SUCCESS )
+				/*if ( pj_open_tcp_clientport(&avsproxy_ip_, avsproxy_tcp_port_, local_tcp_sock_) == PJ_SUCCESS )
 				{
 					tcp_ev_ = event_new(evbase_, local_tcp_sock_, EV_READ | EV_PERSIST, event_on_tcp_read, this);
 					if ( tcp_ev_ != nullptr && (event_add(tcp_ev_, NULL) == 0) )
@@ -528,7 +523,7 @@ void ScreenMgr::ConnectorThread()
 						LoginProxy();
 						return;
 					}
-				}
+				}*/
 
 				pj_thread_sleep( sleep_msec );
 			}
@@ -540,7 +535,7 @@ pj_status_t ScreenMgr::LoginProxy()
 {
 	request_to_avs_proxy_login_t login;
 	login.client_request_type = REQUEST_FROM_CLIENT_TO_AVSPROXY_LOGIN;
-	login.proxy_id = avsproxy_id_;
+	login.proxy_id = 100/*avsproxy_id_*/;
 	login.client_id = client_id_;
 	pj_inet_aton(&local_ip_, &login.media_ip);
 	login.media_port = local_udp_port_;

@@ -4,6 +4,7 @@
 
 #include "stdafx.h"
 #include "Monitor.h"
+#include "pugixml.hpp"
 #include "MonitorDlg.h"
 #include "afxdialogex.h"
 
@@ -11,6 +12,7 @@
 #define new DEBUG_NEW
 #endif
 
+extern Config g_client_config;
 
 // 用于应用程序“关于”菜单项的 CAboutDlg 对话框
 
@@ -45,7 +47,22 @@ END_MESSAGE_MAP()
 
 // CMonitorDlg 对话框
 
+static pj_status_t init_param()
+{
+	pugi::xml_document doc;
 
+    pugi::xml_parse_result result = doc.load_file("client.xml");
+	RETURN_VAL_IF_FAIL(result, PJ_EINVAL);
+
+	pugi::xml_node client = doc.child("client");
+	g_client_config.local_ip = pj_str(strdup((char *)client.attribute("ip").value()));
+	g_client_config.local_media_port = atoi(client.attribute("media_port").value());
+	g_client_config.tls_host = pj_str(strdup((char *)client.attribute("tls_host").value()));
+	g_client_config.tls_uri = pj_str(strdup((char *)client.attribute("tls_uri").value()));
+	g_client_config.log_file_name = pj_str(strdup((char *)client.attribute("log_file_name").value()));
+
+	return PJ_SUCCESS;
+}
 
 CMonitorDlg::CMonitorDlg(CWnd* pParent /*=NULL*/)
 	: CDialogEx(CMonitorDlg::IDD, pParent)
@@ -115,20 +132,17 @@ BOOL CMonitorDlg::OnInitDialog()
 	av_register_all();
 	pj_init();
 
-	pj_str_t avsproxy_ip = pj_str("192.168.6.40");
-	pj_str_t local_ip = pj_str("192.168.6.40");
-	g_screen_mgr = new ScreenMgr(this, 100, avsproxy_ip, 12000, 10, local_ip, 15000);
-
 	pj_status_t status;
-	pj_str_t log_file_name = pj_str("avs_proxy_client.log");
+	status = init_param();
+	pj_assert(status == PJ_SUCCESS);
 
-	status = g_screen_mgr->Prepare(log_file_name);
+	g_screen_mgr = new ScreenMgr(this, 10, g_client_config.local_ip, g_client_config.local_media_port);
+	pj_assert(g_screen_mgr != nullptr);
+	
+	status = g_screen_mgr->Prepare(g_client_config.log_file_name);
 	pj_assert(status == PJ_SUCCESS);
 
 	status = g_screen_mgr->Launch();
-	pj_assert(status == PJ_SUCCESS);
-
-	status = g_screen_mgr->LoginProxy();
 	pj_assert(status == PJ_SUCCESS);
 
 	g_screen_mgr->Adjest(width, height);
@@ -137,6 +151,7 @@ BOOL CMonitorDlg::OnInitDialog()
 	ShowWindow(SW_SHOW);
 
 	GetDlgItem(IDC_BUTTON1)->ShowWindow(SW_HIDE);
+	PJ_LOG(1, (__FILE__, "Client start....."));
 
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
 }

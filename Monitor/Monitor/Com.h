@@ -4,8 +4,10 @@
 #include <event.h>
 #include <memory>
 #include <iostream>
+#include <sstream>
 #include <vector>
 #include <map>
+#include <set>
 
 #include <pjlib.h>
 #include <pjmedia.h>
@@ -20,11 +22,17 @@ extern "C"
 #include <libavutil/mathematics.h>
 }
 
+#include "happyhttp.h"
 #include "command.h"
 
+using std::map;
+using std::set;
+using std::vector;
+
 typedef uint32_t room_id_t;
-typedef std::map<pj_uint32_t, pj_uint8_t> index_map_t;
-typedef std::vector<index_map_t> av_index_map_t;
+typedef map<pj_uint32_t, pj_uint8_t> index_map_t;
+typedef vector<index_map_t> av_index_map_t;
+typedef pj_uint32_t order_t;
 
 #define MAXIMAL_SCREEN_NUM         9
 #define MAXIMAL_THREAD_NUM         1
@@ -155,7 +163,20 @@ void pj_ntoh_assign(const pj_uint8_t *&storage, pj_uint16_t &storage_len, T &rva
 	storage_len -= sizeof(T);
 }
 
-pj_status_t log_open(pj_pool_t *, pj_str_t);
-void        log_writer(int, const char *, int);
+template<class T>
+struct order_cmp
+{
+	bool operator() (const T *t1, const T *t2)
+	{
+		return t1->order_ < t2->order_;
+	}
+};
+
+pj_status_t log_open(pj_pool_t *pool, const pj_str_t &file_name);
+void        log_writer(int level, const char *log, int loglen);
+
+void        http_get(const pj_str_t &host, const pj_str_t &url, pj_uint32_t node_id, std::vector<pj_uint8_t> &response);
+
+pj_status_t UTF8_to_GB2312(wchar_t *gb_dst, int gb_len, const pj_str_t &utf_src);
 
 #endif

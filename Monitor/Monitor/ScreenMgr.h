@@ -11,18 +11,20 @@
 #include "Parameter.h"
 #include "Scene.h"
 #include "Screen.h"
+#include "Config.h"
+#include "TitlesCtl.h"
 #include "RoomsInfoScene.h"
 #include "ModMediaScene.h"
 #include "AddUserScene.h"
 #include "DelUserScene.h"
 #include "KeepAliveScene.h"
 #include "AvsProxyStructs.h"
-#include "RoomTreeCtl.h"
+#include "TitleRoom.h"
 
 #define TOP_SIDE_SIZE          30
 #define SIDE_SIZE              8
 #define MININUM_PADDING        0
-#define MININUM_TREE_CTL_WIDTH 130
+#define MININUM_TREE_CTL_WIDTH 200
 #define MININUM_SCREEN_WIDTH   176
 #define NIMINUM_SCREEN_HEIGHT  144
 #define ROUND(num, fraction) (num) /= (fraction), (num) *= (fraction), (num) / (fraction)
@@ -42,15 +44,11 @@ using std::map;
 
 class ScreenMgr;
 typedef void (ScreenMgr::*screenmgr_func_t)(pj_uint32_t, pj_uint32_t);
-
 class ScreenMgr
 	: public Noncopyable
 {
 public:
 	ScreenMgr(CWnd *wrapper,
-		pj_uint16_t avsproxy_id,
-		const pj_str_t &avsproxy_ip,
-		pj_uint16_t avsproxy_tcp_port,
 		pj_uint16_t client_id,
 		const pj_str_t &local_ip,
 		pj_uint16_t local_udp_port);
@@ -89,7 +87,6 @@ private:
 	const CWnd         *wrapper_;
 	vector<Screen *>    screens_;
 	vector<index_map_t> av_index_map_;
-	pj_uint16_t         avsproxy_id_;
 	pj_uint32_t         width_;
 	pj_uint32_t         height_;
 	pj_uint32_t         vertical_padding_;
@@ -98,8 +95,6 @@ private:
 	pj_sock_t           local_tcp_sock_;
 	mutex               local_tcp_lock_;
 	pj_sock_t           local_udp_sock_;
-	pj_str_t		    avsproxy_ip_;
-	pj_uint16_t         avsproxy_tcp_port_;
 	pj_str_t		    local_ip_;
 	pj_uint16_t         local_udp_port_;
 	pj_caching_pool     caching_pool_;
@@ -111,7 +106,7 @@ private:
 	thread              connector_thread_;
 	thread              event_thread_;
 	pj_bool_t           active_;
-	RoomTreeCtl         rooms_tree_ctl_;
+	TitlesCtl          *titles_;
 	vector<screenmgr_func_t> screenmgr_func_array_;
 	vector<pj_uint32_t> num_blocks_;
 	enum_screen_mgr_resolution_t screen_mgr_res_;

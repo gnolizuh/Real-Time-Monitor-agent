@@ -7,9 +7,9 @@
 #include <pjmedia-codec.h>
 
 #include "resource.h"
-#include "RoomTreeCtl.h"
 #include "PoolThread.hpp"
 #include "AvsProxyStructs.h"
+#include "TitleRoom.h"
 
 using std::lock_guard;
 using std::mutex;

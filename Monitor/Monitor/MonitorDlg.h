@@ -4,9 +4,10 @@
 
 #pragma once
 
-#include "RoomTreeCtl.h"
+#include "TitleRoom.h"
 #include "ScreenMgr.h"
 #include "Screen.h"
+#include "Config.h"
 #include "Com.h"
 
 // CMonitorDlg ¶Ô»°¿ò

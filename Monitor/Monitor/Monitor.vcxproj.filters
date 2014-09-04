@@ -25,6 +25,12 @@
     <Filter Include="Scene\AvsProxyScene\src">
       <UniqueIdentifier>{e878c97f-4ce3-4fe7-b8ea-020b7c3aef5e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="pugixml">
+      <UniqueIdentifier>{4e866c14-3e7c-4757-ab9d-8f15c2904c57}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="happyhttp">
+      <UniqueIdentifier>{9e1d41e6-0411-4b66-8755-8da07f391a96}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
@@ -63,31 +69,55 @@
     <ClInclude Include="PoolThread.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Parameter.h">
-      <Filter>Scene</Filter>
-    </ClInclude>
-    <ClInclude Include="Scene.h">
-      <Filter>Scene</Filter>
-    </ClInclude>
-    <ClInclude Include="RoomsInfoScene.h">
-      <Filter>Scene\AvsProxyScene\inc</Filter>
-    </ClInclude>
-    <ClInclude Include="ModMediaScene.h">
-      <Filter>Scene\AvsProxyScene\inc</Filter>
-    </ClInclude>
-    <ClInclude Include="AddUserScene.h">
-      <Filter>Scene\AvsProxyScene\inc</Filter>
-    </ClInclude>
-    <ClInclude Include="DelUserScene.h">
-      <Filter>Scene\AvsProxyScene\inc</Filter>
-    </ClInclude>
-    <ClInclude Include="KeepAliveScene.h">
-      <Filter>Scene\AvsProxyScene\inc</Filter>
-    </ClInclude>
     <ClInclude Include="AvsProxyStructs.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="RoomTreeCtl.h">
+    <ClInclude Include="Scene\Parameter.h">
+      <Filter>Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="Scene\Scene.h">
+      <Filter>Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="Scene\AvsProxyScene\inc\AddUserScene.h">
+      <Filter>Scene\AvsProxyScene\inc</Filter>
+    </ClInclude>
+    <ClInclude Include="Scene\AvsProxyScene\inc\DelUserScene.h">
+      <Filter>Scene\AvsProxyScene\inc</Filter>
+    </ClInclude>
+    <ClInclude Include="Scene\AvsProxyScene\inc\KeepAliveScene.h">
+      <Filter>Scene\AvsProxyScene\inc</Filter>
+    </ClInclude>
+    <ClInclude Include="Scene\AvsProxyScene\inc\ModMediaScene.h">
+      <Filter>Scene\AvsProxyScene\inc</Filter>
+    </ClInclude>
+    <ClInclude Include="Scene\AvsProxyScene\inc\RoomsInfoScene.h">
+      <Filter>Scene\AvsProxyScene\inc</Filter>
+    </ClInclude>
+    <ClInclude Include="pugixml\pugiconfig.hpp">
+      <Filter>pugixml</Filter>
+    </ClInclude>
+    <ClInclude Include="pugixml\pugixml.hpp">
+      <Filter>pugixml</Filter>
+    </ClInclude>
+    <ClInclude Include="Config.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="happyhttp\happyhttp.h">
+      <Filter>happyhttp</Filter>
+    </ClInclude>
+    <ClInclude Include="TitlesCtl.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Title.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="TitleNode.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Node.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="TitleRoom.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
@@ -110,22 +140,43 @@
     <ClCompile Include="Com.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="RoomsInfoScene.cpp">
+    <ClCompile Include="Scene\AvsProxyScene\src\AddUserScene.cpp">
       <Filter>Scene\AvsProxyScene\src</Filter>
     </ClCompile>
-    <ClCompile Include="ModMediaScene.cpp">
+    <ClCompile Include="Scene\AvsProxyScene\src\DelUserScene.cpp">
       <Filter>Scene\AvsProxyScene\src</Filter>
     </ClCompile>
-    <ClCompile Include="AddUserScene.cpp">
+    <ClCompile Include="Scene\AvsProxyScene\src\KeepAliveScene.cpp">
       <Filter>Scene\AvsProxyScene\src</Filter>
     </ClCompile>
-    <ClCompile Include="DelUserScene.cpp">
+    <ClCompile Include="Scene\AvsProxyScene\src\ModMediaScene.cpp">
       <Filter>Scene\AvsProxyScene\src</Filter>
     </ClCompile>
-    <ClCompile Include="KeepAliveScene.cpp">
+    <ClCompile Include="Scene\AvsProxyScene\src\RoomsInfoScene.cpp">
       <Filter>Scene\AvsProxyScene\src</Filter>
     </ClCompile>
-    <ClCompile Include="RoomTreeCtl.cpp">
+    <ClCompile Include="pugixml\pugixml.cpp">
+      <Filter>pugixml</Filter>
+    </ClCompile>
+    <ClCompile Include="Config.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="happyhttp\happyhttp.cpp">
+      <Filter>happyhttp</Filter>
+    </ClCompile>
+    <ClCompile Include="TitlesCtl.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Title.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="TitleNode.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Node.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="TitleRoom.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
