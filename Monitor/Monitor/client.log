@@ -1,0 +1,60 @@
+13:51:02.861          rtp.c  pjmedia_rtp_session_init: ses=00390744, default_pt=29, ssrc=0x0
+13:51:03.011          rtp.c  pjmedia_rtp_session_init: ses=003A8994, default_pt=29, ssrc=0x0
+13:51:03.059          rtp.c  pjmedia_rtp_session_init: ses=0043AC1C, default_pt=29, ssrc=0x0
+13:51:03.091          rtp.c  pjmedia_rtp_session_init: ses=0044BB74, default_pt=29, ssrc=0x0
+13:51:03.130          rtp.c  pjmedia_rtp_session_init: ses=0045BF34, default_pt=29, ssrc=0x0
+13:51:03.170          rtp.c  pjmedia_rtp_session_init: ses=080E664C, default_pt=29, ssrc=0x0
+13:51:03.213          rtp.c  pjmedia_rtp_session_init: ses=0812E79C, default_pt=29, ssrc=0x0
+13:51:03.254          rtp.c  pjmedia_rtp_session_init: ses=0C2571E4, default_pt=29, ssrc=0x0
+13:51:03.288          rtp.c  pjmedia_rtp_session_init: ses=0C29FCE4, default_pt=29, ssrc=0x0
+13:51:03.394 c:\users\admin  Client start.....
+14:14:58.085          rtp.c  pjmedia_rtp_session_init: ses=00590744, default_pt=29, ssrc=0x0
+14:14:58.134          rtp.c  pjmedia_rtp_session_init: ses=005A8AB4, default_pt=29, ssrc=0x0
+14:14:58.182          rtp.c  pjmedia_rtp_session_init: ses=0063BC1C, default_pt=29, ssrc=0x0
+14:14:58.266          rtp.c  pjmedia_rtp_session_init: ses=0064B4A4, default_pt=29, ssrc=0x0
+14:14:58.310          rtp.c  pjmedia_rtp_session_init: ses=0065C06C, default_pt=29, ssrc=0x0
+14:14:58.354          rtp.c  pjmedia_rtp_session_init: ses=08185ED4, default_pt=29, ssrc=0x0
+14:14:58.445          rtp.c  pjmedia_rtp_session_init: ses=081CE6AC, default_pt=29, ssrc=0x0
+14:14:58.487          rtp.c  pjmedia_rtp_session_init: ses=0C196804, default_pt=29, ssrc=0x0
+14:14:58.528          rtp.c  pjmedia_rtp_session_init: ses=0C1DFDE4, default_pt=29, ssrc=0x0
+14:14:58.627 c:\users\admin  Client start.....
+14:18:13.563          rtp.c  pjmedia_rtp_session_init: ses=00210744, default_pt=29, ssrc=0x0
+14:18:13.627          rtp.c  pjmedia_rtp_session_init: ses=00228AB4, default_pt=29, ssrc=0x0
+14:18:13.674          rtp.c  pjmedia_rtp_session_init: ses=002BBC1C, default_pt=29, ssrc=0x0
+14:18:13.713          rtp.c  pjmedia_rtp_session_init: ses=002CB484, default_pt=29, ssrc=0x0
+14:18:13.753          rtp.c  pjmedia_rtp_session_init: ses=002DC02C, default_pt=29, ssrc=0x0
+14:18:13.794          rtp.c  pjmedia_rtp_session_init: ses=081D5ED4, default_pt=29, ssrc=0x0
+14:18:13.835          rtp.c  pjmedia_rtp_session_init: ses=0821E694, default_pt=29, ssrc=0x0
+14:18:13.875          rtp.c  pjmedia_rtp_session_init: ses=0BED7274, default_pt=29, ssrc=0x0
+14:18:13.919          rtp.c  pjmedia_rtp_session_init: ses=0BF1FDDC, default_pt=29, ssrc=0x0
+14:18:14.011 c:\users\admin  Client start.....
+14:51:26.058          rtp.c  pjmedia_rtp_session_init: ses=0041085C, default_pt=29, ssrc=0x0
+14:51:26.114          rtp.c  pjmedia_rtp_session_init: ses=00428BC4, default_pt=29, ssrc=0x0
+14:51:26.208          rtp.c  pjmedia_rtp_session_init: ses=004BA5BC, default_pt=29, ssrc=0x0
+14:51:26.266          rtp.c  pjmedia_rtp_session_init: ses=004CB98C, default_pt=29, ssrc=0x0
+14:51:26.297          rtp.c  pjmedia_rtp_session_init: ses=004DC144, default_pt=29, ssrc=0x0
+14:51:26.332          rtp.c  pjmedia_rtp_session_init: ses=07BE6864, default_pt=29, ssrc=0x0
+14:51:26.364          rtp.c  pjmedia_rtp_session_init: ses=07C2D3DC, default_pt=29, ssrc=0x0
+14:51:26.400          rtp.c  pjmedia_rtp_session_init: ses=0BDE6244, default_pt=29, ssrc=0x0
+14:51:26.431          rtp.c  pjmedia_rtp_session_init: ses=0BE2FEF4, default_pt=29, ssrc=0x0
+14:51:26.514 c:\users\admin  Client start.....
+14:52:39.957          rtp.c  pjmedia_rtp_session_init: ses=0033085C, default_pt=29, ssrc=0x0
+14:52:40.005          rtp.c  pjmedia_rtp_session_init: ses=00348BC4, default_pt=29, ssrc=0x0
+14:52:40.040          rtp.c  pjmedia_rtp_session_init: ses=003DBC0C, default_pt=29, ssrc=0x0
+14:52:40.080          rtp.c  pjmedia_rtp_session_init: ses=003EB5AC, default_pt=29, ssrc=0x0
+14:52:40.113          rtp.c  pjmedia_rtp_session_init: ses=003FC154, default_pt=29, ssrc=0x0
+14:52:40.200          rtp.c  pjmedia_rtp_session_init: ses=082A6BCC, default_pt=29, ssrc=0x0
+14:52:40.240          rtp.c  pjmedia_rtp_session_init: ses=082EE7AC, default_pt=29, ssrc=0x0
+14:52:40.290          rtp.c  pjmedia_rtp_session_init: ses=0C27663C, default_pt=29, ssrc=0x0
+14:52:40.322          rtp.c  pjmedia_rtp_session_init: ses=0C2BFEF4, default_pt=29, ssrc=0x0
+14:52:40.413 c:\users\admin  Client start.....
+16:44:18.351          rtp.c  pjmedia_rtp_session_init: ses=007F0974, default_pt=29, ssrc=0x0
+16:44:18.389          rtp.c  pjmedia_rtp_session_init: ses=00808E9C, default_pt=29, ssrc=0x0
+16:44:18.426          rtp.c  pjmedia_rtp_session_init: ses=0089BC0C, default_pt=29, ssrc=0x0
+16:44:18.457          rtp.c  pjmedia_rtp_session_init: ses=008AB864, default_pt=29, ssrc=0x0
+16:44:18.493          rtp.c  pjmedia_rtp_session_init: ses=008BC634, default_pt=29, ssrc=0x0
+16:44:18.579          rtp.c  pjmedia_rtp_session_init: ses=08336B4C, default_pt=29, ssrc=0x0
+16:44:18.623          rtp.c  pjmedia_rtp_session_init: ses=0837EA8C, default_pt=29, ssrc=0x0
+16:44:18.653          rtp.c  pjmedia_rtp_session_init: ses=0BBC766C, default_pt=29, ssrc=0x0
+16:44:18.690          rtp.c  pjmedia_rtp_session_init: ses=0BC0E234, default_pt=29, ssrc=0x0
+16:44:18.764 c:\users\admin  Client start.....

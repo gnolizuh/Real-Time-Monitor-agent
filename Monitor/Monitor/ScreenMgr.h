@@ -68,6 +68,8 @@ public:
 	void        GetSuitedSize(LPRECT lpRect);
 	void        Adjest(pj_int32_t &cx, pj_int32_t &cy);
 	void        HideAll();
+	pj_status_t AddProxy(pj_uint16_t id, pj_str_t &ip, pj_uint16_t port, proxy_map_t::mapped_type proxy);
+	pj_status_t DelProxy(pj_uint16_t id;
 	static resolution_t GetDefaultResolution();
 
 protected:

@@ -121,16 +121,8 @@ pj_status_t ScreenMgr::Prepare(const pj_str_t &log_file_name)
 	udp_ev_ = event_new(evbase_, local_udp_sock_, EV_READ | EV_PERSIST, event_func_proxy, pfunction);
 	RETURN_VAL_IF_FAIL( udp_ev_ != nullptr, -1 );
 
-	function = std::bind(&ScreenMgr::EventOnTcpRead, this, std::placeholders::_1, std::placeholders::_2, nullptr);
-	pfunction = new ev_function_t(function);
-	tcp_ev_ = event_new(evbase_, local_tcp_sock_, EV_READ | EV_PERSIST, event_func_proxy, pfunction);
-	RETURN_VAL_IF_FAIL( tcp_ev_ != nullptr, -1 );
-
 	int ret;
 	ret = event_add(udp_ev_, NULL);
-	RETURN_VAL_IF_FAIL( ret == 0, -1 );
-
-	ret = event_add(tcp_ev_, NULL);
 	RETURN_VAL_IF_FAIL( ret == 0, -1 );
 
 	titles_ = new TitlesCtl();
@@ -185,33 +177,14 @@ pj_status_t ScreenMgr::ExpandedTitleRoom(TitleRoom &title_room)
 	pj_str_t              proxy_ip = pj_str("192.168.4.108");
 	pj_uint16_t           proxy_port = 100;
 	// status = GetAvsProxyInfoById(proxy_id, );  // 获取PROXY信息(id, ip,port)
-	// RETURN_VAL_IF_FAIL(status == PJ_SUCCESS, status);
+	// RETURN_VAL_IF_FAIL(status == PJ_SUCCESS, status); // 取不到proxy信息
 
 	proxy_map_t::mapped_type proxy = nullptr;
-	{
-		lock_guard<mutex> lock(linked_proxys_lock_);
-		proxy_map_t::iterator pproxy = linked_proxys_.find(proxy_id);
-		if(pproxy == linked_proxys_.end())
-		{
-			proxy = new AvsProxy(proxy_ip, proxy_port);
-			pj_assert(proxy);
-			linked_proxys_.insert(proxy_map_t::value_type(proxy_id, proxy));
-		}
-		else
-		{
-			proxy = pproxy->second;
-			RETURN_VAL_IF_FAIL(proxy, PJ_EINVAL);
-		}
-	}
-
 	pj_status_t status;
-	if(proxy->status_ == AVS_PROXY_STATUS_OFFLINE)
-	{
-		pj_sock_t sock;
-		status = proxy->Login(sock);
-		RETURN_VAL_IF_FAIL(status == PJ_SUCCESS, PJ_ESOCKETSTOP);
-	}
-	
+	status = AddProxy(proxy_id, proxy_ip, proxy_port, proxy);
+	RETURN_VAL_IF_FAIL(status != PJ_EINVAL && proxy != nullptr, PJ_EEXISTS);
+
+
 	return PJ_SUCCESS;
 }
 
@@ -453,37 +426,42 @@ void ScreenMgr::UdpParamScene(const pjmedia_rtp_hdr *rtp_hdr,
 void ScreenMgr::EventOnTcpRead(evutil_socket_t fd, short event, void *arg)
 {
 	pj_status_t status;
+
+	proxy_map_t::mapped_type proxy = reinterpret_cast<proxy_map_t::mapped_type>(arg);
+	RETURN_IF_FAIL(proxy != nullptr);
 	RETURN_IF_FAIL(event & EV_READ);
 
 	pj_ssize_t recvlen = MAX_STORAGE_SIZE - tcp_storage_offset_;
-	status = pj_sock_recv(local_tcp_sock_,
-		(char *)(tcp_storage_ + tcp_storage_offset_),
+	status = pj_sock_recv(proxy->sock_,
+		(char *)(proxy->tcp_storage_ + proxy->tcp_storage_offset_),
 		&recvlen,
 		0);
 
 	if (recvlen > 0)
 	{
 		tcp_storage_offset_ += (pj_uint16_t)recvlen;
-		pj_uint16_t packet_len = ntohs(*(pj_uint16_t *)tcp_storage_);
+		pj_uint16_t packet_len = ntohs(*(pj_uint16_t *)proxy->tcp_storage_);
 		pj_uint16_t total_len = packet_len + sizeof(packet_len);
 
 		if (total_len > MAX_STORAGE_SIZE)
 		{
-			tcp_storage_offset_ = 0;
+			proxy->tcp_storage_offset_ = 0;
 		}
-		else if (total_len > tcp_storage_offset_)
+		else if (total_len > proxy->tcp_storage_offset_)
 		{
 			return;
 		}
-		else if (total_len <= tcp_storage_offset_)
+		else if (total_len <= proxy->tcp_storage_offset_)
 		{
-			tcp_storage_offset_ -= total_len;
+			proxy->tcp_storage_offset_ -= total_len;
 
-			TcpParamScene(tcp_storage_, total_len);
+			TcpParamScene(proxy->tcp_storage_, total_len);
 
-			if (tcp_storage_offset_ > 0)
+			if (proxy->tcp_storage_offset_ > 0)
 			{
-				memcpy(tcp_storage_, tcp_storage_ + total_len, tcp_storage_offset_);
+				memcpy(proxy->tcp_storage_,
+					proxy->tcp_storage_ + total_len,
+					proxy->tcp_storage_offset_);
 			}
 		}
 	}
@@ -531,6 +509,64 @@ void ScreenMgr::EventOnUdpRead(evutil_socket_t fd, short event, void *arg)
 		UdpParamScene(rtp_hdr, datagram, (pj_uint16_t)datalen);
 	}
 }
+
+pj_status_t ScreenMgr::AddProxy(pj_uint16_t id, pj_str_t &ip, pj_uint16_t port, proxy_map_t::mapped_type proxy)
+{
+	lock_guard<mutex> lock(linked_proxys_lock_);
+	proxy_map_t::iterator pproxy = linked_proxys_.find(id);
+	RETURN_VAL_IF_FAIL( pproxy == linked_proxys_.end(), PJ_EEXISTS );  // 如果proxy已连接
+
+	pj_status_t status;
+	pj_sock_t sock;
+	status = pj_open_tcp_clientport(&ip, port, sock);
+	RETURN_VAL_IF_FAIL(status == PJ_SUCCESS, PJ_EINVAL); // 连不上proxy
+
+	proxy = new AvsProxy(ip, port);
+	linked_proxys_.insert(proxy_map_t::value_type(id, proxy));
+
+	proxy->sock_ = sock;
+
+	ev_function_t function;
+	ev_function_t *pfunction = nullptr;
+
+	function = std::bind(&ScreenMgr::EventOnTcpRead, this, std::placeholders::_1, std::placeholders::_2, proxy);
+	pfunction = new ev_function_t(function);
+	proxy->tcp_ev_ = event_new(evbase_, proxy->sock_, EV_READ | EV_PERSIST, event_func_proxy, pfunction);
+	RETURN_VAL_WITH_STATEMENT_IF_FAIL(proxy->tcp_ev_ != nullptr,
+		(linked_proxys_.erase(id), delete proxy, delete pfunction),
+		PJ_EINVAL);
+
+	int ret;
+	ret = event_add(udp_ev_, NULL);
+	RETURN_VAL_WITH_STATEMENT_IF_FAIL(ret == 0,
+		(linked_proxys_.erase(id), delete proxy, delete pfunction),
+		PJ_EINVAL);
+
+	return PJ_SUCCESS;
+}
+
+pj_status_t ScreenMgr::DelProxy(pj_uint16_t id)
+{
+	lock_guard<mutex> lock(linked_proxys_lock_);
+	proxy_map_t::iterator pproxy = linked_proxys_.find(id);
+	RETURN_VAL_IF_FAIL( pproxy != linked_proxys_.end(), PJ_ENOTFOUND );
+
+	proxy_map_t::mapped_type proxy = pproxy->second;
+	linked_proxys_.erase(pproxy); // First free the memory of iterator, termination is safe.
+
+	RETURN_VAL_IF_FAIL( proxy != nullptr, PJ_SUCCESS );
+
+	pj_sock_close( proxy->sock_ );
+	event_del( proxy->tcp_ev_ );
+
+	/**< Prevent using termination before delete it.*/
+	/*DisconnectScene *scene = new DisconnectScene();
+	std::function<scene_opt_t (pj_buffer_t &)> maintain = std::bind(&DisconnectScene::Maintain, shared_ptr<DisconnectScene>(scene), termination);
+	sync_thread_pool_.Schedule(std::bind(&RoomMgr::Maintain, this, maintain));*/
+
+	return PJ_SUCCESS;
+}
+
 
 void ScreenMgr::EventThread()
 {

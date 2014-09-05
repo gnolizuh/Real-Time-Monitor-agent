@@ -8,11 +8,7 @@ AvsProxy::AvsProxy(const pj_str_t &ip, pj_uint16_t port)
 {
 }
 
-pj_status_t AvsProxy::Login(pj_sock_t &sock)
+pj_status_t AvsProxy::LinkRoom()
 {
-	pj_status_t status = pj_open_tcp_clientport(&ip_, port_, sock);
-	RETURN_VAL_IF_FAIL(status == PJ_SUCCESS, status);
-
-	sock_ = sock;
-	return status;
+	
 }

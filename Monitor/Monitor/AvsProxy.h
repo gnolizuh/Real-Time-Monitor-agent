@@ -14,12 +14,16 @@ class AvsProxy
 {
 public:
 	AvsProxy(const pj_str_t &ip, pj_uint16_t port);
-	pj_status_t Login(pj_sock_t &sock);
+	pj_status_t LinkRoom();
 
-	pj_sock_t   sock_;
-	pj_uint8_t  status_;
-	pj_str_t    ip_;
-	pj_uint16_t port_;
+	struct event *tcp_ev_;
+	pj_sock_t    sock_;
+	pj_uint8_t   status_;
+	pj_str_t     ip_;
+	pj_uint16_t  port_;
+	pj_bool_t    active_; 
+	pj_uint8_t   tcp_storage_[MAX_STORAGE_SIZE];  // TCP»º´æ
+	pj_uint16_t  tcp_storage_offset_;             // TCP»º´æÆ«ÒÆµØÖ·
 };
 
 #endif
