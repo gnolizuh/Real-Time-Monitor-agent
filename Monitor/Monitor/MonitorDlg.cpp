@@ -13,7 +13,7 @@
 #endif
 
 extern Config g_client_config;
-
+extern Pipe   g_client_pipe;
 // 用于应用程序“关于”菜单项的 CAboutDlg 对话框
 
 class CAboutDlg : public CDialogEx
@@ -87,8 +87,8 @@ BEGIN_MESSAGE_MAP(CMonitorDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_BUTTON1, &CMonitorDlg::OnChangeLayout)
 	ON_MESSAGE(WM_BEGINDRAGITEM, &CMonitorDlg::OnBeginDragItem)
 	ON_MESSAGE(WM_ENDDRAGITEM, &CMonitorDlg::OnEndDragItem)
+	ON_MESSAGE(WM_EXPANDEDROOM, &CMonitorDlg::OnExpandedRoom)
 END_MESSAGE_MAP()
-
 
 // CMonitorDlg 消息处理程序
 static ScreenMgr *g_screen_mgr = NULL;
@@ -134,6 +134,9 @@ BOOL CMonitorDlg::OnInitDialog()
 
 	pj_status_t status;
 	status = init_param();
+	pj_assert(status == PJ_SUCCESS);
+
+	status = g_client_pipe.Create();
 	pj_assert(status == PJ_SUCCESS);
 
 	g_screen_mgr = new ScreenMgr(this, 10, g_client_config.local_ip, g_client_config.local_media_port);
@@ -256,7 +259,6 @@ LRESULT CMonitorDlg::OnBeginDragItem(WPARAM wParam, LPARAM lParam)
 	User *user = reinterpret_cast<User *>(lParam);
 	RETURN_VAL_IF_FAIL(user, true);
 
-	TRACE("CMonitorDlg::OnBeginDragItem user_id:%ld\n", user->user_id_);
 	is_draging_ = PJ_TRUE;
 	draging_user_ = user;
 
@@ -272,6 +274,16 @@ LRESULT CMonitorDlg::OnEndDragItem(WPARAM wParam, LPARAM lParam)
 
 	is_draging_ = PJ_FALSE;
 	draging_user_ = nullptr;
+
+	return true;
+}
+
+LRESULT CMonitorDlg::OnExpandedRoom(WPARAM wParam, LPARAM lParam)
+{
+	TitleRoom *title_room = (TitleRoom *)lParam;
+	RETURN_VAL_IF_FAIL(title_room, true);
+
+	g_screen_mgr->ExpandedTitleRoom(*title_room);
 
 	return true;
 }

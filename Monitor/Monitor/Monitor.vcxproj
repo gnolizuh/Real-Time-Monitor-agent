@@ -105,6 +105,7 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AvsProxy.h" />
     <ClInclude Include="AvsProxyStructs.h" />
     <ClInclude Include="Com.h" />
     <ClInclude Include="command.h" />
@@ -135,6 +136,7 @@
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="AvsProxy.cpp" />
     <ClCompile Include="Com.cpp" />
     <ClCompile Include="Config.cpp" />
     <ClCompile Include="happyhttp\happyhttp.cpp" />

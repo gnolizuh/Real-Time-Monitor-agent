@@ -22,6 +22,7 @@ public:
 
 protected:
 	afx_msg void OnItemExpanded(NMHDR *pNMHDR, LRESULT *pResult);
+	afx_msg void OnTvnBeginDrag(NMHDR *pNMHDR, LRESULT *pResult);
 	DECLARE_MESSAGE_MAP()
 };
 

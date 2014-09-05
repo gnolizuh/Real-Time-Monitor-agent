@@ -9,16 +9,11 @@ const resolution_t ScreenMgr::DEFAULT_RESOLUTION =
 	NIMINUM_SCREEN_HEIGHT * 3 + MININUM_PADDING
 };
 
-void ScreenMgr::event_on_tcp_read(evutil_socket_t fd, short event, void *arg)
+void ScreenMgr::event_func_proxy(evutil_socket_t fd, short event, void *arg)
 {
-	ScreenMgr *mgr = static_cast<ScreenMgr *>(arg);
-	mgr->EventOnTcpRead(fd, event);
-}
-
-void ScreenMgr::event_on_udp_read(evutil_socket_t fd, short event, void *arg)
-{
-	ScreenMgr *mgr = static_cast<ScreenMgr *>(arg);
-	mgr->EventOnUdpRead(fd, event);
+	ev_function_t *pfunction = reinterpret_cast<ev_function_t *>(arg);
+	(*pfunction)(fd, event, arg);
+	delete pfunction;
 }
 
 ScreenMgr::ScreenMgr(CWnd *wrapper,
@@ -48,7 +43,9 @@ ScreenMgr::ScreenMgr(CWnd *wrapper,
 	, connector_thread_()
 	, event_thread_()
 	, active_(PJ_FALSE)
-	, titles_()
+	, titles_(nullptr)
+	, linked_rooms_lock_()
+	, linked_rooms_()
 	, screenmgr_func_array_()
 	, sync_thread_pool_(1)
 	, num_blocks_()
@@ -115,11 +112,18 @@ pj_status_t ScreenMgr::Prepare(const pj_str_t &log_file_name)
 
 	evbase_ = event_base_new();
 	RETURN_VAL_IF_FAIL( evbase_ != nullptr, -1 );
+	
+	ev_function_t function;
+	ev_function_t *pfunction = nullptr;
 
-	udp_ev_ = event_new(evbase_, local_udp_sock_, EV_READ | EV_PERSIST, event_on_udp_read, this);
+	function = std::bind(&ScreenMgr::EventOnUdpRead, this, std::placeholders::_1, std::placeholders::_2, nullptr);
+	pfunction = new ev_function_t(function);
+	udp_ev_ = event_new(evbase_, local_udp_sock_, EV_READ | EV_PERSIST, event_func_proxy, pfunction);
 	RETURN_VAL_IF_FAIL( udp_ev_ != nullptr, -1 );
 
-	tcp_ev_ = event_new(evbase_, local_tcp_sock_, EV_READ | EV_PERSIST, event_on_tcp_read, this);
+	function = std::bind(&ScreenMgr::EventOnTcpRead, this, std::placeholders::_1, std::placeholders::_2, nullptr);
+	pfunction = new ev_function_t(function);
+	tcp_ev_ = event_new(evbase_, local_tcp_sock_, EV_READ | EV_PERSIST, event_func_proxy, pfunction);
 	RETURN_VAL_IF_FAIL( tcp_ev_ != nullptr, -1 );
 
 	int ret;
@@ -167,6 +171,48 @@ void ScreenMgr::Destory()
 
 	pj_sock_close(local_tcp_sock_);
 	pj_sock_close(local_udp_sock_);
+}
+
+pj_status_t ScreenMgr::ExpandedTitleRoom(TitleRoom &title_room)
+{
+	lock_guard<mutex> lock(linked_rooms_lock_);
+	room_map_t::iterator proom = linked_rooms_.find(title_room.id_);
+	RETURN_VAL_IF_FAIL(proom == linked_rooms_.end(), PJ_EEXISTS);
+
+	linked_rooms_.insert(room_map_t::value_type(title_room.id_, &title_room));
+
+	proxy_map_t::key_type proxy_id = 0;
+	pj_str_t              proxy_ip = pj_str("192.168.4.108");
+	pj_uint16_t           proxy_port = 100;
+	// status = GetAvsProxyInfoById(proxy_id, );  // 获取PROXY信息(id, ip,port)
+	// RETURN_VAL_IF_FAIL(status == PJ_SUCCESS, status);
+
+	proxy_map_t::mapped_type proxy = nullptr;
+	{
+		lock_guard<mutex> lock(linked_proxys_lock_);
+		proxy_map_t::iterator pproxy = linked_proxys_.find(proxy_id);
+		if(pproxy == linked_proxys_.end())
+		{
+			proxy = new AvsProxy(proxy_ip, proxy_port);
+			pj_assert(proxy);
+			linked_proxys_.insert(proxy_map_t::value_type(proxy_id, proxy));
+		}
+		else
+		{
+			proxy = pproxy->second;
+			RETURN_VAL_IF_FAIL(proxy, PJ_EINVAL);
+		}
+	}
+
+	pj_status_t status;
+	if(proxy->status_ == AVS_PROXY_STATUS_OFFLINE)
+	{
+		pj_sock_t sock;
+		status = proxy->Login(sock);
+		RETURN_VAL_IF_FAIL(status == PJ_SUCCESS, PJ_ESOCKETSTOP);
+	}
+	
+	return PJ_SUCCESS;
 }
 
 void ScreenMgr::LinkScreenUser(Screen *screen, User *user)
@@ -333,7 +379,7 @@ void ScreenMgr::TcpParamScene(const pj_uint8_t *storage,
 
 	TcpParameter *param = NULL;
 	TcpScene     *scene = NULL;
-	pj_uint16_t type = (pj_uint16_t)ntohs(*(pj_uint16_t *)(storage + sizeof(param->length_)));
+	pj_uint16_t   type = (pj_uint16_t)ntohs(*(pj_uint16_t *)(storage + sizeof(param->length_)));
 
 	switch(type)
 	{
@@ -404,7 +450,7 @@ void ScreenMgr::UdpParamScene(const pjmedia_rtp_hdr *rtp_hdr,
 		screen->VideoScene(datagram, datalen);
 }
 
-void ScreenMgr::EventOnTcpRead(evutil_socket_t fd, short event)
+void ScreenMgr::EventOnTcpRead(evutil_socket_t fd, short event, void *arg)
 {
 	pj_status_t status;
 	RETURN_IF_FAIL(event & EV_READ);
@@ -455,7 +501,7 @@ void ScreenMgr::EventOnTcpRead(evutil_socket_t fd, short event)
 	}
 }
 
-void ScreenMgr::EventOnUdpRead(evutil_socket_t fd, short event)
+void ScreenMgr::EventOnUdpRead(evutil_socket_t fd, short event, void *arg)
 {
 	RETURN_IF_FAIL(event & EV_READ);
 

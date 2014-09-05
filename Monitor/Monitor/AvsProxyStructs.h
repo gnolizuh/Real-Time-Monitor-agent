@@ -50,6 +50,28 @@ typedef struct
 {
 	void Serialize()
 	{
+		length = serialize((pj_uint16_t)(sizeof(request_to_avs_proxy_logout_t) - sizeof(length)));
+		client_request_type = serialize(client_request_type);
+		proxy_id = serialize(proxy_id);
+		client_id = serialize(client_id);
+	}
+
+private:
+	pj_uint16_t length;
+
+public:
+	pj_uint16_t client_request_type;
+	pj_uint16_t proxy_id;
+	pj_uint16_t client_id;
+	pj_int32_t  room_id;
+} request_to_avs_proxy_link_room_t;
+
+typedef request_to_avs_proxy_link_room_t request_to_avs_proxy_unlink_room_t;
+
+typedef struct
+{
+	void Serialize()
+	{
 		length = serialize((pj_uint16_t)(sizeof(request_to_avs_proxy_link_room_user_t) - sizeof(length)));
 		client_request_type = serialize(client_request_type);
 		proxy_id = serialize(proxy_id);

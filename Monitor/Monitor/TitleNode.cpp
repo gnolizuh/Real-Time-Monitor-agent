@@ -3,8 +3,8 @@
 
 extern Config g_client_config;
 
-TitleNode::TitleNode(pj_uint32_t id, const pj_str_t &name, order_t order, pj_uint32_t usercount)
-	: Node(id, name, order, usercount)
+TitleNode::TitleNode(pj_int32_t id, const pj_str_t &name, order_t order, pj_uint32_t usercount)
+	: Node(id, name, order, usercount, TITLE_NODE)
 {
 }
 

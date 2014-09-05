@@ -38,6 +38,7 @@ protected:
 	afx_msg void OnChangeLayout();
 	afx_msg LRESULT OnBeginDragItem(WPARAM wParam, LPARAM lParam);
 	afx_msg LRESULT OnEndDragItem(WPARAM wParam, LPARAM lParam);
+	afx_msg LRESULT OnExpandedRoom(WPARAM wParam, LPARAM lParam);
 	afx_msg HCURSOR OnQueryDragIcon();
 	DECLARE_MESSAGE_MAP()
 

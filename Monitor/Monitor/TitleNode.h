@@ -11,7 +11,7 @@ class TitleNode
 	: public Node
 {
 public:
-	TitleNode(pj_uint32_t id, const pj_str_t &name, pj_uint32_t order, pj_uint32_t usercount);
+	TitleNode(pj_int32_t id, const pj_str_t &name, pj_uint32_t order, pj_uint32_t usercount);
 	virtual ~TitleNode();
 	virtual void OnItemExpanded(CTreeCtrl &tree_ctrl, Node &parent);
 

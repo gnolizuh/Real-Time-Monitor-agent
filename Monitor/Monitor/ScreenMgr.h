@@ -20,6 +20,7 @@
 #include "KeepAliveScene.h"
 #include "AvsProxyStructs.h"
 #include "TitleRoom.h"
+#include "AvsProxy.h"
 
 #define TOP_SIDE_SIZE          30
 #define SIDE_SIZE              8
@@ -44,6 +45,9 @@ using std::map;
 
 class ScreenMgr;
 typedef void (ScreenMgr::*screenmgr_func_t)(pj_uint32_t, pj_uint32_t);
+typedef std::function<void (intptr_t, short, void *)> ev_function_t;
+typedef map<pj_uint16_t, AvsProxy *> proxy_map_t;
+typedef map<pj_int32_t, TitleRoom *> room_map_t;
 class ScreenMgr
 	: public Noncopyable
 {
@@ -58,6 +62,7 @@ public:
 	pj_status_t Prepare(const pj_str_t &log_file_name);
 	pj_status_t Launch();
 	void        Destory();
+	pj_status_t ExpandedTitleRoom(TitleRoom &title_room);
 	void        LinkScreenUser(Screen *screen, User *user);
 	void        ChangeLayout(enum_screen_mgr_resolution_t resolution);
 	void        GetSuitedSize(LPRECT lpRect);
@@ -66,11 +71,10 @@ public:
 	static resolution_t GetDefaultResolution();
 
 protected:
-	static void event_on_tcp_read(evutil_socket_t, short, void *);
-	static void event_on_udp_read(evutil_socket_t, short, void *);
+	static void event_func_proxy(evutil_socket_t, short, void *);
 
-	void EventOnTcpRead(evutil_socket_t, short);
-	void EventOnUdpRead(evutil_socket_t, short);
+	void EventOnTcpRead(evutil_socket_t fd, short event, void *arg);
+	void EventOnUdpRead(evutil_socket_t fd, short event, void *arg);
 	void ConnectorThread();
 	void EventThread();
 
@@ -107,6 +111,10 @@ private:
 	thread              event_thread_;
 	pj_bool_t           active_;
 	TitlesCtl          *titles_;
+	mutex               linked_rooms_lock_;
+	room_map_t          linked_rooms_;
+	mutex               linked_proxys_lock_;
+	proxy_map_t         linked_proxys_;
 	vector<screenmgr_func_t> screenmgr_func_array_;
 	vector<pj_uint32_t> num_blocks_;
 	enum_screen_mgr_resolution_t screen_mgr_res_;

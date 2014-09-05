@@ -2,6 +2,7 @@
 #define __AVS_PROXY_CLIENT_TITLE_ROOM__
 
 #include "pugixml.hpp"
+#include "resource.h"
 #include "Config.h"
 #include "Node.h"
 #include "Com.h"
@@ -34,15 +35,16 @@ class TitleRoom
 	: public Node
 {
 public:
-	TitleRoom(pj_uint32_t id, const pj_str_t &name, pj_uint32_t order, pj_uint32_t usercount);
+	TitleRoom(pj_int32_t id, const pj_str_t &name, pj_uint32_t order, pj_uint32_t usercount);
 	virtual ~TitleRoom();
 	virtual void OnItemExpanded(CTreeCtrl &tree_ctrl, Node &parent);
 
 private:
-	void AddNode(pj_uint32_t id, const pj_str_t &name, pj_uint32_t order, pj_uint32_t usercount);
-	void DelNode(pj_uint32_t id);
+	void AddNode(pj_int32_t id, const pj_str_t &name, pj_uint32_t order, pj_uint32_t usercount);
+	void DelNode(pj_int32_t id);
 
 public:
+	// status;
 	users_map_t users_;
 };
 

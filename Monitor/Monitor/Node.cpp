@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "Node.h"
 
-Node::Node(pj_uint32_t id, const pj_str_t &name, pj_uint32_t order, pj_uint32_t usercount)
+Node::Node(pj_int32_t id, const pj_str_t &name, pj_uint32_t order, pj_uint32_t usercount, pj_uint8_t node_type)
 	: tree_item_(nullptr)
 	, id_(id)
 	, name_(pj_str(strdup(name.ptr)))
@@ -9,6 +9,7 @@ Node::Node(pj_uint32_t id, const pj_str_t &name, pj_uint32_t order, pj_uint32_t 
 	, usercount_(usercount)
 	, nodes_()
 	, nodes_order_()
+	, node_type_(node_type)
 {
 }
 
@@ -22,7 +23,7 @@ void Node::AddNull(CTreeCtrl &tree_ctrl, HTREEITEM hParent)
 	tree_ctrl.InsertItem(&tvInsert);
 }
 
-void Node::AddNodeOrRoom(pj_uint32_t id,
+void Node::AddNodeOrRoom(pj_int32_t id,
 						Node *node,
 						CTreeCtrl &tree_ctrl,
 						HTREEITEM hParent)
@@ -52,7 +53,7 @@ void Node::AddNodeOrRoom(pj_uint32_t id,
 	nodes_order_.insert(node);
 }
 
-void Node::DelNodeOrRoom(pj_uint32_t id, CTreeCtrl &tree_ctrl)
+void Node::DelNodeOrRoom(pj_int32_t id, CTreeCtrl &tree_ctrl)
 {
 	node_map_t::iterator pnode = nodes_.find(id);
 	RETURN_IF_FAIL(pnode != nodes_.end());

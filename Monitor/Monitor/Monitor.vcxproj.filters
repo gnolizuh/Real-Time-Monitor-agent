@@ -63,9 +63,6 @@
     <ClInclude Include="Com.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="command.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="PoolThread.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
@@ -118,6 +115,12 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="TitleRoom.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="command.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="AvsProxy.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
@@ -177,6 +180,9 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="TitleRoom.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="AvsProxy.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
