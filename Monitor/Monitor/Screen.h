@@ -43,15 +43,13 @@ class Screen
 	: public CWnd
 {
 public:
-	Screen(pj_uint32_t index,
-		pj_sock_t &ref_tcp_sock,
-		mutex &ref_tcp_lock);
+	Screen(pj_uint32_t index);
 	virtual ~Screen();
 	pj_status_t Prepare(pj_pool_t *pool, const CRect &rect, const CWnd *wrapper, pj_uint32_t);
 	pj_status_t Launch();
 	void        Destory();
-	pj_status_t LinkRoomUser(av_index_map_t &av_index_map, User *user);
-	pj_status_t UnlinkRoomUser(av_index_map_t &av_index_map);
+	pj_status_t LinkRoomUser(av_index_map_t &av_index_map, TitleRoom *title_room, User *user);
+	pj_status_t UnlinkRoomUser(av_index_map_t &av_index_map, TitleRoom *title_room);
 	inline pj_bool_t HasLinkedUser() { return user_ != nullptr; }
 	void MoveToRect(const CRect &);
 	void HideWindow();
@@ -63,6 +61,7 @@ public:
 
 protected:
 	afx_msg void OnLButtonUp(UINT nFlags, CPoint point);
+	afx_msg void OnLButtonDblClk(UINT nFlags, CPoint point);
 	DECLARE_MESSAGE_MAP()
 
 private:
@@ -79,8 +78,6 @@ private:
 	pj_bool_t         media_active_;
 	pj_uint32_t       call_status_;
 	vid_stream_t     *stream_;
-	pj_sock_t        &ref_tcp_sock_;
-	mutex            &ref_tcp_lock_;
 	mutex             video_mutex_;
 	PoolThread<std::function<void ()>> audio_thread_pool_;
 	PoolThread<std::function<void ()>> video_thread_pool_;

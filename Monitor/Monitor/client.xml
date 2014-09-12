@@ -1,4 +1,5 @@
 <?xml version="1.0"?>
-<client ip="192.168.6.40" media_port="15000" log_file_name="client.log" tls_host="tls.show.sina.com.cn" tls_uri="/fcgi-bin/get_listinfo.fcgi?p_id=0&ver=1.0.0.0">
-
+<client ip="192.168.6.40" media_port="15000" log_file_name="client.log"
+	tls_host="tls.show.sina.com.cn" tls_port="80" tls_uri="/fcgi-bin/get_listinfo.fcgi?p_id=0&ver=1.0.0.0"
+	rrtvms_fcgi_host="123.103.108.102" rrtvms_fcgi_port="8080" rrtvms_fcgi_uri="/fcgi_bin/get_rrtvmss_info.fcgi?">
 </client>

@@ -5,6 +5,7 @@
 
 #include "Parameter.h"
 #include "Scene.h"
+#include "Config.h"
 
 using std::vector;
 
@@ -14,6 +15,7 @@ typedef struct
 	pj_int64_t  user_id_;
 	pj_uint32_t audio_ssrc_;
 	pj_uint32_t video_ssrc_;
+	pj_uint32_t mic_id_;
 } user_info_t;
 
 typedef struct
@@ -41,7 +43,7 @@ public:
 	RoomsInfoScene() {}
 	virtual ~RoomsInfoScene() {}
 
-	virtual void Maintain(shared_ptr<TcpParameter> ptr_tcp_param, Node *node);
+	virtual void Maintain(shared_ptr<TcpParameter> ptr_tcp_param, AvsProxy *avs_proxy);
 };
 
 #endif

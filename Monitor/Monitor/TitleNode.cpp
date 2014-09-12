@@ -18,7 +18,7 @@ void TitleNode::OnItemExpanded(CTreeCtrl &tree_ctrl, Node &parent)
 	DelAll(tree_ctrl, parent);
 
 	vector<pj_uint8_t> response;
-	http_get(g_client_config.tls_host, g_client_config.tls_uri, id_, response);
+	http_tls_get(g_client_config.tls_host, g_client_config.tls_port, g_client_config.tls_uri, id_, response);
 	ParseXML(response, tree_ctrl, parent);
 
 	if(nodes_.empty())
@@ -66,7 +66,7 @@ void TitleNode::ParseXML(const vector<pj_uint8_t> &xml, CTreeCtrl &tree_ctrl, No
 			order_t order = atoi(room.attribute("order").value());
 			pj_uint32_t usercount = atoi(room.attribute("usercount").value());
 
-			TitleRoom *title_room = new TitleRoom(id, name, order, usercount);
+			TitleRoom *title_room = new TitleRoom(&tree_ctrl, id, name, order, usercount);
 			pj_assert(title_room);
 			AddNodeOrRoom(id, title_room, tree_ctrl, parent.tree_item_);
 		}

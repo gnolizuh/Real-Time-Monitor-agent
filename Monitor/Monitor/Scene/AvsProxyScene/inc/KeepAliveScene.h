@@ -18,7 +18,7 @@ public:
 	KeepAliveScene() {}
 	virtual ~KeepAliveScene() {}
 
-	virtual void Maintain(shared_ptr<TcpParameter> ptr_tcp_param);
+	virtual void Maintain(shared_ptr<TcpParameter> ptr_tcp_param, AvsProxy *avs_proxy);
 };
 
 #endif

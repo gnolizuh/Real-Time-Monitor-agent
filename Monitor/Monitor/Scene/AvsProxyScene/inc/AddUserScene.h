@@ -21,7 +21,7 @@ public:
 	AddUserScene() {}
 	virtual ~AddUserScene() {}
 
-	virtual void Maintain(shared_ptr<TcpParameter> ptr_tcp_param, Node *node);
+	virtual void Maintain(shared_ptr<TcpParameter> ptr_tcp_param, AvsProxy *avs_proxy);
 };
 
 #endif

@@ -115,22 +115,13 @@ void Title::OnTvnBeginDrag(NMHDR *pNMHDR, LRESULT *pResult)
  
 	HTREEITEM pTreeItem = reinterpret_cast<HTREEITEM>(pNMTreeView->itemNew.hItem);
 
-	Node *node = reinterpret_cast<Node *>(GetItemData(pTreeItem));
-	RETURN_IF_FAIL(node);
- 
-	switch(node->node_type_)
+	if(!ItemHasChildren(pTreeItem))
 	{
-		case TITLE_NODE:
-		case TITLE_ROOM: break;
-		case TITLE_USER:
-		{
-			/*User *user = reinterpret_cast<User *>(GetItemData(pTreeItem));
-			if(user)
-			{
- 				::SendMessage(AfxGetMainWnd()->m_hWnd, WM_BEGINDRAGITEM, 0, (LPARAM)user);
- 				TRACE("user_id:%ld\n", user->user_id_);
-			}*/
-			break;
-		}
+		HTREEITEM pParentItem = GetParentItem(pTreeItem);
+		TitleRoom *title_room = reinterpret_cast<TitleRoom *>(GetItemData(pParentItem));
+		User *user = reinterpret_cast<User *>(GetItemData(pTreeItem));
+		RETURN_IF_FAIL(title_room != nullptr && user != nullptr);
+
+ 		::SendMessage(AfxGetMainWnd()->m_hWnd, WM_BEGINDRAGITEM, (WPARAM)title_room, (LPARAM)user);
 	}
 }

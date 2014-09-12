@@ -16,21 +16,30 @@ RoomsInfoParameter::RoomsInfoParameter(const pj_uint8_t *storage, pj_uint16_t st
 			pj_ntoh_assign(storage, storage_len, rooms_info_[i].users_info_[j].user_id_);
 			pj_ntoh_assign(storage, storage_len, rooms_info_[i].users_info_[j].audio_ssrc_);
 			pj_ntoh_assign(storage, storage_len, rooms_info_[i].users_info_[j].video_ssrc_);
+			pj_ntoh_assign(storage, storage_len, rooms_info_[i].users_info_[j].mic_id_);
 		}
 	}
 }
 
-void RoomsInfoScene::Maintain(shared_ptr<TcpParameter> ptr_tcp_param, Node *node)
+void RoomsInfoScene::Maintain(shared_ptr<TcpParameter> ptr_tcp_param, AvsProxy *avs_proxy)
 {
 	RoomsInfoParameter *param = reinterpret_cast<RoomsInfoParameter *>(ptr_tcp_param.get());
-	for(pj_uint32_t i = 0; i < param->room_count_; ++ i)
+	RETURN_IF_FAIL(param->room_count_ > 0);
+
+	TitleRoom *title_room = nullptr;
+	for(pj_uint8_t i = 0; i < param->room_count_; ++ i)
 	{
-		/*Room *room = room_ctl->AddRoom(param->rooms_info_[i].room_id_);
-		for(pj_uint8_t j = 0; j < param->rooms_info_[i].user_count_; ++ j)
+		title_room = nullptr;
+		if(avs_proxy->GetRoom(param->rooms_info_[i].room_id_, title_room) == PJ_SUCCESS)
 		{
-			User *user = room_ctl->AddUser(room, param->rooms_info_[i].users_info_[j].user_id_);
-			room_ctl->ModMedia(user, param->rooms_info_[i].users_info_[j].audio_ssrc_,
-				param->rooms_info_[i].users_info_[j].video_ssrc_);
-		}*/
+			for(pj_uint8_t j = 0; j < param->rooms_info_[i].user_count_; ++ j)
+			{
+				pj_uint64_t user_id = param->rooms_info_[i].users_info_[j].user_id_;
+				pj_uint32_t audio_ssrc = param->rooms_info_[i].users_info_[j].audio_ssrc_;
+				pj_uint32_t video_ssrc = param->rooms_info_[i].users_info_[j].video_ssrc_;
+				User *user = title_room->AddUser(user_id);
+				title_room->ModUser(user, audio_ssrc, video_ssrc);
+			}
+		}
 	}
 }

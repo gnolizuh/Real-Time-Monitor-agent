@@ -3,6 +3,7 @@
 
 #include <event.h>
 #include <memory>
+#include <functional>
 #include <iostream>
 #include <sstream>
 #include <vector>
@@ -30,6 +31,7 @@ using std::set;
 using std::vector;
 
 typedef uint32_t room_id_t;
+typedef std::function<void (intptr_t, short, void *)> ev_function_t;
 typedef map<pj_uint32_t, pj_uint8_t> index_map_t;
 typedef vector<index_map_t> av_index_map_t;
 typedef pj_uint32_t order_t;
@@ -175,7 +177,8 @@ struct order_cmp
 pj_status_t log_open(pj_pool_t *pool, const pj_str_t &file_name);
 void        log_writer(int level, const char *log, int loglen);
 
-void        http_get(const pj_str_t &host, const pj_str_t &url, pj_uint32_t node_id, std::vector<pj_uint8_t> &response);
+void        http_tls_get(const pj_str_t &host, pj_uint16_t port, const pj_str_t &url, pj_uint32_t node_id, std::vector<pj_uint8_t> &response);
+void        http_proxy_get(const pj_str_t &host, pj_uint16_t port, const pj_str_t &url, pj_uint32_t room_id, std::vector<pj_uint8_t> &response);
 
 pj_status_t UTF8_to_GB2312(wchar_t *gb_dst, int gb_len, const pj_str_t &utf_src);
 

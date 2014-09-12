@@ -4,11 +4,10 @@
 
 BEGIN_MESSAGE_MAP(Screen, CWnd)
 	ON_WM_LBUTTONUP()
+	ON_WM_LBUTTONDBLCLK()
 END_MESSAGE_MAP()
 
-Screen::Screen(pj_uint32_t index,
-			   pj_sock_t &ref_tcp_sock,
-			   mutex &ref_tcp_lock)
+Screen::Screen(pj_uint32_t index)
 	: CWnd()
 	, user_(nullptr)
 	, index_(index)
@@ -21,8 +20,6 @@ Screen::Screen(pj_uint32_t index,
 	, media_active_(PJ_FALSE)
 	, call_status_(0)
 	, stream_(nullptr)
-	, ref_tcp_sock_(ref_tcp_sock)
-	, ref_tcp_lock_(ref_tcp_lock)
 	, video_mutex_()
 {
 }
@@ -345,7 +342,7 @@ pj_status_t Screen::decode_vid_frame()
 	return got_frame ? PJ_SUCCESS : PJ_ENOTFOUND;
 }
 
-pj_status_t Screen::LinkRoomUser(av_index_map_t &av_index_map, User *user)
+pj_status_t Screen::LinkRoomUser(av_index_map_t &av_index_map, TitleRoom *title_room, User *user)
 {
 	enum {AUDIO_INDEX, VIDEO_INDEX};
 
@@ -357,7 +354,7 @@ pj_status_t Screen::LinkRoomUser(av_index_map_t &av_index_map, User *user)
 	{
 		RETURN_VAL_IF_FAIL((*user_ != *user), PJ_SUCCESS);
 
-		status = UnlinkRoomUser(av_index_map);
+		status = UnlinkRoomUser(av_index_map, title_room);
 		RETURN_VAL_IF_FAIL(status == PJ_SUCCESS, status);
 	}
 
@@ -377,10 +374,10 @@ pj_status_t Screen::LinkRoomUser(av_index_map_t &av_index_map, User *user)
 	av_index_map[VIDEO_INDEX].insert(index_map_t::value_type(user->video_ssrc_, index_));
 
 	sndlen = sizeof(link_room_user);
-	return SendTCPPacket(&link_room_user, &sndlen);
+	return title_room->SendTCPPacket(&link_room_user, &sndlen);
 }
 
-pj_status_t Screen::UnlinkRoomUser(av_index_map_t &av_index_map)
+pj_status_t Screen::UnlinkRoomUser(av_index_map_t &av_index_map, TitleRoom *title_room)
 {
 	enum {AUDIO_INDEX, VIDEO_INDEX};
 
@@ -402,16 +399,15 @@ pj_status_t Screen::UnlinkRoomUser(av_index_map_t &av_index_map)
 	user_ = nullptr;
 
 	pj_ssize_t sndlen = sizeof(unlink_room_user);
-	return SendTCPPacket(&unlink_room_user, &sndlen);
-}
-
-pj_status_t Screen::SendTCPPacket(const void *buf, pj_ssize_t *len)
-{
-	lock_guard<mutex> lock(ref_tcp_lock_);
-	return pj_sock_send(ref_tcp_sock_, buf, len, 0);
+	return title_room->SendTCPPacket(&unlink_room_user, &sndlen);
 }
 
 void Screen::OnLButtonUp(UINT nFlags, CPoint point)
 {
 	::SendMessage(AfxGetMainWnd()->m_hWnd, WM_ENDDRAGITEM, 0, (LPARAM)this); // let Mainframe knowns.
+}
+
+void Screen::OnLButtonDblClk(UINT nFlags, CPoint point)
+{
+	::SendMessage(AfxGetMainWnd()->m_hWnd, WM_UNLINK_ROOM_USER, (WPARAM)user_, (LPARAM)this);
 }

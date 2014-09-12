@@ -110,6 +110,7 @@
     <ClInclude Include="Com.h" />
     <ClInclude Include="command.h" />
     <ClInclude Include="Config.h" />
+    <ClInclude Include="DiscProxyScene.h" />
     <ClInclude Include="happyhttp\happyhttp.h" />
     <ClInclude Include="MessageQueue.hpp" />
     <ClInclude Include="Monitor.h" />
@@ -139,6 +140,7 @@
     <ClCompile Include="AvsProxy.cpp" />
     <ClCompile Include="Com.cpp" />
     <ClCompile Include="Config.cpp" />
+    <ClCompile Include="DiscProxyScene.cpp" />
     <ClCompile Include="happyhttp\happyhttp.cpp" />
     <ClCompile Include="Monitor.cpp" />
     <ClCompile Include="MonitorDlg.cpp" />

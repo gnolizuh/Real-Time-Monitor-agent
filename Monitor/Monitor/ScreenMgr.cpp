@@ -13,7 +13,6 @@ void ScreenMgr::event_func_proxy(evutil_socket_t fd, short event, void *arg)
 {
 	ev_function_t *pfunction = reinterpret_cast<ev_function_t *>(arg);
 	(*pfunction)(fd, event, arg);
-	delete pfunction;
 }
 
 ScreenMgr::ScreenMgr(CWnd *wrapper,
@@ -38,14 +37,12 @@ ScreenMgr::ScreenMgr(CWnd *wrapper,
 	, pool_(NULL)
 	, tcp_ev_(nullptr)
 	, udp_ev_(nullptr)
+	, pipe_ev_(nullptr)
 	, evbase_(nullptr)
-	, tcp_storage_offset_(0)
 	, connector_thread_()
 	, event_thread_()
 	, active_(PJ_FALSE)
 	, titles_(nullptr)
-	, linked_rooms_lock_()
-	, linked_rooms_()
 	, screenmgr_func_array_()
 	, sync_thread_pool_(1)
 	, num_blocks_()
@@ -58,11 +55,6 @@ ScreenMgr::ScreenMgr(CWnd *wrapper,
 	num_blocks_.push_back(3);
 	screenmgr_func_array_.push_back(&ScreenMgr::ChangeLayout_3x3);
 	num_blocks_.push_back(3);
-
-	for (pj_uint32_t idx = 0; idx < MAXIMAL_SCREEN_NUM; ++ idx)
-	{
-		screens_[idx] = new Screen(idx, local_tcp_sock_, local_tcp_lock_);
-	}
 }
 
 ScreenMgr::~ScreenMgr()
@@ -85,11 +77,17 @@ pj_status_t ScreenMgr::Prepare(const pj_str_t &log_file_name)
 	} while(status != PJ_SUCCESS && ((++ local_udp_port_), (-- retrys > 0)));
 	RETURN_VAL_IF_FAIL( status == PJ_SUCCESS, status );
 
+	int ret;
+	ret = evutil_socketpair(AF_INET, SOCK_STREAM, 0, pipe_fds_);
+
 	pj_caching_pool_init(&caching_pool_, &pj_pool_factory_default_policy, 0);
 
 	pool_ = pj_pool_create(&caching_pool_.factory, "AvsProxyClientPool", 1000, 1000, NULL);
 
 	status = log_open(pool_, log_file_name);
+
+	status = pjmedia_rtp_session_init(&rtp_out_session_, RTP_EXPAND_PAYLOAD_TYPE, pj_rand());
+	RETURN_VAL_IF_FAIL( status == PJ_SUCCESS, status );
 
 	/* Init video format manager */
     status = pjmedia_video_format_mgr_create(pool_, 64, 0, NULL);
@@ -121,16 +119,24 @@ pj_status_t ScreenMgr::Prepare(const pj_str_t &log_file_name)
 	udp_ev_ = event_new(evbase_, local_udp_sock_, EV_READ | EV_PERSIST, event_func_proxy, pfunction);
 	RETURN_VAL_IF_FAIL( udp_ev_ != nullptr, -1 );
 
-	int ret;
 	ret = event_add(udp_ev_, NULL);
+	RETURN_VAL_IF_FAIL( ret == 0, -1 );
+
+	function = std::bind(&ScreenMgr::EventOnConnection, this, std::placeholders::_1, std::placeholders::_2, nullptr);
+	pfunction = new ev_function_t(function);
+	pipe_ev_ = event_new(evbase_, pipe_fds_[0], EV_READ | EV_PERSIST, event_func_proxy, pfunction);
+	RETURN_VAL_IF_FAIL( pipe_ev_ != nullptr, -1 );
+
+	ret = event_add(pipe_ev_, NULL);
 	RETURN_VAL_IF_FAIL( ret == 0, -1 );
 
 	titles_ = new TitlesCtl();
 	pj_assert(titles_ != nullptr);
 	titles_->Prepare(wrapper_, IDC_ROOM_TREE_CTL_INDEX);
 
-	for(pj_uint32_t idx = 0; idx < screens_.size(); ++ idx)
+	for(pj_uint32_t idx = 0; idx < MAXIMAL_SCREEN_NUM; ++ idx)
 	{
+		screens_[idx] = new Screen(idx);
 		status = screens_[idx]->Prepare(pool_, CRect(0, 0, width_, height_), wrapper_, IDC_WALL_BASE_INDEX + idx);
 	}
 
@@ -144,7 +150,6 @@ pj_status_t ScreenMgr::Launch()
 	active_ = PJ_TRUE;
 
 	event_thread_ = thread(std::bind(&ScreenMgr::EventThread, this));
-	// connector_thread_ = thread(std::bind(&ScreenMgr::ConnectorThread, this));
 	sync_thread_pool_.Start();
 
 	for(pj_uint32_t idx = 0; idx < screens_.size(); ++ idx)
@@ -165,32 +170,37 @@ void ScreenMgr::Destory()
 	pj_sock_close(local_udp_sock_);
 }
 
-pj_status_t ScreenMgr::ExpandedTitleRoom(TitleRoom &title_room)
+pj_status_t ScreenMgr::OnLinkRoom(TitleRoom *title_room)
 {
-	lock_guard<mutex> lock(linked_rooms_lock_);
-	room_map_t::iterator proom = linked_rooms_.find(title_room.id_);
-	RETURN_VAL_IF_FAIL(proom == linked_rooms_.end(), PJ_EEXISTS);
+	vector<pj_uint8_t> response;
+	http_proxy_get(g_client_config.rrtvms_fcgi_host, g_client_config.rrtvms_fcgi_port, g_client_config.rrtvms_fcgi_uri,
+		title_room->id_, response);
 
-	linked_rooms_.insert(room_map_t::value_type(title_room.id_, &title_room));
+	pj_status_t           status;
+	proxy_map_t::key_type proxy_id(100);
+	string                proxy_ip("192.168.6.40");
+	pj_uint16_t           proxy_tcp_port(12000);
+	pj_uint16_t           proxy_udp_port(13000);
 
-	proxy_map_t::key_type proxy_id = 0;
-	pj_str_t              proxy_ip = pj_str("192.168.4.108");
-	pj_uint16_t           proxy_port = 100;
-	// status = GetAvsProxyInfoById(proxy_id, );  // 获取PROXY信息(id, ip,port)
-	// RETURN_VAL_IF_FAIL(status == PJ_SUCCESS, status); // 取不到proxy信息
+	status = ParseHttpResponse(proxy_id, proxy_ip, proxy_tcp_port, proxy_udp_port, response);
+	RETURN_VAL_IF_FAIL(status == PJ_SUCCESS, status);
 
-	proxy_map_t::mapped_type proxy = nullptr;
-	pj_status_t status;
-	status = AddProxy(proxy_id, proxy_ip, proxy_port, proxy);
-	RETURN_VAL_IF_FAIL(status != PJ_EINVAL && proxy != nullptr, PJ_EEXISTS);
+	vector<pj_uint16_t> ports;
+	ports.push_back(proxy_tcp_port);
+	ports.push_back(proxy_udp_port);
+	std::function<pj_status_t ()> connection = std::bind(&ScreenMgr::LinkRoom, this, proxy_id, proxy_ip, ports, title_room);
+	std::function<pj_status_t ()> *pconnection = new std::function<pj_status_t ()>(connection);
+	pj_assert(pconnection != nullptr);
 
+	pj_ssize_t sndlen = sizeof(pconnection);
+	pj_sock_send(pipe_fds_[1], &pconnection, &sndlen, 0);
 
 	return PJ_SUCCESS;
 }
 
-void ScreenMgr::LinkScreenUser(Screen *screen, User *user)
+void ScreenMgr::LinkScreenUser(Screen *screen, TitleRoom *title_room, User *user)
 {
-	screen->LinkRoomUser(av_index_map_, user);
+	screen->LinkRoomUser(av_index_map_, title_room, user);
 }
 
 void ScreenMgr::ChangeLayout(enum_screen_mgr_resolution_t resolution)
@@ -345,13 +355,48 @@ void ScreenMgr::HideAll()
 	}
 }
 
+pj_status_t ScreenMgr::ParseHttpResponse(pj_uint16_t &proxy_id, string &proxy_ip, pj_uint16_t &proxy_tcp_port, pj_uint16_t &proxy_udp_port,
+										 const vector<pj_uint8_t> &response)
+{
+	RETURN_VAL_IF_FAIL(response.size() > 0, PJ_EINVAL);
+
+	enum {PROXY_ID = 0, PROXY_IP, PROXY_TCP_PORT, PROXY_UDP_PORT, TOKEN_SIZE};
+	const char *delim = "\n";
+	int i = 0;
+
+	char *tmp = (char *)&response[0];
+	char *s, *next = nullptr;
+	s = strtok_s(tmp, delim, &next);
+	while(s && i < TOKEN_SIZE)
+	{
+		switch(i ++)
+		{
+			case PROXY_ID:
+				proxy_id = atoi(s);
+				break;
+			case PROXY_IP:
+				proxy_ip.assign(s);
+				break;
+			case PROXY_TCP_PORT:
+				proxy_tcp_port = atoi(s);
+				break;
+			case PROXY_UDP_PORT:
+				proxy_udp_port = atoi(s);
+				break;
+		}
+		s = strtok_s(nullptr, delim, &next);
+	}
+
+	return i == TOKEN_SIZE ? PJ_SUCCESS : PJ_EINVAL;
+}
+
 void ScreenMgr::TcpParamScene(const pj_uint8_t *storage,
 							  pj_uint16_t storage_len)
 {
 	RETURN_IF_FAIL(storage && (storage_len > 0));
 
-	TcpParameter *param = NULL;
-	TcpScene     *scene = NULL;
+	TcpParameter *param = nullptr;
+	TcpScene     *scene = nullptr;
 	pj_uint16_t   type = (pj_uint16_t)ntohs(*(pj_uint16_t *)(storage + sizeof(param->length_)));
 
 	switch(type)
@@ -388,9 +433,11 @@ void ScreenMgr::TcpParamScene(const pj_uint8_t *storage,
 		}
 	}
 
+	AvsProxy *proxy = nullptr;
+	RETURN_IF_FAIL(GetProxy(param->proxy_id_, proxy) == PJ_SUCCESS);
 	RETURN_IF_FAIL(param != nullptr && scene != nullptr);
 
-	// sync_thread_pool_.Schedule(std::bind(&TcpScene::Maintain, shared_ptr<TcpScene>(scene), shared_ptr<TcpParameter>(param), &rooms_tree_ctl_));
+	sync_thread_pool_.Schedule(std::bind(&TcpScene::Maintain, shared_ptr<TcpScene>(scene), shared_ptr<TcpParameter>(param), proxy));
 }
 
 void ScreenMgr::UdpParamScene(const pjmedia_rtp_hdr *rtp_hdr,
@@ -431,7 +478,7 @@ void ScreenMgr::EventOnTcpRead(evutil_socket_t fd, short event, void *arg)
 	RETURN_IF_FAIL(proxy != nullptr);
 	RETURN_IF_FAIL(event & EV_READ);
 
-	pj_ssize_t recvlen = MAX_STORAGE_SIZE - tcp_storage_offset_;
+	pj_ssize_t recvlen = MAX_STORAGE_SIZE - proxy->tcp_storage_offset_;
 	status = pj_sock_recv(proxy->sock_,
 		(char *)(proxy->tcp_storage_ + proxy->tcp_storage_offset_),
 		&recvlen,
@@ -439,43 +486,51 @@ void ScreenMgr::EventOnTcpRead(evutil_socket_t fd, short event, void *arg)
 
 	if (recvlen > 0)
 	{
-		tcp_storage_offset_ += (pj_uint16_t)recvlen;
-		pj_uint16_t packet_len = ntohs(*(pj_uint16_t *)proxy->tcp_storage_);
-		pj_uint16_t total_len = packet_len + sizeof(packet_len);
+		proxy->tcp_storage_offset_ += (pj_uint16_t)recvlen;
+		do {
+			pj_uint16_t packet_len = ntohs(*(pj_uint16_t *)proxy->tcp_storage_);
+			pj_uint16_t total_len = packet_len + sizeof(packet_len);
 
-		if (total_len > MAX_STORAGE_SIZE)
-		{
-			proxy->tcp_storage_offset_ = 0;
-		}
-		else if (total_len > proxy->tcp_storage_offset_)
-		{
-			return;
-		}
-		else if (total_len <= proxy->tcp_storage_offset_)
-		{
-			proxy->tcp_storage_offset_ -= total_len;
-
-			TcpParamScene(proxy->tcp_storage_, total_len);
-
-			if (proxy->tcp_storage_offset_ > 0)
+			if (total_len > MAX_STORAGE_SIZE)
 			{
-				memcpy(proxy->tcp_storage_,
-					proxy->tcp_storage_ + total_len,
-					proxy->tcp_storage_offset_);
+				proxy->tcp_storage_offset_ = 0;
+				break;
 			}
-		}
+			else if (total_len > proxy->tcp_storage_offset_)
+			{
+				break;
+			}
+			else if (total_len <= proxy->tcp_storage_offset_)
+			{
+				proxy->tcp_storage_offset_ -= total_len;
+
+				TcpParamScene(proxy->tcp_storage_, total_len);
+
+				if (proxy->tcp_storage_offset_ > 0)
+				{
+					memcpy(proxy->tcp_storage_,
+						proxy->tcp_storage_ + total_len,
+						proxy->tcp_storage_offset_);
+				}
+				else if(proxy->tcp_storage_offset_ == 0)
+				{
+					break;
+				}
+			}
+		} while (1);
 	}
-	else if (recvlen == 0)
+	else if (recvlen <= 0)
 	{
-		pj_sock_close( local_tcp_sock_ );
-		event_del( tcp_ev_ );
-		connector_thread_ = thread(std::bind(&ScreenMgr::ConnectorThread, this));
-	}
-	else /* if ( recvlen < 0 ) */
-	{
-		pj_sock_close( local_tcp_sock_ );
-		event_del( tcp_ev_ );
-		connector_thread_ = thread(std::bind(&ScreenMgr::ConnectorThread, this));
+		pj_sock_close(proxy->sock_);
+		event_del(proxy->tcp_ev_);
+		event_free(proxy->tcp_ev_);
+
+		std::function<pj_status_t ()> disconnection = std::bind(&ScreenMgr::DelProxy, this, proxy);
+		std::function<pj_status_t ()> *pdisconnection = new std::function<pj_status_t ()>(disconnection);
+		pj_assert(pdisconnection != nullptr);
+
+		pj_ssize_t sndlen = sizeof(pdisconnection);
+		pj_sock_send(pipe_fds_[1], &pdisconnection, &sndlen, 0);
 	}
 }
 
@@ -510,63 +565,114 @@ void ScreenMgr::EventOnUdpRead(evutil_socket_t fd, short event, void *arg)
 	}
 }
 
-pj_status_t ScreenMgr::AddProxy(pj_uint16_t id, pj_str_t &ip, pj_uint16_t port, proxy_map_t::mapped_type proxy)
+void ScreenMgr::EventOnConnection(evutil_socket_t fd, short event, void *arg)
+{
+	std::function<pj_status_t ()> *pconnection = nullptr;
+	RETURN_IF_FAIL(event & EV_READ);
+
+	pj_ssize_t recvlen = sizeof(pconnection);
+	pj_status_t status;
+	status = pj_sock_recv(pipe_fds_[0], &pconnection, &recvlen, 0);
+
+	pj_assert(recvlen == sizeof(pconnection));
+	pj_assert(pconnection != nullptr);
+
+	status = (*pconnection)();
+	delete pconnection;
+}
+
+pj_status_t ScreenMgr::LinkRoom(pj_uint16_t id, string ip, vector<pj_uint16_t> ports, TitleRoom *title_room)
+{
+	proxy_map_t::mapped_type proxy = nullptr;
+	pj_status_t status;
+	status = GetProxy(id, proxy);
+	
+	if(status != PJ_SUCCESS && ports.size() == 2) // Proxy isn't exist!
+	{
+		pj_sock_t sock;
+		pj_str_t pj_ip = pj_str((char *)ip.c_str());
+		status = pj_open_tcp_clientport(&pj_ip, ports[0], sock);
+		RETURN_VAL_IF_FAIL(status == PJ_SUCCESS, status); // 连不上proxy
+
+		status = AddProxy(id, pj_ip, ports[0], ports[1], sock, proxy);
+		RETURN_VAL_IF_FAIL(status == PJ_SUCCESS, status);
+
+		ev_function_t function;
+		ev_function_t *pfunction = nullptr;
+
+		function = std::bind(&ScreenMgr::EventOnTcpRead, this, std::placeholders::_1, std::placeholders::_2, proxy);
+		pfunction = new ev_function_t(function);
+		proxy->pfunction_ = pfunction;
+
+		proxy->tcp_ev_ = event_new(evbase_, proxy->sock_, EV_READ | EV_PERSIST, event_func_proxy, pfunction);
+		RETURN_VAL_WITH_STATEMENT_IF_FAIL(proxy->tcp_ev_ != nullptr,
+			(linked_proxys_.erase(id), delete proxy, delete pfunction, pj_sock_close(sock)),
+			PJ_EINVAL);
+
+		RETURN_VAL_WITH_STATEMENT_IF_FAIL(event_add(proxy->tcp_ev_, NULL) == 0,
+			(linked_proxys_.erase(id), delete proxy, delete pfunction, pj_sock_close(sock)),
+			PJ_EINVAL);
+
+		status = proxy->Login();
+		RETURN_VAL_IF_FAIL(status == PJ_SUCCESS, status);
+
+		request_to_avs_proxy_nat_t nat
+			= {REQUEST_FROM_CLIENT_TO_AVSPROXY_NAT, id, 0, g_client_config.client_id};
+		nat.Serialize();
+
+		status = SendRTPPacket(pj_ip, ports[1], &nat, sizeof(nat));
+		RETURN_VAL_IF_FAIL(status == PJ_SUCCESS, status);
+	}
+
+	status = proxy->LinkRoom(title_room);
+	RETURN_VAL_IF_FAIL(status == PJ_SUCCESS || status == PJ_EEXISTS, status);
+
+	title_room->proxy_ = proxy;
+
+	return PJ_SUCCESS;
+}
+
+pj_status_t ScreenMgr::AddProxy(pj_uint16_t id, pj_str_t &ip, pj_uint16_t tcp_port, pj_uint16_t udp_port, pj_sock_t sock, proxy_map_t::mapped_type &proxy)
 {
 	lock_guard<mutex> lock(linked_proxys_lock_);
 	proxy_map_t::iterator pproxy = linked_proxys_.find(id);
-	RETURN_VAL_IF_FAIL( pproxy == linked_proxys_.end(), PJ_EEXISTS );  // 如果proxy已连接
+	RETURN_VAL_IF_FAIL(pproxy == linked_proxys_.end(), PJ_EINVAL);
 
-	pj_status_t status;
-	pj_sock_t sock;
-	status = pj_open_tcp_clientport(&ip, port, sock);
-	RETURN_VAL_IF_FAIL(status == PJ_SUCCESS, PJ_EINVAL); // 连不上proxy
-
-	proxy = new AvsProxy(ip, port);
+	proxy = new AvsProxy(id, ip, tcp_port, udp_port, sock);
+	pj_assert(proxy != nullptr);
 	linked_proxys_.insert(proxy_map_t::value_type(id, proxy));
 
-	proxy->sock_ = sock;
+	return PJ_SUCCESS;
+}
 
-	ev_function_t function;
-	ev_function_t *pfunction = nullptr;
+pj_status_t ScreenMgr::DelProxy(proxy_map_t::mapped_type proxy)
+{
+	RETURN_VAL_IF_FAIL( proxy != nullptr, PJ_SUCCESS );
 
-	function = std::bind(&ScreenMgr::EventOnTcpRead, this, std::placeholders::_1, std::placeholders::_2, proxy);
-	pfunction = new ev_function_t(function);
-	proxy->tcp_ev_ = event_new(evbase_, proxy->sock_, EV_READ | EV_PERSIST, event_func_proxy, pfunction);
-	RETURN_VAL_WITH_STATEMENT_IF_FAIL(proxy->tcp_ev_ != nullptr,
-		(linked_proxys_.erase(id), delete proxy, delete pfunction),
-		PJ_EINVAL);
+	lock_guard<mutex> lock(linked_proxys_lock_);
+	proxy_map_t::iterator pproxy = linked_proxys_.find(proxy->id_);
+	RETURN_VAL_IF_FAIL(pproxy != linked_proxys_.end(), PJ_EINVAL);
 
-	int ret;
-	ret = event_add(udp_ev_, NULL);
-	RETURN_VAL_WITH_STATEMENT_IF_FAIL(ret == 0,
-		(linked_proxys_.erase(id), delete proxy, delete pfunction),
-		PJ_EINVAL);
+	linked_proxys_.erase(pproxy);
+
+	/**< Prevent using termination before delete it.*/
+	DiscProxyScene *scene = new DiscProxyScene();
+	sync_thread_pool_.Schedule(std::bind(&DiscProxyScene::Maintain, shared_ptr<DiscProxyScene>(scene), proxy));
 
 	return PJ_SUCCESS;
 }
 
-pj_status_t ScreenMgr::DelProxy(pj_uint16_t id)
+pj_status_t ScreenMgr::GetProxy(pj_uint16_t id, proxy_map_t::mapped_type &proxy)
 {
 	lock_guard<mutex> lock(linked_proxys_lock_);
 	proxy_map_t::iterator pproxy = linked_proxys_.find(id);
-	RETURN_VAL_IF_FAIL( pproxy != linked_proxys_.end(), PJ_ENOTFOUND );
+	RETURN_VAL_IF_FAIL(pproxy != linked_proxys_.end(), PJ_EINVAL);
 
-	proxy_map_t::mapped_type proxy = pproxy->second;
-	linked_proxys_.erase(pproxy); // First free the memory of iterator, termination is safe.
-
-	RETURN_VAL_IF_FAIL( proxy != nullptr, PJ_SUCCESS );
-
-	pj_sock_close( proxy->sock_ );
-	event_del( proxy->tcp_ev_ );
-
-	/**< Prevent using termination before delete it.*/
-	/*DisconnectScene *scene = new DisconnectScene();
-	std::function<scene_opt_t (pj_buffer_t &)> maintain = std::bind(&DisconnectScene::Maintain, shared_ptr<DisconnectScene>(scene), termination);
-	sync_thread_pool_.Schedule(std::bind(&RoomMgr::Maintain, this, maintain));*/
+	proxy = pproxy->second;
+	RETURN_VAL_IF_FAIL(proxy != nullptr, PJ_EINVAL);
 
 	return PJ_SUCCESS;
 }
-
 
 void ScreenMgr::EventThread()
 {
@@ -585,50 +691,42 @@ void ScreenMgr::EventThread()
 	}
 }
 
-void ScreenMgr::ConnectorThread()
-{
-	pj_thread_desc rtpdesc;
-	pj_thread_t *thread = 0;
-
-	if ( !pj_thread_is_registered() )
-	{
-		if ( pj_thread_register(NULL,rtpdesc,&thread) == PJ_SUCCESS )
-		{
-			unsigned sleep_msec = 5000;
-			while(1)
-			{
-				/*if ( pj_open_tcp_clientport(&avsproxy_ip_, avsproxy_tcp_port_, local_tcp_sock_) == PJ_SUCCESS )
-				{
-					tcp_ev_ = event_new(evbase_, local_tcp_sock_, EV_READ | EV_PERSIST, event_on_tcp_read, this);
-					if ( tcp_ev_ != nullptr && (event_add(tcp_ev_, NULL) == 0) )
-					{
-						LoginProxy();
-						return;
-					}
-				}*/
-
-				pj_thread_sleep( sleep_msec );
-			}
-		}
-	}
-}
-
-pj_status_t ScreenMgr::LoginProxy()
-{
-	request_to_avs_proxy_login_t login;
-	login.client_request_type = REQUEST_FROM_CLIENT_TO_AVSPROXY_LOGIN;
-	login.proxy_id = 100/*avsproxy_id_*/;
-	login.client_id = client_id_;
-	pj_inet_aton(&local_ip_, &login.media_ip);
-	login.media_port = local_udp_port_;
-	login.Serialize();
-
-	pj_ssize_t sndlen = sizeof(login);
-	return SendTCPPacket(&login, &sndlen);
-}
-
 pj_status_t ScreenMgr::SendTCPPacket(const void *buf, pj_ssize_t *len)
 {
 	lock_guard<mutex> lock(local_tcp_lock_);
 	return pj_sock_send(local_tcp_sock_, buf, len, 0);
+}
+
+pj_status_t ScreenMgr::SendRTPPacket(pj_str_t &ip, pj_uint16_t port, const void *payload, pj_ssize_t payload_len)
+{
+	lock_guard<mutex> lock(local_udp_lock_);
+
+	RETURN_VAL_IF_FAIL(payload_len <= MAX_UDP_DATA_SIZE, PJ_EINVAL);
+
+	pj_uint8_t packet[MAX_UDP_DATA_SIZE];
+	const pjmedia_rtp_hdr *hdr;
+	const void *p_hdr;
+	int hdrlen;
+	pj_ssize_t size;
+	
+	pj_status_t status;
+	status = pjmedia_rtp_encode_rtp (&rtp_out_session_, RTP_EXPAND_PAYLOAD_TYPE, 0, payload_len, 0, &p_hdr, &hdrlen);
+	RETURN_VAL_IF_FAIL(status == PJ_SUCCESS, status);
+
+	hdr = (const pjmedia_rtp_hdr*) p_hdr;
+
+	/* Copy RTP header to packet */
+	pj_memcpy(packet, hdr, hdrlen);
+
+	/* Copy RTP payload to packet */
+	pj_memcpy(packet + hdrlen, payload, payload_len);
+
+	/* Send RTP packet */
+	size = hdrlen + payload_len;
+
+	pj_sockaddr_in addr;
+	status = pj_sockaddr_in_init(&addr, &ip, port);
+	RETURN_VAL_IF_FAIL(status == PJ_SUCCESS, status);
+
+	return pj_sock_sendto(local_udp_sock_, packet, &size, 0, &addr, sizeof(addr));
 }

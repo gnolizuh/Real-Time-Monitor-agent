@@ -13,7 +13,6 @@
 #endif
 
 extern Config g_client_config;
-extern Pipe   g_client_pipe;
 // 用于应用程序“关于”菜单项的 CAboutDlg 对话框
 
 class CAboutDlg : public CDialogEx
@@ -55,11 +54,16 @@ static pj_status_t init_param()
 	RETURN_VAL_IF_FAIL(result, PJ_EINVAL);
 
 	pugi::xml_node client = doc.child("client");
+	g_client_config.client_id = atoi(client.attribute("client_id").value());
 	g_client_config.local_ip = pj_str(strdup((char *)client.attribute("ip").value()));
 	g_client_config.local_media_port = atoi(client.attribute("media_port").value());
-	g_client_config.tls_host = pj_str(strdup((char *)client.attribute("tls_host").value()));
-	g_client_config.tls_uri = pj_str(strdup((char *)client.attribute("tls_uri").value()));
 	g_client_config.log_file_name = pj_str(strdup((char *)client.attribute("log_file_name").value()));
+	g_client_config.tls_host = pj_str(strdup((char *)client.attribute("tls_host").value()));
+	g_client_config.tls_port = atoi(client.attribute("tls_port").value());
+	g_client_config.tls_uri = pj_str(strdup((char *)client.attribute("tls_uri").value()));
+	g_client_config.rrtvms_fcgi_host = pj_str(strdup((char *)client.attribute("rrtvms_fcgi_host").value()));
+	g_client_config.rrtvms_fcgi_port = atoi(client.attribute("rrtvms_fcgi_port").value());
+	g_client_config.rrtvms_fcgi_uri = pj_str(strdup((char *)client.attribute("rrtvms_fcgi_uri").value()));
 
 	return PJ_SUCCESS;
 }
@@ -87,7 +91,8 @@ BEGIN_MESSAGE_MAP(CMonitorDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_BUTTON1, &CMonitorDlg::OnChangeLayout)
 	ON_MESSAGE(WM_BEGINDRAGITEM, &CMonitorDlg::OnBeginDragItem)
 	ON_MESSAGE(WM_ENDDRAGITEM, &CMonitorDlg::OnEndDragItem)
-	ON_MESSAGE(WM_EXPANDEDROOM, &CMonitorDlg::OnExpandedRoom)
+	ON_MESSAGE(WM_EXPANDEDROOM, &CMonitorDlg::OnLinkRoom)
+	ON_MESSAGE(WM_EXPANDEDROOM, &CMonitorDlg::OnUnlinkRoom)
 END_MESSAGE_MAP()
 
 // CMonitorDlg 消息处理程序
@@ -136,12 +141,9 @@ BOOL CMonitorDlg::OnInitDialog()
 	status = init_param();
 	pj_assert(status == PJ_SUCCESS);
 
-	status = g_client_pipe.Create();
-	pj_assert(status == PJ_SUCCESS);
-
 	g_screen_mgr = new ScreenMgr(this, 10, g_client_config.local_ip, g_client_config.local_media_port);
 	pj_assert(g_screen_mgr != nullptr);
-	
+
 	status = g_screen_mgr->Prepare(g_client_config.log_file_name);
 	pj_assert(status == PJ_SUCCESS);
 
@@ -149,7 +151,7 @@ BOOL CMonitorDlg::OnInitDialog()
 	pj_assert(status == PJ_SUCCESS);
 
 	g_screen_mgr->Adjest(width, height);
-	
+
 	MoveWindow(CRect(0, 0, width, height));
 	ShowWindow(SW_SHOW);
 
@@ -256,10 +258,12 @@ void CMonitorDlg::OnChangeLayout()
 
 LRESULT CMonitorDlg::OnBeginDragItem(WPARAM wParam, LPARAM lParam)
 {
+	TitleRoom *title_room = reinterpret_cast<TitleRoom *>(wParam);
 	User *user = reinterpret_cast<User *>(lParam);
 	RETURN_VAL_IF_FAIL(user, true);
 
 	is_draging_ = PJ_TRUE;
+	draging_rooom_ = title_room;
 	draging_user_ = user;
 
 	return true;
@@ -268,22 +272,36 @@ LRESULT CMonitorDlg::OnBeginDragItem(WPARAM wParam, LPARAM lParam)
 LRESULT CMonitorDlg::OnEndDragItem(WPARAM wParam, LPARAM lParam)
 {
 	Screen *screen = reinterpret_cast<Screen *>(lParam);
-	RETURN_VAL_IF_FAIL((screen && draging_user_ && is_draging_), true);
+	RETURN_VAL_IF_FAIL((screen && draging_rooom_ && draging_user_ && is_draging_), true);
 
-	g_screen_mgr->LinkScreenUser(screen, draging_user_);
+	g_screen_mgr->LinkScreenUser(screen, draging_rooom_, draging_user_);
 
 	is_draging_ = PJ_FALSE;
+	draging_rooom_ = nullptr;
 	draging_user_ = nullptr;
 
 	return true;
 }
 
-LRESULT CMonitorDlg::OnExpandedRoom(WPARAM wParam, LPARAM lParam)
+LRESULT CMonitorDlg::OnLinkRoom(WPARAM wParam, LPARAM lParam)
 {
 	TitleRoom *title_room = (TitleRoom *)lParam;
 	RETURN_VAL_IF_FAIL(title_room, true);
 
-	g_screen_mgr->ExpandedTitleRoom(*title_room);
+	title_room->id_ = 462728;
+
+	g_screen_mgr->OnLinkRoom(title_room);
+
+	return true;
+}
+
+LRESULT CMonitorDlg::OnUnlinkRoom(WPARAM wParam, LPARAM lParam)
+{
+	User *user = reinterpret_cast<User *>(wParam);
+	Screen *screen = reinterpret_cast<Screen *>(lParam);
+	RETURN_VAL_IF_FAIL(user && screen, true);
+
+	/*g_screen_mgr->OnUnlinkRoom(title_room);*/
 
 	return true;
 }

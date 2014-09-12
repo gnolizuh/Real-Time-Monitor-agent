@@ -1,6 +1,7 @@
 #ifndef __AVS_PROXY_CLIENT_SCREEN_MGR__
 #define __AVS_PROXY_CLIENT_SCREEN_MGR__
 
+#include <string>
 #include <vector>
 #include <thread>
 #include <mutex>
@@ -18,6 +19,7 @@
 #include "AddUserScene.h"
 #include "DelUserScene.h"
 #include "KeepAliveScene.h"
+#include "DiscProxyScene.h"
 #include "AvsProxyStructs.h"
 #include "TitleRoom.h"
 #include "AvsProxy.h"
@@ -37,6 +39,7 @@ typedef struct
 	pj_uint32_t y;
 } resolution_t;
 
+using std::string;
 using std::thread;
 using std::mutex;
 using std::lock_guard;
@@ -45,9 +48,7 @@ using std::map;
 
 class ScreenMgr;
 typedef void (ScreenMgr::*screenmgr_func_t)(pj_uint32_t, pj_uint32_t);
-typedef std::function<void (intptr_t, short, void *)> ev_function_t;
 typedef map<pj_uint16_t, AvsProxy *> proxy_map_t;
-typedef map<pj_int32_t, TitleRoom *> room_map_t;
 class ScreenMgr
 	: public Noncopyable
 {
@@ -62,14 +63,16 @@ public:
 	pj_status_t Prepare(const pj_str_t &log_file_name);
 	pj_status_t Launch();
 	void        Destory();
-	pj_status_t ExpandedTitleRoom(TitleRoom &title_room);
-	void        LinkScreenUser(Screen *screen, User *user);
+	pj_status_t OnLinkRoom(TitleRoom *title_room);
+	void        LinkScreenUser(Screen *screen, TitleRoom *title_room, User *user);
 	void        ChangeLayout(enum_screen_mgr_resolution_t resolution);
 	void        GetSuitedSize(LPRECT lpRect);
 	void        Adjest(pj_int32_t &cx, pj_int32_t &cy);
 	void        HideAll();
-	pj_status_t AddProxy(pj_uint16_t id, pj_str_t &ip, pj_uint16_t port, proxy_map_t::mapped_type proxy);
-	pj_status_t DelProxy(pj_uint16_t id;
+	pj_status_t LinkRoom(pj_uint16_t id, string ip, vector<pj_uint16_t> ports, TitleRoom *title_room);
+	pj_status_t AddProxy(pj_uint16_t id, pj_str_t &ip, pj_uint16_t tcp_port, pj_uint16_t udp_port, pj_sock_t sock, proxy_map_t::mapped_type &proxy);
+	pj_status_t DelProxy(proxy_map_t::mapped_type proxy);
+	pj_status_t GetProxy(pj_uint16_t id, proxy_map_t::mapped_type &proxy);
 	static resolution_t GetDefaultResolution();
 
 protected:
@@ -77,11 +80,17 @@ protected:
 
 	void EventOnTcpRead(evutil_socket_t fd, short event, void *arg);
 	void EventOnUdpRead(evutil_socket_t fd, short event, void *arg);
-	void ConnectorThread();
+	void EventOnConnection(evutil_socket_t fd, short event, void *arg);
 	void EventThread();
 
 private:
 	pj_status_t SendTCPPacket(const void *buf, pj_ssize_t *len);
+	pj_status_t SendRTPPacket(pj_str_t &ip, pj_uint16_t port, const void *payload, pj_ssize_t payload_len);
+
+public:
+	pj_status_t ParseHttpResponse(pj_uint16_t &proxy_id, string &proxy_ip, pj_uint16_t &proxy_tcp_port, pj_uint16_t &proxy_udp_port,
+		const vector<pj_uint8_t> &response);
+private:
 	void TcpParamScene(const pj_uint8_t *, pj_uint16_t);
 	void UdpParamScene(const pjmedia_rtp_hdr *, const pj_uint8_t *, pj_uint16_t);
 	void ChangeLayout_1x1(pj_uint32_t width, pj_uint32_t height);
@@ -101,20 +110,19 @@ private:
 	pj_sock_t           local_tcp_sock_;
 	mutex               local_tcp_lock_;
 	pj_sock_t           local_udp_sock_;
+	mutex               local_udp_lock_;
 	pj_str_t		    local_ip_;
 	pj_uint16_t         local_udp_port_;
 	pj_caching_pool     caching_pool_;
+	evutil_socket_t     pipe_fds_[2];
 	pj_pool_t		   *pool_;
-	struct event       *tcp_ev_, *udp_ev_;
+	pjmedia_rtp_session rtp_out_session_;
+	struct event       *tcp_ev_, *udp_ev_, *pipe_ev_;
 	struct event_base  *evbase_;
-	pj_uint8_t          tcp_storage_[MAX_STORAGE_SIZE];
-	pj_uint16_t         tcp_storage_offset_;
 	thread              connector_thread_;
 	thread              event_thread_;
 	pj_bool_t           active_;
 	TitlesCtl          *titles_;
-	mutex               linked_rooms_lock_;
-	room_map_t          linked_rooms_;
 	mutex               linked_proxys_lock_;
 	proxy_map_t         linked_proxys_;
 	vector<screenmgr_func_t> screenmgr_func_array_;

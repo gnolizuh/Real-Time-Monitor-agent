@@ -6,7 +6,7 @@ KeepAliveParameter::KeepAliveParameter(const pj_uint8_t *storage, pj_uint16_t st
 {
 }
 
-void KeepAliveScene::Maintain(shared_ptr<TcpParameter> ptr_tcp_param)
+void KeepAliveScene::Maintain(shared_ptr<TcpParameter> ptr_tcp_param, AvsProxy *avs_proxy)
 {
 	KeepAliveParameter *param = reinterpret_cast<KeepAliveParameter *>(ptr_tcp_param.get());
 

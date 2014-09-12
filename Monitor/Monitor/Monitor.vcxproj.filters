@@ -123,6 +123,9 @@
     <ClInclude Include="AvsProxy.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="DiscProxyScene.h">
+      <Filter>Scene\AvsProxyScene\inc</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Monitor.cpp">
@@ -184,6 +187,9 @@
     </ClCompile>
     <ClCompile Include="AvsProxy.cpp">
       <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="DiscProxyScene.cpp">
+      <Filter>Scene\AvsProxyScene\src</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

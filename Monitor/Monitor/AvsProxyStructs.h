@@ -9,7 +9,7 @@ typedef struct
 {
 	void Serialize()
 	{
-		length = serialize((pj_uint16_t)(sizeof(request_to_avs_proxy_login_t) - sizeof(length)));
+		length = serialize((pj_uint16_t)(sizeof(*this) - sizeof(length)));
 		client_request_type = serialize(client_request_type);
 		proxy_id = serialize(proxy_id);
 		client_id = serialize(client_id);
@@ -31,7 +31,7 @@ typedef struct
 {
 	void Serialize()
 	{
-		length = serialize((pj_uint16_t)(sizeof(request_to_avs_proxy_logout_t) - sizeof(length)));
+		length = serialize((pj_uint16_t)(sizeof(*this) - sizeof(length)));
 		client_request_type = serialize(client_request_type);
 		proxy_id = serialize(proxy_id);
 		client_id = serialize(client_id);
@@ -50,10 +50,11 @@ typedef struct
 {
 	void Serialize()
 	{
-		length = serialize((pj_uint16_t)(sizeof(request_to_avs_proxy_logout_t) - sizeof(length)));
+		length = serialize((pj_uint16_t)(sizeof(*this) - sizeof(length)));
 		client_request_type = serialize(client_request_type);
 		proxy_id = serialize(proxy_id);
 		client_id = serialize(client_id);
+		room_id = serialize(room_id);
 	}
 
 private:
@@ -72,7 +73,7 @@ typedef struct
 {
 	void Serialize()
 	{
-		length = serialize((pj_uint16_t)(sizeof(request_to_avs_proxy_link_room_user_t) - sizeof(length)));
+		length = serialize((pj_uint16_t)(sizeof(*this) - sizeof(length)));
 		client_request_type = serialize(client_request_type);
 		proxy_id = serialize(proxy_id);
 		client_id = serialize(client_id);
@@ -97,7 +98,7 @@ typedef struct
 {
 	void Serialize()
 	{
-		length = serialize((pj_uint16_t)(sizeof(request_to_avs_proxy_unlink_room_user_t) - sizeof(length)));
+		length = serialize((pj_uint16_t)(sizeof(*this) - sizeof(length)));
 		client_request_type = serialize(client_request_type);
 		proxy_id = serialize(proxy_id);
 		client_id = serialize(client_id);
@@ -122,7 +123,7 @@ typedef struct
 {
 	void Serialize()
 	{
-		length = serialize((pj_uint16_t)(sizeof(request_to_avs_proxy_keep_alive_t) - sizeof(length)));
+		length = serialize((pj_uint16_t)(sizeof(*this) - sizeof(length)));
 		client_request_type = serialize(client_request_type);
 		proxy_id = serialize(proxy_id);
 		client_id = serialize(client_id);
@@ -136,6 +137,22 @@ public:
 	pj_uint16_t proxy_id;
 	pj_uint16_t client_id;
 } request_to_avs_proxy_keep_alive_t;
+
+typedef struct
+{
+	void Serialize()
+	{
+		client_request_type = serialize(client_request_type);
+		proxy_id = serialize(proxy_id);
+		room_id = serialize(room_id);
+		client_id = serialize(client_id);
+	}
+
+	pj_uint16_t client_request_type;
+	pj_uint16_t proxy_id;
+	pj_int32_t  room_id;
+	pj_uint16_t client_id;
+} request_to_avs_proxy_nat_t;
 
 #pragma pack()
 

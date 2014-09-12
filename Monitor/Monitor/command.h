@@ -1,6 +1,8 @@
 #ifndef _RRTVMS_COMMAND__
 #define _RRTVMS_COMMAND__
 
+enum { MAX_STORAGE_SIZE = 1024 };
+
 typedef enum __enum_from_avs_to_avsproxy_request_type__
 {
 	REQUEST_FROM_AVS_TO_AVSPROXY_USERS_INFO,
@@ -10,7 +12,8 @@ typedef enum __enum_from_avs_to_avsproxy_request_type__
 	REQUEST_FROM_AVS_TO_AVSPROXY_MEDIA_STREAM,
 	RESPONSE_FROM_AVS_TO_AVSPROXY_LOGIN,
 	RESPONSE_FROM_AVS_TO_AVSPROXY_KEEP_ALIVE,
-	REPORT_FROM_AVS_TO_AVSPROXY
+	REPORT_FROM_AVS_TO_AVSPROXY,
+	REQUEST_FROM_CLIENT_TO_AVSPROXY_NAT
 } enum_from_avs_to_avsproxy_request_t;
 
 typedef enum __enum_from_avsproxy_to_avs_request_type__

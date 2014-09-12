@@ -130,14 +130,29 @@ static void OnData( const happyhttp::Response* r, void* userdata, const unsigned
 	response.insert(response.end(), data, data + n);
 }
 
-void http_get(const pj_str_t &host, const pj_str_t &url, pj_uint32_t node_id, std::vector<pj_uint8_t> &response)
+void http_tls_get(const pj_str_t &host, pj_uint16_t port, const pj_str_t &url,
+				  pj_uint32_t node_id, std::vector<pj_uint8_t> &response)
 {
 #define ATTR_NODE_ID "&node_id="
 	std::stringstream ss_uri;
 	ss_uri << url.ptr << ATTR_NODE_ID << node_id;
 
-	TRACE(ss_uri.str().c_str());
-	happyhttp::Connection conn(host.ptr, 80);
+	happyhttp::Connection conn(host.ptr, port);
+	conn.setcallbacks(0, OnData, 0, &response);
+	conn.request("GET", ss_uri.str().c_str(), 0, 0, 0);
+
+	while( conn.outstanding() )
+		conn.pump();
+}
+
+void http_proxy_get(const pj_str_t &host, pj_uint16_t port, const pj_str_t &url,
+					pj_uint32_t room_id, std::vector<pj_uint8_t> &response)
+{
+#define ATTR_ROOM_ID "roomid="
+	std::stringstream ss_uri;
+	ss_uri << url.ptr << ATTR_ROOM_ID << room_id;
+
+	happyhttp::Connection conn(host.ptr, port);
 	conn.setcallbacks(0, OnData, 0, &response);
 	conn.request("GET", ss_uri.str().c_str(), 0, 0, 0);
 

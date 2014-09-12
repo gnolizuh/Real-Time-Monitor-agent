@@ -22,7 +22,7 @@ pj_status_t TitlesCtl::Prepare(const CWnd *wrapper, pj_uint32_t uid)
 		CRect(0, 0, 0, 0), (CWnd *)wrapper, uid);
 
 	vector<pj_uint8_t> response;
-	http_get(g_client_config.tls_host, g_client_config.tls_uri, 0, response);
+	http_tls_get(g_client_config.tls_host, g_client_config.tls_port, g_client_config.tls_uri, 0, response);
 	ParseXML(response, uid);
 
 	Perform();

@@ -8,12 +8,16 @@ AddUserParameter::AddUserParameter(const pj_uint8_t *storage, pj_uint16_t storag
 	pj_ntoh_assign(storage, storage_len, user_id_);
 }
 
-void AddUserScene::Maintain(shared_ptr<TcpParameter> ptr_tcp_param, Node *node)
+void AddUserScene::Maintain(shared_ptr<TcpParameter> ptr_tcp_param, AvsProxy *avs_proxy)
 {
+	RETURN_IF_FAIL(avs_proxy != nullptr);
+
 	AddUserParameter *param = reinterpret_cast<AddUserParameter *>(ptr_tcp_param.get());
 
-	/*Room *room = room_ctl->GetRoom(param->room_id_);
-	RETURN_IF_FAIL(room != nullptr);
+	pj_status_t status;
+	TitleRoom *title_room = nullptr;
+	status = avs_proxy->GetRoom(param->room_id_, title_room);
+	RETURN_IF_FAIL(status == PJ_SUCCESS);
 
-	room_ctl->AddUser(room, param->user_id_);*/
+	title_room->AddUser(param->user_id_);
 }

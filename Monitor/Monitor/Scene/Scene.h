@@ -5,7 +5,8 @@
 
 #include <memory>
 #include "Com.h"
-#include "Node.h"
+#include "TitleRoom.h"
+#include "AvsProxy.h"
 #include "Parameter.h"
 
 using std::shared_ptr;
@@ -16,7 +17,7 @@ public:
 	TcpScene() {}
 	virtual ~TcpScene() {}
 
-	virtual void Maintain(shared_ptr<TcpParameter> ptr_tcp_param, Node *node) {}
+	virtual void Maintain(shared_ptr<TcpParameter> ptr_tcp_param, AvsProxy *avs_proxy) {}
 };
 
 class UdpScene

@@ -38,11 +38,13 @@ protected:
 	afx_msg void OnChangeLayout();
 	afx_msg LRESULT OnBeginDragItem(WPARAM wParam, LPARAM lParam);
 	afx_msg LRESULT OnEndDragItem(WPARAM wParam, LPARAM lParam);
-	afx_msg LRESULT OnExpandedRoom(WPARAM wParam, LPARAM lParam);
+	afx_msg LRESULT OnLinkRoom(WPARAM wParam, LPARAM lParam);
+	afx_msg LRESULT OnUnlinkRoom(WPARAM wParam, LPARAM lParam);
 	afx_msg HCURSOR OnQueryDragIcon();
 	DECLARE_MESSAGE_MAP()
 
 private:
 	pj_bool_t is_draging_;
-	User     *draging_user_;
+	TitleRoom *draging_rooom_;
+	User      *draging_user_;
 };
