@@ -3,6 +3,7 @@
 
 #include "AvsProxyStructs.h"
 #include "TitleRoom.h"
+#include "Screen.h"
 #include "Config.h"
 #include "Com.h"
 
@@ -21,14 +22,17 @@ class AvsProxy
 public:
 	AvsProxy(pj_uint16_t id, const pj_str_t &ip, pj_uint16_t tcp_port, pj_uint16_t udp_port, pj_sock_t sock);
 	pj_status_t Login();
+	pj_status_t Logout();
 
 	/**< 当上麦用户被拖拽到Screen中 */
-	pj_status_t LinkRoomUser(TitleRoom *title_room, User *user);
-	pj_status_t UnlinkRoomUser(TitleRoom *title_room, User *user);
+	pj_status_t LinkRoomUser(User *user);
+	pj_status_t UnlinkRoomUser(User *user);
 	pj_status_t LinkRoom(TitleRoom *title_room);
 	pj_status_t UnlinkRoom(TitleRoom *title_room);
 	pj_status_t AddRoom(pj_int32_t room_id, TitleRoom *title_room);
+	pj_status_t DelRoom(pj_int32_t room_id, TitleRoom *title_room);
 	pj_status_t GetRoom(pj_int32_t room_id, TitleRoom *&title_room);
+	pj_uint32_t GetRoomSize();
 	pj_status_t SendTCPPacket(const void *buf, pj_ssize_t *len);
 
 	ev_function_t *pfunction_;

@@ -88,11 +88,13 @@ BEGIN_MESSAGE_MAP(CMonitorDlg, CDialogEx)
 	ON_WM_SIZING()
 	ON_WM_SIZE()
 	ON_WM_GETMINMAXINFO()
+	ON_WM_LBUTTONUP()
 	ON_BN_CLICKED(IDC_BUTTON1, &CMonitorDlg::OnChangeLayout)
-	ON_MESSAGE(WM_BEGINDRAGITEM, &CMonitorDlg::OnBeginDragItem)
-	ON_MESSAGE(WM_ENDDRAGITEM, &CMonitorDlg::OnEndDragItem)
+	ON_MESSAGE(WM_SELECT_USER, &CMonitorDlg::OnSelectUser)
+	ON_MESSAGE(WM_LINK_ROOM_USER, &CMonitorDlg::OnLinkRoomUser)
+	ON_MESSAGE(WM_UNLINK_ROOM_USER, &CMonitorDlg::OnUnlinkRoomUser)
 	ON_MESSAGE(WM_EXPANDEDROOM, &CMonitorDlg::OnLinkRoom)
-	ON_MESSAGE(WM_EXPANDEDROOM, &CMonitorDlg::OnUnlinkRoom)
+	ON_MESSAGE(WM_SHRINKEDROOM, &CMonitorDlg::OnUnlinkRoom)
 END_MESSAGE_MAP()
 
 // CMonitorDlg 消息处理程序
@@ -256,29 +258,43 @@ void CMonitorDlg::OnChangeLayout()
 	g_res_type = (enum_screen_mgr_resolution_t)(( g_res_type + 1 ) % 4);
 }
 
-LRESULT CMonitorDlg::OnBeginDragItem(WPARAM wParam, LPARAM lParam)
+LRESULT CMonitorDlg::OnSelectUser(WPARAM wParam, LPARAM lParam)
 {
-	TitleRoom *title_room = reinterpret_cast<TitleRoom *>(wParam);
 	User *user = reinterpret_cast<User *>(lParam);
 	RETURN_VAL_IF_FAIL(user, true);
 
 	is_draging_ = PJ_TRUE;
-	draging_rooom_ = title_room;
 	draging_user_ = user;
 
 	return true;
 }
 
-LRESULT CMonitorDlg::OnEndDragItem(WPARAM wParam, LPARAM lParam)
+void CMonitorDlg::OnDropUpUser(UINT nFlags, CPoint point)
+{
+	is_draging_ = PJ_FALSE;
+	draging_user_ = nullptr;
+}
+
+LRESULT CMonitorDlg::OnLinkRoomUser(WPARAM wParam, LPARAM lParam)
 {
 	Screen *screen = reinterpret_cast<Screen *>(lParam);
-	RETURN_VAL_IF_FAIL((screen && draging_rooom_ && draging_user_ && is_draging_), true);
+	RETURN_VAL_IF_FAIL((screen && draging_user_ && is_draging_), true);
 
-	g_screen_mgr->LinkScreenUser(screen, draging_rooom_, draging_user_);
+	g_screen_mgr->LinkScreenUser(screen, draging_user_);
 
 	is_draging_ = PJ_FALSE;
-	draging_rooom_ = nullptr;
 	draging_user_ = nullptr;
+
+	return true;
+}
+
+LRESULT CMonitorDlg::OnUnlinkRoomUser(WPARAM wParam, LPARAM lParam)
+{
+	User   *user   = reinterpret_cast<User *>(wParam);
+	Screen *screen = reinterpret_cast<Screen *>(lParam);
+	RETURN_VAL_IF_FAIL((user != nullptr && screen != nullptr), true);
+
+	g_screen_mgr->UnlinkScreenUser(screen, user);
 
 	return true;
 }
@@ -297,11 +313,12 @@ LRESULT CMonitorDlg::OnLinkRoom(WPARAM wParam, LPARAM lParam)
 
 LRESULT CMonitorDlg::OnUnlinkRoom(WPARAM wParam, LPARAM lParam)
 {
-	User *user = reinterpret_cast<User *>(wParam);
-	Screen *screen = reinterpret_cast<Screen *>(lParam);
-	RETURN_VAL_IF_FAIL(user && screen, true);
+	TitleRoom *title_room = (TitleRoom *)lParam;
+	RETURN_VAL_IF_FAIL(title_room, true);
 
-	/*g_screen_mgr->OnUnlinkRoom(title_room);*/
+	title_room->id_ = 462728;
+
+	g_screen_mgr->OnUnlinkRoom(title_room);
 
 	return true;
 }

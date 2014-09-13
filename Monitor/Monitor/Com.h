@@ -36,6 +36,7 @@ typedef map<pj_uint32_t, pj_uint8_t> index_map_t;
 typedef vector<index_map_t> av_index_map_t;
 typedef pj_uint32_t order_t;
 
+#define INVALID_SCREEN_INDEX      -1
 #define MAXIMAL_SCREEN_NUM         9
 #define MAXIMAL_THREAD_NUM         1
 #define MAX_STORAGE_SIZE           1024
@@ -43,6 +44,7 @@ typedef pj_uint32_t order_t;
 #define IP_HEADER_SIZE             20
 #define UDP_HEADER_SIZE            8
 #define MAX_UDP_DATA_SIZE (MAX_TRANSMISSION_UNIT_SIZE - IP_HEADER_SIZE - UDP_HEADER_SIZE)
+enum { AUDIO_INDEX, VIDEO_INDEX };
 
 typedef enum __enum_screen_mgr_resolution_type__
 {

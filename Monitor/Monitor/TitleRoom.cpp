@@ -15,8 +15,29 @@ TitleRoom::~TitleRoom()
 
 void TitleRoom::OnItemExpanded(CTreeCtrl &tree_ctrl, Node &parent)
 {
-	//Let the mainframe knowns.
+	lock_guard<mutex> lock(room_lock_);
+
+	RETURN_IF_FAIL(proxy_ == nullptr);  // 只有未连接才推送消息
+
 	::SendMessage(AfxGetMainWnd()->m_hWnd, WM_EXPANDEDROOM, 0, (LPARAM)this);
+}
+
+void TitleRoom::OnItemShrinked(CTreeCtrl &tree_ctrl, Node &parent)
+{
+	lock_guard<mutex> lock(room_lock_);
+	pj_bool_t useless = PJ_FALSE;
+	for (pj_uint32_t i = 0; i < users_.size(); ++i)
+	{
+		if (users_[i]->screen_idx_ != INVALID_SCREEN_INDEX)
+		{
+			useless = PJ_TRUE;
+			break;
+		}
+	}
+
+	RETURN_IF_FAIL(useless == PJ_FALSE);
+
+	::SendMessage(AfxGetMainWnd()->m_hWnd, WM_SHRINKEDROOM, 0, (LPARAM)this);
 }
 
 User *TitleRoom::AddUser(pj_int64_t user_id)
@@ -35,9 +56,7 @@ User *TitleRoom::AddUser(pj_int64_t user_id)
 	}
 	else
 	{
-		user = new User();
-		user->user_id_ = user_id;
-		user->room_id_ = id_;
+		user = new User(user_id, this);
 		users_[user_id] = user;
 
 		wchar_t str_user_id[32];

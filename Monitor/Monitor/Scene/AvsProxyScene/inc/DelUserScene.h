@@ -3,6 +3,7 @@
 
 #include "Parameter.h"
 #include "Scene.h"
+#include "Screen.h"
 
 class DelUserParameter
 	: public TcpParameter

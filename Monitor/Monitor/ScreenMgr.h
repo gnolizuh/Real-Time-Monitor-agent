@@ -64,12 +64,15 @@ public:
 	pj_status_t Launch();
 	void        Destory();
 	pj_status_t OnLinkRoom(TitleRoom *title_room);
-	void        LinkScreenUser(Screen *screen, TitleRoom *title_room, User *user);
+	pj_status_t OnUnlinkRoom(TitleRoom *title_room);
+	void        LinkScreenUser(Screen *screen, User *new_user);
+	void        UnlinkScreenUser(Screen *screen, User *old_user);
 	void        ChangeLayout(enum_screen_mgr_resolution_t resolution);
 	void        GetSuitedSize(LPRECT lpRect);
 	void        Adjest(pj_int32_t &cx, pj_int32_t &cy);
 	void        HideAll();
 	pj_status_t LinkRoom(pj_uint16_t id, string ip, vector<pj_uint16_t> ports, TitleRoom *title_room);
+	pj_status_t UnlinkRoom(TitleRoom *title_room);
 	pj_status_t AddProxy(pj_uint16_t id, pj_str_t &ip, pj_uint16_t tcp_port, pj_uint16_t udp_port, pj_sock_t sock, proxy_map_t::mapped_type &proxy);
 	pj_status_t DelProxy(proxy_map_t::mapped_type proxy);
 	pj_status_t GetProxy(pj_uint16_t id, proxy_map_t::mapped_type &proxy);
@@ -80,7 +83,7 @@ protected:
 
 	void EventOnTcpRead(evutil_socket_t fd, short event, void *arg);
 	void EventOnUdpRead(evutil_socket_t fd, short event, void *arg);
-	void EventOnConnection(evutil_socket_t fd, short event, void *arg);
+	void EventOnPipe(evutil_socket_t fd, short event, void *arg);
 	void EventThread();
 
 private:
@@ -100,8 +103,6 @@ private:
 
 private:
 	const CWnd         *wrapper_;
-	vector<Screen *>    screens_;
-	vector<index_map_t> av_index_map_;
 	pj_uint32_t         width_;
 	pj_uint32_t         height_;
 	pj_uint32_t         vertical_padding_;

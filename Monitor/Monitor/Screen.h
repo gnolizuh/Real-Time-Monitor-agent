@@ -39,6 +39,7 @@ typedef struct vid_stream
     int			       last_dec_seq;    /**< Last decoded sequence.     */
 } vid_stream_t;
 
+class User;
 class Screen
 	: public CWnd
 {
@@ -48,9 +49,11 @@ public:
 	pj_status_t Prepare(pj_pool_t *pool, const CRect &rect, const CWnd *wrapper, pj_uint32_t);
 	pj_status_t Launch();
 	void        Destory();
-	pj_status_t LinkRoomUser(av_index_map_t &av_index_map, TitleRoom *title_room, User *user);
-	pj_status_t UnlinkRoomUser(av_index_map_t &av_index_map, TitleRoom *title_room);
+	pj_status_t GetUser(User *&user);
+	pj_status_t ConnectUser(User *user);
+	pj_status_t DisconnectUser();
 	inline pj_bool_t HasLinkedUser() { return user_ != nullptr; }
+	inline pj_uint32_t GetIndex() const { return index_; }
 	void MoveToRect(const CRect &);
 	void HideWindow();
 	void Painting(const void *pixels);

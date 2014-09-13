@@ -36,8 +36,10 @@ protected:
 	afx_msg void OnSize(UINT nType, int cx, int cy);
 	afx_msg void OnGetMinMaxInfo(MINMAXINFO* lpMMI);
 	afx_msg void OnChangeLayout();
-	afx_msg LRESULT OnBeginDragItem(WPARAM wParam, LPARAM lParam);
-	afx_msg LRESULT OnEndDragItem(WPARAM wParam, LPARAM lParam);
+	afx_msg LRESULT OnSelectUser(WPARAM wParam, LPARAM lParam);
+	afx_msg void    OnDropUpUser(UINT nFlags, CPoint point);
+	afx_msg LRESULT OnLinkRoomUser(WPARAM wParam, LPARAM lParam);
+	afx_msg LRESULT OnUnlinkRoomUser(WPARAM wParam, LPARAM lParam);
 	afx_msg LRESULT OnLinkRoom(WPARAM wParam, LPARAM lParam);
 	afx_msg LRESULT OnUnlinkRoom(WPARAM wParam, LPARAM lParam);
 	afx_msg HCURSOR OnQueryDragIcon();
@@ -45,6 +47,5 @@ protected:
 
 private:
 	pj_bool_t is_draging_;
-	TitleRoom *draging_rooom_;
 	User      *draging_user_;
 };

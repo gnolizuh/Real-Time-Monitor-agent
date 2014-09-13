@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include "Com.h"
 
+index_map_t g_av_index_map[2];
+
 pj_status_t pj_open_tcp_serverport(pj_str_t *ip, pj_uint16_t port, pj_sock_t &sock)
 {
 	pj_status_t status;

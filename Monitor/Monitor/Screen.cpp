@@ -7,6 +7,8 @@ BEGIN_MESSAGE_MAP(Screen, CWnd)
 	ON_WM_LBUTTONDBLCLK()
 END_MESSAGE_MAP()
 
+Screen *g_screens[MAXIMAL_SCREEN_NUM];
+
 Screen::Screen(pj_uint32_t index)
 	: CWnd()
 	, user_(nullptr)
@@ -342,69 +344,34 @@ pj_status_t Screen::decode_vid_frame()
 	return got_frame ? PJ_SUCCESS : PJ_ENOTFOUND;
 }
 
-pj_status_t Screen::LinkRoomUser(av_index_map_t &av_index_map, TitleRoom *title_room, User *user)
+pj_status_t Screen::GetUser(User *&user)
 {
-	enum {AUDIO_INDEX, VIDEO_INDEX};
+	return (user = const_cast<User *>(user_)) != nullptr ? PJ_SUCCESS : PJ_ENOTFOUND;
+}
 
+pj_status_t Screen::ConnectUser(User *user)
+{
 	RETURN_VAL_IF_FAIL(user, PJ_EINVAL);
-
-	pj_status_t status;
-	pj_ssize_t sndlen;
-	if(user_)
-	{
-		RETURN_VAL_IF_FAIL((*user_ != *user), PJ_SUCCESS);
-
-		status = UnlinkRoomUser(av_index_map, title_room);
-		RETURN_VAL_IF_FAIL(status == PJ_SUCCESS, status);
-	}
 
 	media_active_ = PJ_TRUE;
 	user_ = user;
 
-	request_to_avs_proxy_link_room_user_t link_room_user;
-	link_room_user.client_request_type = REQUEST_FROM_CLIENT_TO_AVSPROXY_LINK_ROOM_USER;
-	link_room_user.proxy_id = 100;
-	link_room_user.client_id = 10;
-	link_room_user.room_id = user->room_id_;
-	link_room_user.user_id = user->user_id_;
-	link_room_user.link_media_mask = MEDIA_MASK_VIDEO;
-	link_room_user.Serialize();
-
-	av_index_map[AUDIO_INDEX].insert(index_map_t::value_type(user->audio_ssrc_, index_));
-	av_index_map[VIDEO_INDEX].insert(index_map_t::value_type(user->video_ssrc_, index_));
-
-	sndlen = sizeof(link_room_user);
-	return title_room->SendTCPPacket(&link_room_user, &sndlen);
+	return PJ_SUCCESS;
 }
 
-pj_status_t Screen::UnlinkRoomUser(av_index_map_t &av_index_map, TitleRoom *title_room)
+pj_status_t Screen::DisconnectUser()
 {
-	enum {AUDIO_INDEX, VIDEO_INDEX};
-
 	RETURN_VAL_IF_FAIL(user_, PJ_EINVAL);
-
-	request_to_avs_proxy_unlink_room_user_t unlink_room_user;
-	unlink_room_user.client_request_type = REQUEST_FROM_CLIENT_TO_AVSPROXY_UNLINK_ROOM_USER;
-	unlink_room_user.proxy_id = 100;
-	unlink_room_user.client_id = 10;
-	unlink_room_user.room_id = user_->room_id_;
-	unlink_room_user.user_id = user_->user_id_;
-	unlink_room_user.unlink_media_mask = MEDIA_MASK_VIDEO;
-	unlink_room_user.Serialize();
-
-	av_index_map[AUDIO_INDEX].erase(user_->audio_ssrc_);
-	av_index_map[VIDEO_INDEX].erase(user_->video_ssrc_);
 
 	media_active_ = PJ_FALSE;
 	user_ = nullptr;
 
-	pj_ssize_t sndlen = sizeof(unlink_room_user);
-	return title_room->SendTCPPacket(&unlink_room_user, &sndlen);
+	return PJ_SUCCESS;
 }
 
 void Screen::OnLButtonUp(UINT nFlags, CPoint point)
 {
-	::SendMessage(AfxGetMainWnd()->m_hWnd, WM_ENDDRAGITEM, 0, (LPARAM)this); // let Mainframe knowns.
+	::SendMessage(AfxGetMainWnd()->m_hWnd, WM_LINK_ROOM_USER, 0, (LPARAM)this); // let Mainframe knowns.
 }
 
 void Screen::OnLButtonDblClk(UINT nFlags, CPoint point)

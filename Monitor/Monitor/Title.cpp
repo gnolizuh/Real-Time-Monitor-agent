@@ -117,11 +117,9 @@ void Title::OnTvnBeginDrag(NMHDR *pNMHDR, LRESULT *pResult)
 
 	if(!ItemHasChildren(pTreeItem))
 	{
-		HTREEITEM pParentItem = GetParentItem(pTreeItem);
-		TitleRoom *title_room = reinterpret_cast<TitleRoom *>(GetItemData(pParentItem));
 		User *user = reinterpret_cast<User *>(GetItemData(pTreeItem));
-		RETURN_IF_FAIL(title_room != nullptr && user != nullptr);
+		RETURN_IF_FAIL(user != nullptr);
 
- 		::SendMessage(AfxGetMainWnd()->m_hWnd, WM_BEGINDRAGITEM, (WPARAM)title_room, (LPARAM)user);
+		::SendMessage(AfxGetMainWnd()->m_hWnd, WM_SELECT_USER, 0, (LPARAM)user);
 	}
 }
