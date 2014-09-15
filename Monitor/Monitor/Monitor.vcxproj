@@ -115,11 +115,14 @@
     <ClInclude Include="MessageQueue.hpp" />
     <ClInclude Include="Monitor.h" />
     <ClInclude Include="MonitorDlg.h" />
+    <ClInclude Include="NATScene.h" />
     <ClInclude Include="Node.h" />
     <ClInclude Include="PoolThread.hpp" />
     <ClInclude Include="pugixml\pugiconfig.hpp" />
     <ClInclude Include="pugixml\pugixml.hpp" />
+    <ClInclude Include="ResLoginScene.h" />
     <ClInclude Include="Resource.h" />
+    <ClInclude Include="RTPSession.h" />
     <ClInclude Include="Scene\AvsProxyScene\inc\AddUserScene.h" />
     <ClInclude Include="Scene\AvsProxyScene\inc\DelUserScene.h" />
     <ClInclude Include="Scene\AvsProxyScene\inc\KeepAliveScene.h" />
@@ -144,10 +147,13 @@
     <ClCompile Include="happyhttp\happyhttp.cpp" />
     <ClCompile Include="Monitor.cpp" />
     <ClCompile Include="MonitorDlg.cpp" />
+    <ClCompile Include="NATScene.cpp" />
     <ClCompile Include="Node.cpp" />
     <ClCompile Include="pugixml\pugixml.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="ResLoginScene.cpp" />
+    <ClCompile Include="RTPSession.cpp" />
     <ClCompile Include="Scene\AvsProxyScene\src\AddUserScene.cpp" />
     <ClCompile Include="Scene\AvsProxyScene\src\DelUserScene.cpp" />
     <ClCompile Include="Scene\AvsProxyScene\src\KeepAliveScene.cpp" />

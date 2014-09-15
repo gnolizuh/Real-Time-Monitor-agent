@@ -17,7 +17,7 @@ void TitleRoom::OnItemExpanded(CTreeCtrl &tree_ctrl, Node &parent)
 {
 	lock_guard<mutex> lock(room_lock_);
 
-	RETURN_IF_FAIL(proxy_ == nullptr);  // 只有未连接才推送消息
+	RETURN_IF_FAIL(proxy_ == nullptr);  // ??óD?′á??ó2?í??í???￠
 
 	::SendMessage(AfxGetMainWnd()->m_hWnd, WM_EXPANDEDROOM, 0, (LPARAM)this);
 }
@@ -26,12 +26,17 @@ void TitleRoom::OnItemShrinked(CTreeCtrl &tree_ctrl, Node &parent)
 {
 	lock_guard<mutex> lock(room_lock_);
 	pj_bool_t useless = PJ_FALSE;
-	for (pj_uint32_t i = 0; i < users_.size(); ++i)
+	for (users_map_t::iterator puser = users_.begin();
+		puser != users_.end(); ++ puser)
 	{
-		if (users_[i]->screen_idx_ != INVALID_SCREEN_INDEX)
+		users_map_t::mapped_type user = puser->second;
+		if(user != nullptr)
 		{
-			useless = PJ_TRUE;
-			break;
+			if (user->screen_idx_ != INVALID_SCREEN_INDEX)
+			{
+				useless = PJ_TRUE;
+				break;
+			}
 		}
 	}
 

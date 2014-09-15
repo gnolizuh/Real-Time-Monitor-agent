@@ -4,12 +4,13 @@
 extern Config g_client_config;
 extern index_map_t g_av_index_map[2];
 extern Screen *g_screens[MAXIMAL_SCREEN_NUM];
+extern RTPSession g_rtp_session;
 
 AvsProxy::AvsProxy(pj_uint16_t id, const pj_str_t &ip, pj_uint16_t tcp_port, pj_uint16_t udp_port, pj_sock_t sock)
 	: pfunction_(nullptr)
 	, tcp_ev_(nullptr)
 	, sock_(sock)
-	, status_(AVS_PROXY_STATUS_OFFLINE)
+	, status_(AVS_PROXY_STATUS_UNINIT)
 	, id_(id)
 	, ip_(pj_str(strdup(ip.ptr)))
 	, tcp_port_(tcp_port)
@@ -21,7 +22,7 @@ AvsProxy::AvsProxy(pj_uint16_t id, const pj_str_t &ip, pj_uint16_t tcp_port, pj_
 
 pj_status_t AvsProxy::Login()
 {
-	RETURN_VAL_IF_FAIL(status_ == AVS_PROXY_STATUS_OFFLINE, PJ_SUCCESS);
+	RETURN_VAL_IF_FAIL(status_ == AVS_PROXY_STATUS_UNINIT, PJ_SUCCESS);
 
 	request_to_avs_proxy_login_t login;
 	login.client_request_type = REQUEST_FROM_CLIENT_TO_AVSPROXY_LOGIN;
@@ -36,15 +37,69 @@ pj_status_t AvsProxy::Login()
 	RETURN_VAL_IF_FAIL(status == PJ_SUCCESS, status);
 
 	status_ = AVS_PROXY_STATUS_LOGINING;
+
+	return PJ_SUCCESS;
+}
+
+pj_status_t AvsProxy::OnRxLogin()
+{
+	RETURN_VAL_IF_FAIL(status_ == AVS_PROXY_STATUS_LOGINING, PJ_SUCCESS);
+
+	request_to_avs_proxy_nat_t nat
+		= {REQUEST_FROM_CLIENT_TO_AVSPROXY_NAT, id_, 0, g_client_config.client_id};
+	nat.Serialize();
+
+	pj_status_t status;
+	status = g_rtp_session.SendRTPPacket(ip_, udp_port_, &nat, sizeof(nat));
+	RETURN_VAL_IF_FAIL(status == PJ_SUCCESS, status);
+	status = g_rtp_session.SendRTPPacket(ip_, udp_port_, &nat, sizeof(nat));
+	RETURN_VAL_IF_FAIL(status == PJ_SUCCESS, status);
+	status = g_rtp_session.SendRTPPacket(ip_, udp_port_, &nat, sizeof(nat));
+	RETURN_VAL_IF_FAIL(status == PJ_SUCCESS, status);	
+
+	status_ = AVS_PROXY_STATUS_NATING;
+
+	return PJ_SUCCESS;
+}
+
+pj_status_t AvsProxy::OnRxNAT()
+{
+	RETURN_VAL_IF_FAIL(status_ == AVS_PROXY_STATUS_NATING, PJ_SUCCESS);
+
 	status_ = AVS_PROXY_STATUS_ONLINE;
+
+	lock_guard<mutex> lock(waits_rooms_lock_);
+	for(pj_uint32_t i = 0; i < waits_rooms_.size(); ++ i)
+	{
+		room_vec_t::value_type title_room = waits_rooms_[i];
+		LinkRoom(title_room);
+	}
+	waits_rooms_.clear();
 
 	return PJ_SUCCESS;
 }
 
 pj_status_t AvsProxy::Logout()
 {
-	status_ = AVS_PROXY_STATUS_OFFLINE;
+	status_ = AVS_PROXY_STATUS_UNINIT;
 
+	Destory();
+
+	request_to_avs_proxy_logout_t logout;
+	logout.client_request_type = REQUEST_FROM_CLIENT_TO_AVSPROXY_LOGOUT;
+	logout.proxy_id = id_;
+	logout.client_id = g_client_config.client_id;
+	logout.Serialize();
+
+	pj_ssize_t sndlen = sizeof(logout);
+	pj_status_t status = SendTCPPacket(&logout, &sndlen);
+	RETURN_VAL_IF_FAIL(status == PJ_SUCCESS, status);
+
+	return PJ_SUCCESS;
+}
+
+void AvsProxy::Destory()
+{
 	if (ip_.ptr != nullptr)
 	{
 		free(ip_.ptr);
@@ -88,18 +143,6 @@ pj_status_t AvsProxy::Logout()
 			DelRoom(room->id_, room);
 		}
 	}
-
-	request_to_avs_proxy_logout_t logout;
-	logout.client_request_type = REQUEST_FROM_CLIENT_TO_AVSPROXY_LOGOUT;
-	logout.proxy_id = id_;
-	logout.client_id = g_client_config.client_id;
-	logout.Serialize();
-
-	pj_ssize_t sndlen = sizeof(logout);
-	pj_status_t status = SendTCPPacket(&logout, &sndlen);
-	RETURN_VAL_IF_FAIL(status == PJ_SUCCESS, status);
-
-	return PJ_SUCCESS;
 }
 
 pj_status_t AvsProxy::LinkRoomUser(User *user)
@@ -138,17 +181,27 @@ pj_status_t AvsProxy::UnlinkRoomUser(User *user)
 
 pj_status_t AvsProxy::LinkRoom(TitleRoom *title_room)
 {
-	RETURN_VAL_IF_FAIL(AddRoom(title_room->id_, title_room) == PJ_SUCCESS, PJ_EEXISTS);
+	if(status_ == AVS_PROXY_STATUS_ONLINE)
+	{
+		RETURN_VAL_IF_FAIL(AddRoom(title_room->id_, title_room) == PJ_SUCCESS, PJ_EEXISTS);
 
-	request_to_avs_proxy_link_room_t link_room;
-	link_room.client_request_type = REQUEST_FROM_CLIENT_TO_AVSPROXY_LINK_ROOM;
-	link_room.proxy_id = id_;
-	link_room.client_id = g_client_config.client_id;
-	link_room.room_id = title_room->id_;
-	link_room.Serialize();
+		request_to_avs_proxy_link_room_t link_room;
+		link_room.client_request_type = REQUEST_FROM_CLIENT_TO_AVSPROXY_LINK_ROOM;
+		link_room.proxy_id = id_;
+		link_room.client_id = g_client_config.client_id;
+		link_room.room_id = title_room->id_;
+		link_room.Serialize();
 
-	pj_ssize_t sndlen = sizeof(link_room);
-	return SendTCPPacket(&link_room, &sndlen);
+		pj_ssize_t sndlen = sizeof(link_room);
+		return SendTCPPacket(&link_room, &sndlen);
+	}
+	else
+	{
+		lock_guard<mutex> lock(waits_rooms_lock_);
+		waits_rooms_.push_back(title_room);
+	}
+
+	return PJ_SUCCESS;
 }
 
 pj_status_t AvsProxy::UnlinkRoom(TitleRoom *title_room)

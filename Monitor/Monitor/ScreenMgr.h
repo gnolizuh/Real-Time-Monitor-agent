@@ -20,7 +20,10 @@
 #include "DelUserScene.h"
 #include "KeepAliveScene.h"
 #include "DiscProxyScene.h"
+#include "ResLoginScene.h"
 #include "AvsProxyStructs.h"
+#include "RTPSession.h"
+#include "NATScene.h"
 #include "TitleRoom.h"
 #include "AvsProxy.h"
 
@@ -88,14 +91,13 @@ protected:
 
 private:
 	pj_status_t SendTCPPacket(const void *buf, pj_ssize_t *len);
-	pj_status_t SendRTPPacket(pj_str_t &ip, pj_uint16_t port, const void *payload, pj_ssize_t payload_len);
 
 public:
 	pj_status_t ParseHttpResponse(pj_uint16_t &proxy_id, string &proxy_ip, pj_uint16_t &proxy_tcp_port, pj_uint16_t &proxy_udp_port,
 		const vector<pj_uint8_t> &response);
 private:
 	void TcpParamScene(const pj_uint8_t *, pj_uint16_t);
-	void UdpParamScene(const pjmedia_rtp_hdr *, const pj_uint8_t *, pj_uint16_t);
+	void UdpParamScene(const pjmedia_rtp_hdr *rtp_hdr, const pj_uint8_t *storage, pj_uint16_t storage_len);
 	void ChangeLayout_1x1(pj_uint32_t width, pj_uint32_t height);
 	void ChangeLayout_2x2(pj_uint32_t width, pj_uint32_t height);
 	void ChangeLayout_1x5(pj_uint32_t width, pj_uint32_t height);
@@ -110,14 +112,9 @@ private:
 	pj_uint16_t         client_id_;
 	pj_sock_t           local_tcp_sock_;
 	mutex               local_tcp_lock_;
-	pj_sock_t           local_udp_sock_;
-	mutex               local_udp_lock_;
-	pj_str_t		    local_ip_;
-	pj_uint16_t         local_udp_port_;
 	pj_caching_pool     caching_pool_;
 	evutil_socket_t     pipe_fds_[2];
 	pj_pool_t		   *pool_;
-	pjmedia_rtp_session rtp_out_session_;
 	struct event       *tcp_ev_, *udp_ev_, *pipe_ev_;
 	struct event_base  *evbase_;
 	thread              connector_thread_;

@@ -4,6 +4,7 @@
 extern Config g_client_config;
 extern index_map_t g_av_index_map[2];
 extern Screen *g_screens[MAXIMAL_SCREEN_NUM];
+extern RTPSession g_rtp_session;
 
 const resolution_t ScreenMgr::DEFAULT_RESOLUTION = 
 {
@@ -30,9 +31,6 @@ ScreenMgr::ScreenMgr(CWnd *wrapper,
 	, horizontal_padding_(MININUM_PADDING)
 	, client_id_(client_id)
 	, local_tcp_sock_(-1)
-	, local_udp_sock_(-1)
-	, local_ip_(local_ip)
-	, local_udp_port_(local_udp_port)
 	, caching_pool_()
 	, pool_(NULL)
 	, tcp_ev_(nullptr)
@@ -70,13 +68,6 @@ pj_status_t ScreenMgr::Prepare(const pj_str_t &log_file_name)
 {
 	pj_status_t status;
 
-	int retrys = 50;
-	do
-	{
-		status = pj_open_udp_transport(&local_ip_, local_udp_port_, local_udp_sock_);
-	} while(status != PJ_SUCCESS && ((++ local_udp_port_), (-- retrys > 0)));
-	RETURN_VAL_IF_FAIL( status == PJ_SUCCESS, status );
-
 	int ret;
 	ret = evutil_socketpair(AF_INET, SOCK_STREAM, 0, pipe_fds_);
 
@@ -86,8 +77,9 @@ pj_status_t ScreenMgr::Prepare(const pj_str_t &log_file_name)
 
 	status = log_open(pool_, log_file_name);
 
-	status = pjmedia_rtp_session_init(&rtp_out_session_, RTP_EXPAND_PAYLOAD_TYPE, pj_rand());
-	RETURN_VAL_IF_FAIL( status == PJ_SUCCESS, status );
+	pj_sock_t rtp_sock;
+	status = g_rtp_session.Open(rtp_sock);
+	PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
 
 	/* Init video format manager */
     status = pjmedia_video_format_mgr_create(pool_, 64, 0, NULL);
@@ -116,7 +108,7 @@ pj_status_t ScreenMgr::Prepare(const pj_str_t &log_file_name)
 
 	function = std::bind(&ScreenMgr::EventOnUdpRead, this, std::placeholders::_1, std::placeholders::_2, nullptr);
 	pfunction = new ev_function_t(function);
-	udp_ev_ = event_new(evbase_, local_udp_sock_, EV_READ | EV_PERSIST, event_func_proxy, pfunction);
+	udp_ev_ = event_new(evbase_, g_rtp_session.GetRTPSock(), EV_READ | EV_PERSIST, event_func_proxy, pfunction);
 	RETURN_VAL_IF_FAIL( udp_ev_ != nullptr, -1 );
 
 	ret = event_add(udp_ev_, NULL);
@@ -167,7 +159,6 @@ void ScreenMgr::Destory()
 	sync_thread_pool_.Stop();
 
 	pj_sock_close(local_tcp_sock_);
-	pj_sock_close(local_udp_sock_);
 }
 
 pj_status_t ScreenMgr::OnLinkRoom(TitleRoom *title_room)
@@ -456,10 +447,16 @@ void ScreenMgr::TcpParamScene(const pj_uint8_t *storage,
 
 	TcpParameter *param = nullptr;
 	TcpScene     *scene = nullptr;
-	pj_uint16_t   type = (pj_uint16_t)ntohs(*(pj_uint16_t *)(storage + sizeof(param->length_)));
+	pj_uint16_t   type = (pj_uint16_t)ntohs(*(pj_uint16_t *)(storage + sizeof(pj_uint16_t)));
 
 	switch(type)
 	{
+		case RESPONSE_FROM_AVSPROXY_TO_CLIENT_LOGIN:
+		{
+			param = new ResLoginParameter(storage, storage_len);
+			scene = new ResLoginScene();
+			break;
+		}
 		case REQUEST_FROM_AVSPROXY_TO_CLIENT_ROOMS_INFO:
 		{
 			param = new RoomsInfoParameter(storage, storage_len);
@@ -490,6 +487,11 @@ void ScreenMgr::TcpParamScene(const pj_uint8_t *storage,
 			scene = new KeepAliveScene();
 			break;
 		}
+		default:
+		{
+			PJ_LOG(5, ("ScreenMgr", "Tcp type:%u is invalid!! Please check it!!", type));
+			return;
+		}
 	}
 
 	AvsProxy *proxy = nullptr;
@@ -500,31 +502,45 @@ void ScreenMgr::TcpParamScene(const pj_uint8_t *storage,
 }
 
 void ScreenMgr::UdpParamScene(const pjmedia_rtp_hdr *rtp_hdr,
-							  const pj_uint8_t *datagram,
-							  pj_uint16_t datalen)
+							  const pj_uint8_t *storage,
+							  pj_uint16_t storage_len)
 {
-	RETURN_IF_FAIL(rtp_hdr && datagram && datalen > 0);
-
-	const pj_uint8_t media_index = (rtp_hdr->pt == RTP_MEDIA_VIDEO_TYPE) ? VIDEO_INDEX : 
-		(rtp_hdr->pt == RTP_MEDIA_AUDIO_TYPE ? AUDIO_INDEX : -1);
-	RETURN_IF_FAIL(media_index != -1);
-
-	Screen *screen = nullptr;
-	index_map_t::iterator pscreen_idx = g_av_index_map[media_index].find(rtp_hdr->ssrc);
-	if (pscreen_idx != g_av_index_map[media_index].end())
+	RETURN_IF_FAIL(rtp_hdr && storage && storage_len > 0);
+	
+	if(rtp_hdr->pt == RTP_EXPAND_PAYLOAD_TYPE)
 	{
-		index_map_t::mapped_type screen_idx = pscreen_idx->second;
-		if (screen_idx >= 0 && screen_idx < MAXIMAL_SCREEN_NUM)
-		{
-			screen = g_screens[screen_idx];
-		}
+		UdpParameter *param = new NATParameter(storage, storage_len);
+		UdpScene     *scene = new NATScene();
+
+		AvsProxy *proxy = nullptr;
+		RETURN_IF_FAIL(GetProxy(param->proxy_id_, proxy) == PJ_SUCCESS);
+		RETURN_IF_FAIL(param != nullptr && scene != nullptr);
+
+		sync_thread_pool_.Schedule(std::bind(&UdpScene::Maintain, shared_ptr<UdpScene>(scene), shared_ptr<UdpParameter>(param), proxy));
 	}
+	else
+	{
+		const pj_uint8_t media_index = (rtp_hdr->pt == RTP_MEDIA_VIDEO_TYPE) ? VIDEO_INDEX : 
+			(rtp_hdr->pt == RTP_MEDIA_AUDIO_TYPE ? AUDIO_INDEX : -1);
+		RETURN_IF_FAIL(media_index != -1);
 
-	RETURN_IF_FAIL(screen != nullptr);
+		Screen *screen = nullptr;
+		index_map_t::iterator pscreen_idx = g_av_index_map[media_index].find(rtp_hdr->ssrc);
+		if (pscreen_idx != g_av_index_map[media_index].end())
+		{
+			index_map_t::mapped_type screen_idx = pscreen_idx->second;
+			if (screen_idx >= 0 && screen_idx < MAXIMAL_SCREEN_NUM)
+			{
+				screen = g_screens[screen_idx];
+			}
+		}
 
-	media_index == AUDIO_INDEX ?
-		screen->AudioScene(datagram, datalen) :
-		screen->VideoScene(datagram, datalen);
+		RETURN_IF_FAIL(screen != nullptr);
+
+		media_index == AUDIO_INDEX ?
+			screen->AudioScene(storage, storage_len) :
+			screen->VideoScene(storage, storage_len);
+	}
 }
 
 void ScreenMgr::EventOnTcpRead(evutil_socket_t fd, short event, void *arg)
@@ -607,7 +623,7 @@ void ScreenMgr::EventOnUdpRead(evutil_socket_t fd, short event, void *arg)
 	int addrlen = sizeof(addr);
 
 	pj_status_t status;
-	status = pj_sock_recvfrom(local_udp_sock_, datagram, &datalen, 0, &addr, &addrlen);
+	status = pj_sock_recvfrom(g_rtp_session.GetRTPSock(), datagram, &datalen, 0, &addr, &addrlen);
 	RETURN_IF_FAIL(status == PJ_SUCCESS);
 
 	if (datalen >= sizeof(*rtp_hdr)
@@ -618,7 +634,14 @@ void ScreenMgr::EventOnUdpRead(evutil_socket_t fd, short event, void *arg)
 			&rtp_hdr, (const void **)&payload, &payload_len);
 		RETURN_IF_FAIL(status == PJ_SUCCESS);
 
-		UdpParamScene(rtp_hdr, datagram, (pj_uint16_t)datalen);
+		if(rtp_hdr->pt == RTP_EXPAND_PAYLOAD_TYPE)
+		{
+			UdpParamScene(rtp_hdr, payload, (pj_uint16_t)payload_len);
+		}
+		else
+		{
+			UdpParamScene(rtp_hdr, datagram, (pj_uint16_t)datalen);
+		}
 	}
 }
 
@@ -671,13 +694,6 @@ pj_status_t ScreenMgr::LinkRoom(pj_uint16_t id, string ip, vector<pj_uint16_t> p
 			PJ_EINVAL);
 
 		status = proxy->Login();
-		RETURN_VAL_IF_FAIL(status == PJ_SUCCESS, status);
-
-		request_to_avs_proxy_nat_t nat
-			= {REQUEST_FROM_CLIENT_TO_AVSPROXY_NAT, id, 0, g_client_config.client_id};
-		nat.Serialize();
-
-		status = SendRTPPacket(pj_ip, ports[1], &nat, sizeof(nat));
 		RETURN_VAL_IF_FAIL(status == PJ_SUCCESS, status);
 	}
 
@@ -774,38 +790,4 @@ pj_status_t ScreenMgr::SendTCPPacket(const void *buf, pj_ssize_t *len)
 {
 	lock_guard<mutex> lock(local_tcp_lock_);
 	return pj_sock_send(local_tcp_sock_, buf, len, 0);
-}
-
-pj_status_t ScreenMgr::SendRTPPacket(pj_str_t &ip, pj_uint16_t port, const void *payload, pj_ssize_t payload_len)
-{
-	lock_guard<mutex> lock(local_udp_lock_);
-
-	RETURN_VAL_IF_FAIL(payload_len <= MAX_UDP_DATA_SIZE, PJ_EINVAL);
-
-	pj_uint8_t packet[MAX_UDP_DATA_SIZE];
-	const pjmedia_rtp_hdr *hdr;
-	const void *p_hdr;
-	int hdrlen;
-	pj_ssize_t size;
-	
-	pj_status_t status;
-	status = pjmedia_rtp_encode_rtp (&rtp_out_session_, RTP_EXPAND_PAYLOAD_TYPE, 0, payload_len, 0, &p_hdr, &hdrlen);
-	RETURN_VAL_IF_FAIL(status == PJ_SUCCESS, status);
-
-	hdr = (const pjmedia_rtp_hdr*) p_hdr;
-
-	/* Copy RTP header to packet */
-	pj_memcpy(packet, hdr, hdrlen);
-
-	/* Copy RTP payload to packet */
-	pj_memcpy(packet + hdrlen, payload, payload_len);
-
-	/* Send RTP packet */
-	size = hdrlen + payload_len;
-
-	pj_sockaddr_in addr;
-	status = pj_sockaddr_in_init(&addr, &ip, port);
-	RETURN_VAL_IF_FAIL(status == PJ_SUCCESS, status);
-
-	return pj_sock_sendto(local_udp_sock_, packet, &size, 0, &addr, sizeof(addr));
 }

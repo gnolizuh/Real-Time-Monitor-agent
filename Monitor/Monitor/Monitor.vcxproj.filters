@@ -126,6 +126,15 @@
     <ClInclude Include="DiscProxyScene.h">
       <Filter>Scene\AvsProxyScene\inc</Filter>
     </ClInclude>
+    <ClInclude Include="ResLoginScene.h">
+      <Filter>Scene\AvsProxyScene\inc</Filter>
+    </ClInclude>
+    <ClInclude Include="RTPSession.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="NATScene.h">
+      <Filter>Scene\AvsProxyScene\inc</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Monitor.cpp">
@@ -189,6 +198,15 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="DiscProxyScene.cpp">
+      <Filter>Scene\AvsProxyScene\src</Filter>
+    </ClCompile>
+    <ClCompile Include="ResLoginScene.cpp">
+      <Filter>Scene\AvsProxyScene\src</Filter>
+    </ClCompile>
+    <ClCompile Include="RTPSession.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="NATScene.cpp">
       <Filter>Scene\AvsProxyScene\src</Filter>
     </ClCompile>
   </ItemGroup>

@@ -120,11 +120,13 @@ public:
 	void Schedule(const T &t)
 	{
 		// First element indicate the lightest load thread.
+		std::lock_guard<mutex> lock(threads_lock_);
 		threads_[0]->Push(t);
 		std::make_heap(threads_.begin(), threads_.end(), min_heap_cmp_func);
 	}
 
 private:
+	std::mutex                       threads_lock_;
 	pj_uint32_t                      threads_count_;
 	std::vector<InternalThread<T> *> threads_;
 };

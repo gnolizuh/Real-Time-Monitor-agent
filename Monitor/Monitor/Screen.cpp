@@ -30,8 +30,8 @@ Screen::~Screen()
 {
 }
 
-#define WIDTH  264
-#define HEIGHT 216
+#define WIDTH  320
+#define HEIGHT 240
 
 pj_status_t Screen::Prepare(pj_pool_t *pool,
 							const CRect &rect,

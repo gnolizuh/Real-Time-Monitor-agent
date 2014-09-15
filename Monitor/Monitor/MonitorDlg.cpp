@@ -266,11 +266,15 @@ LRESULT CMonitorDlg::OnSelectUser(WPARAM wParam, LPARAM lParam)
 	is_draging_ = PJ_TRUE;
 	draging_user_ = user;
 
+	TRACE("Select user %ld\n", user->user_id_);
+
 	return true;
 }
 
-void CMonitorDlg::OnDropUpUser(UINT nFlags, CPoint point)
+void CMonitorDlg::OnLButtonUp(UINT nFlags, CPoint point)
 {
+	TRACE("Drop user\n");
+
 	is_draging_ = PJ_FALSE;
 	draging_user_ = nullptr;
 }

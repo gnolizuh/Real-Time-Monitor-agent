@@ -38,7 +38,7 @@ typedef enum __enum_from_client_to_avsproxy_request_type__
 
 typedef enum __enum_from_avsproxy_to_client_request_type__
 {
-	REQUEST_FROM_AVSPROXY_TO_CLIENT_LOGIN,
+	RESPONSE_FROM_AVSPROXY_TO_CLIENT_LOGIN,
 	REQUEST_FROM_AVSPROXY_TO_CLIENT_ROOMS_INFO,
 	REQUEST_FROM_AVSPROXY_TO_CLIENT_ROOM_MOD_MEDIA,
 	REQUEST_FROM_AVSPROXY_TO_CLIENT_ROOM_ADD_USER,

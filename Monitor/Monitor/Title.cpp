@@ -145,12 +145,18 @@ BOOL Title::OnToolTipText(UINT id, NMHDR *pNMHDR, LRESULT *pResult)
 
 	UINT nFlags;
 	HTREEITEM hitem = HitTest(pt, &nFlags);
+	RETURN_VAL_IF_FAIL(hitem != nullptr, true);
+
+	if(!ItemHasChildren(hitem))
+	{
+		return true;
+	}
 
 	Node *node = reinterpret_cast<Node *>(GetItemData(hitem));
 	RETURN_VAL_IF_FAIL(node != nullptr, FALSE);
 
 	CString strTipText;
-	strTipText.Format(L"·???ID: %d è?êy: %u", node->id_, node->usercount_);
+	strTipText.Format(L"房间ID: %d 人数: %u", node->id_, node->usercount_);
 	if (pNMHDR->code == TTN_NEEDTEXTA)
 	{
 		_wcstombsz(pTTTA->szText, strTipText, 80);
