@@ -197,16 +197,16 @@
     <ClCompile Include="AvsProxy.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="DiscProxyScene.cpp">
-      <Filter>Scene\AvsProxyScene\src</Filter>
-    </ClCompile>
-    <ClCompile Include="ResLoginScene.cpp">
-      <Filter>Scene\AvsProxyScene\src</Filter>
-    </ClCompile>
     <ClCompile Include="RTPSession.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="NATScene.cpp">
+    <ClCompile Include="Scene\AvsProxyScene\src\DiscProxyScene.cpp">
+      <Filter>Scene\AvsProxyScene\src</Filter>
+    </ClCompile>
+    <ClCompile Include="Scene\AvsProxyScene\src\NATScene.cpp">
+      <Filter>Scene\AvsProxyScene\src</Filter>
+    </ClCompile>
+    <ClCompile Include="Scene\AvsProxyScene\src\ResLoginScene.cpp">
       <Filter>Scene\AvsProxyScene\src</Filter>
     </ClCompile>
   </ItemGroup>

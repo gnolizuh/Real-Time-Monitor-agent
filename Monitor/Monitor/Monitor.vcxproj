@@ -143,21 +143,21 @@
     <ClCompile Include="AvsProxy.cpp" />
     <ClCompile Include="Com.cpp" />
     <ClCompile Include="Config.cpp" />
-    <ClCompile Include="DiscProxyScene.cpp" />
     <ClCompile Include="happyhttp\happyhttp.cpp" />
     <ClCompile Include="Monitor.cpp" />
     <ClCompile Include="MonitorDlg.cpp" />
-    <ClCompile Include="NATScene.cpp" />
     <ClCompile Include="Node.cpp" />
     <ClCompile Include="pugixml\pugixml.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="ResLoginScene.cpp" />
     <ClCompile Include="RTPSession.cpp" />
     <ClCompile Include="Scene\AvsProxyScene\src\AddUserScene.cpp" />
     <ClCompile Include="Scene\AvsProxyScene\src\DelUserScene.cpp" />
+    <ClCompile Include="Scene\AvsProxyScene\src\DiscProxyScene.cpp" />
     <ClCompile Include="Scene\AvsProxyScene\src\KeepAliveScene.cpp" />
     <ClCompile Include="Scene\AvsProxyScene\src\ModMediaScene.cpp" />
+    <ClCompile Include="Scene\AvsProxyScene\src\NATScene.cpp" />
+    <ClCompile Include="Scene\AvsProxyScene\src\ResLoginScene.cpp" />
     <ClCompile Include="Scene\AvsProxyScene\src\RoomsInfoScene.cpp" />
     <ClCompile Include="ScreenMgr.cpp" />
     <ClCompile Include="Screen.cpp" />
