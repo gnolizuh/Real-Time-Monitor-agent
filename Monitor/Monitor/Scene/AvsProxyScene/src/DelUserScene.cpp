@@ -28,7 +28,7 @@ void DelUserScene::Maintain(shared_ptr<TcpParameter> ptr_tcp_param, AvsProxy *av
 	if (user->GetScreenIndex() != INVALID_SCREEN_INDEX)
 	{
 		// 如果这个用户已经在屏幕上显示
-		RETURN_IF_FAIL(user->GetScreenIndex() >= 0 && user->screen_idx_ <= MAXIMAL_SCREEN_NUM);
+		RETURN_IF_FAIL(user->GetScreenIndex() >= 0 && user->screen_idx_ < MAXIMAL_SCREEN_NUM);
 		Screen *screen = g_screens[user->screen_idx_];
 
 		RETURN_IF_FAIL(screen != nullptr);

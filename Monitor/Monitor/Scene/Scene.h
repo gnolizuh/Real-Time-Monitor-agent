@@ -26,7 +26,7 @@ public:
 	UdpScene() {}
 	virtual ~UdpScene() {}
 
-	virtual void Maintain(shared_ptr<UdpParameter> ptr_udp_param) {}
+	virtual void Maintain(shared_ptr<UdpParameter> ptr_udp_param, AvsProxy *avs_proxy) {}
 };
 
 #endif
