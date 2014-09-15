@@ -37,7 +37,7 @@ protected:
 	afx_msg void OnGetMinMaxInfo(MINMAXINFO* lpMMI);
 	afx_msg void OnChangeLayout();
 	afx_msg LRESULT OnSelectUser(WPARAM wParam, LPARAM lParam);
-	afx_msg void    OnDropUpUser(UINT nFlags, CPoint point);
+	afx_msg void    OnLButtonUp(UINT nFlags, CPoint point);
 	afx_msg LRESULT OnLinkRoomUser(WPARAM wParam, LPARAM lParam);
 	afx_msg LRESULT OnUnlinkRoomUser(WPARAM wParam, LPARAM lParam);
 	afx_msg LRESULT OnLinkRoom(WPARAM wParam, LPARAM lParam);

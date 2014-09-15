@@ -23,7 +23,11 @@ public:
 protected:
 	afx_msg void OnItemExpanded(NMHDR *pNMHDR, LRESULT *pResult);
 	afx_msg void OnTvnBeginDrag(NMHDR *pNMHDR, LRESULT *pResult);
+	afx_msg BOOL OnToolTipText(UINT id, NMHDR *pNMHDR, LRESULT *pResult);
 	DECLARE_MESSAGE_MAP()
+
+private:
+	virtual void PreSubclassWindow();
 };
 
 #endif

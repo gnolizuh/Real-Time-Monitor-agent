@@ -67,7 +67,7 @@ pj_status_t AvsProxy::Logout()
 					if (user->GetScreenIndex() != INVALID_SCREEN_INDEX)
 					{
 						// 如果这个用户已经在屏幕上显示
-						if (user->GetScreenIndex() >= 0 && user->screen_idx_ <= MAXIMAL_SCREEN_NUM)
+						if (user->GetScreenIndex() >= 0 && user->screen_idx_ < MAXIMAL_SCREEN_NUM)
 						{
 							Screen *screen = g_screens[user->screen_idx_];
 

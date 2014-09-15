@@ -210,29 +210,38 @@ pj_status_t ScreenMgr::OnUnlinkRoom(TitleRoom *title_room)
 	return PJ_SUCCESS;
 }
 
-void ScreenMgr::LinkScreenUser(Screen *screen, User *new_user)
+// old_screen may be exist at new_user.
+// old_user may be exist at new_screen
+void ScreenMgr::LinkScreenUser(Screen *new_screen, User *new_user)
 {
-	RETURN_IF_FAIL(screen != nullptr);
+	RETURN_IF_FAIL(new_screen != nullptr);
 	RETURN_IF_FAIL(new_user != nullptr);
 	RETURN_IF_FAIL(new_user->title_room_ != nullptr);
 
 	AvsProxy *proxy = new_user->title_room_->proxy_;
 	RETURN_IF_FAIL(proxy != nullptr);
 
-	User *old_user = nullptr;
-	if (screen->GetUser(old_user) == PJ_SUCCESS)
+	if(new_user->screen_idx_ != INVALID_SCREEN_INDEX)  // 如果这个被拖拽的用户正在其他屏幕上显示
 	{
-		RETURN_IF_FAIL(*new_user != *old_user);   // 如果已有用户在屏幕上显示, 并且这次是Link不同的用户, 则先Unlink掉
-
-		UnlinkScreenUser(screen, old_user);
+		pj_assert(new_user->screen_idx_ >= 0 && new_user->screen_idx_ < MAXIMAL_SCREEN_NUM);
+		Screen *old_screen = g_screens[new_user->screen_idx_];
+		UnlinkScreenUser(old_screen, new_user);
 	}
 
-	g_av_index_map[AUDIO_INDEX].insert(index_map_t::value_type(new_user->audio_ssrc_, screen->GetIndex()));
-	g_av_index_map[VIDEO_INDEX].insert(index_map_t::value_type(new_user->video_ssrc_, screen->GetIndex()));
+	User *old_user = nullptr;
+	if (new_screen->GetUser(old_user) == PJ_SUCCESS)  // 如果这个屏幕上已有用户
+	{
+		RETURN_IF_FAIL(*new_user != *old_user);
+
+		UnlinkScreenUser(new_screen, old_user);
+	}
+
+	g_av_index_map[AUDIO_INDEX].insert(index_map_t::value_type(new_user->audio_ssrc_, new_screen->GetIndex()));
+	g_av_index_map[VIDEO_INDEX].insert(index_map_t::value_type(new_user->video_ssrc_, new_screen->GetIndex()));
 	
 	proxy->LinkRoomUser(new_user);
-	screen->ConnectUser(new_user);
-	new_user->ConnectScreen(screen->GetIndex());
+	new_screen->ConnectUser(new_user);
+	new_user->ConnectScreen(new_screen->GetIndex());
 }
 
 void ScreenMgr::UnlinkScreenUser(Screen *screen, User *old_user)

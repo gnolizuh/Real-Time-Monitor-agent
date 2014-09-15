@@ -54,7 +54,7 @@ static pj_status_t init_param()
 	RETURN_VAL_IF_FAIL(result, PJ_EINVAL);
 
 	pugi::xml_node client = doc.child("client");
-	g_client_config.client_id = atoi(client.attribute("client_id").value());
+	g_client_config.client_id = atoi(client.attribute("id").value());
 	g_client_config.local_ip = pj_str(strdup((char *)client.attribute("ip").value()));
 	g_client_config.local_media_port = atoi(client.attribute("media_port").value());
 	g_client_config.log_file_name = pj_str(strdup((char *)client.attribute("log_file_name").value()));
@@ -304,8 +304,6 @@ LRESULT CMonitorDlg::OnLinkRoom(WPARAM wParam, LPARAM lParam)
 	TitleRoom *title_room = (TitleRoom *)lParam;
 	RETURN_VAL_IF_FAIL(title_room, true);
 
-	title_room->id_ = 462728;
-
 	g_screen_mgr->OnLinkRoom(title_room);
 
 	return true;
@@ -315,8 +313,6 @@ LRESULT CMonitorDlg::OnUnlinkRoom(WPARAM wParam, LPARAM lParam)
 {
 	TitleRoom *title_room = (TitleRoom *)lParam;
 	RETURN_VAL_IF_FAIL(title_room, true);
-
-	title_room->id_ = 462728;
 
 	g_screen_mgr->OnUnlinkRoom(title_room);
 

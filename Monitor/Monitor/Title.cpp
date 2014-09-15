@@ -4,6 +4,8 @@
 BEGIN_MESSAGE_MAP(Title, CTreeCtrl)
 	ON_NOTIFY_REFLECT(TVN_ITEMEXPANDED, OnItemExpanded)
 	ON_NOTIFY_REFLECT(TVN_BEGINDRAG,    OnTvnBeginDrag)
+	ON_NOTIFY_EX_RANGE(TTN_NEEDTEXTW, 0, 0xFFFF, OnToolTipText)
+    ON_NOTIFY_EX_RANGE(TTN_NEEDTEXTA, 0, 0xFFFF, OnToolTipText)
 END_MESSAGE_MAP()
 
 Title::Title(pj_uint32_t id, const pj_str_t &name, order_t order)
@@ -12,11 +14,17 @@ Title::Title(pj_uint32_t id, const pj_str_t &name, order_t order)
 {
 }
 
+void Title::PreSubclassWindow()
+{
+   CTreeCtrl::PreSubclassWindow();
+   EnableToolTips(TRUE);
+}
+
 pj_status_t Title::Prepare(const CWnd *wrapper, pj_uint32_t uid)
 {
 	BOOL result;
 	result = Create(WS_VISIBLE | WS_TABSTOP | WS_CHILD | WS_BORDER
-		| TVS_HASBUTTONS | TVS_LINESATROOT | TVS_HASLINES | TVS_NOTOOLTIPS,
+		| TVS_HASBUTTONS | TVS_LINESATROOT | TVS_HASLINES,
 		CRect(0, 0, 0, 0), (CWnd *)wrapper, uid);
 	RETURN_VAL_IF_FAIL(result, PJ_EINVAL);
 
@@ -122,4 +130,35 @@ void Title::OnTvnBeginDrag(NMHDR *pNMHDR, LRESULT *pResult)
 
 		::SendMessage(AfxGetMainWnd()->m_hWnd, WM_SELECT_USER, 0, (LPARAM)user);
 	}
+}
+
+BOOL Title::OnToolTipText(UINT id, NMHDR *pNMHDR, LRESULT *pResult)
+{
+	TOOLTIPTEXTA *pTTTA = (TOOLTIPTEXTA *)pNMHDR;
+	TOOLTIPTEXTW *pTTTW = (TOOLTIPTEXTW *)pNMHDR;
+
+	const MSG *pMessage = GetCurrentMessage(); 
+	RETURN_VAL_IF_FAIL(pMessage != nullptr, FALSE);
+
+	CPoint pt = pMessage->pt;  
+	ScreenToClient(&pt);
+
+	UINT nFlags;
+	HTREEITEM hitem = HitTest(pt, &nFlags);
+
+	Node *node = reinterpret_cast<Node *>(GetItemData(hitem));
+	RETURN_VAL_IF_FAIL(node != nullptr, FALSE);
+
+	CString strTipText;
+	strTipText.Format(L"¡¤???ID: %d ¨¨?¨ºy: %u", node->id_, node->usercount_);
+	if (pNMHDR->code == TTN_NEEDTEXTA)
+	{
+		_wcstombsz(pTTTA->szText, strTipText, 80);
+	}
+	else
+	{
+		lstrcpyn(pTTTW->szText, strTipText, 80);
+	}
+ 
+	return TRUE;
 }
