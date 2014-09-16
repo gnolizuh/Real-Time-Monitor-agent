@@ -1,6 +1,12 @@
 #include "stdafx.h"
 #include "TitleNode.h"
 
+#ifdef __ABS_FILE__
+#undef __ABS_FILE__
+#endif
+
+#define __ABS_FILE__ "TitleNode.cpp"
+
 extern Config g_client_config;
 
 TitleNode::TitleNode(pj_int32_t id, const pj_str_t &name, order_t order, pj_uint32_t usercount)

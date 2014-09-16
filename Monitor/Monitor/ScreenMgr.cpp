@@ -6,6 +6,12 @@ extern index_map_t g_av_index_map[2];
 extern Screen *g_screens[MAXIMAL_SCREEN_NUM];
 extern RTPSession g_rtp_session;
 
+#ifdef __ABS_FILE__
+#undef __ABS_FILE__
+#endif
+
+#define __ABS_FILE__ "ScreenMgr.cpp"
+
 const resolution_t ScreenMgr::DEFAULT_RESOLUTION = 
 {
 	MININUM_TREE_CTL_WIDTH + MININUM_SCREEN_WIDTH * 3 + MININUM_PADDING,
@@ -64,7 +70,7 @@ resolution_t ScreenMgr::GetDefaultResolution()
 	return DEFAULT_RESOLUTION;
 }
 
-pj_status_t ScreenMgr::Prepare(const pj_str_t &log_file_name)
+pj_status_t ScreenMgr::Prepare()
 {
 	pj_status_t status;
 
@@ -75,33 +81,36 @@ pj_status_t ScreenMgr::Prepare(const pj_str_t &log_file_name)
 
 	pool_ = pj_pool_create(&caching_pool_.factory, "AvsProxyClientPool", 1000, 1000, NULL);
 
-	status = log_open(pool_, log_file_name);
+	status = log_open(pool_, g_client_config.log_file_name);
+	RETURN_VAL_IF_FAIL(status == PJ_SUCCESS, status);
+	PJ_LOG(5, (__ABS_FILE__, "Open log file %s success!", g_client_config.log_file_name.ptr));
 
-	pj_sock_t rtp_sock;
-	status = g_rtp_session.Open(rtp_sock);
-	PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
+	status = g_rtp_session.Open();
+	RETURN_VAL_IF_FAIL(status == PJ_SUCCESS, status);
+	PJ_LOG(5, (__ABS_FILE__, "Open rtp session success!"));
 
 	/* Init video format manager */
     status = pjmedia_video_format_mgr_create(pool_, 64, 0, NULL);
-	PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
+	RETURN_VAL_IF_FAIL(status == PJ_SUCCESS, status);
 
 	/* Init video converter manager */
     status = pjmedia_converter_mgr_create(pool_, NULL);
-	PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
+	RETURN_VAL_IF_FAIL(status == PJ_SUCCESS, status);
 
     /* Init event manager */
     status = pjmedia_event_mgr_create(pool_, 0, NULL);
-	PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
+	RETURN_VAL_IF_FAIL(status == PJ_SUCCESS, status);
 
 	/* Init video codec manager */
     status = pjmedia_vid_codec_mgr_create(pool_, NULL);
-	PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
+	RETURN_VAL_IF_FAIL(status == PJ_SUCCESS, status);
 
 	status = pjmedia_codec_ffmpeg_vid_init(NULL, &caching_pool_.factory);
-	PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
+	RETURN_VAL_IF_FAIL(status == PJ_SUCCESS, status);
+	PJ_LOG(5, (__ABS_FILE__, "Initialize ffmpeg video codec success!"));
 
 	evbase_ = event_base_new();
-	RETURN_VAL_IF_FAIL( evbase_ != nullptr, -1 );
+	RETURN_VAL_IF_FAIL(evbase_ != nullptr, PJ_EINVAL);
 	
 	ev_function_t function;
 	ev_function_t *pfunction = nullptr;
@@ -109,28 +118,31 @@ pj_status_t ScreenMgr::Prepare(const pj_str_t &log_file_name)
 	function = std::bind(&ScreenMgr::EventOnUdpRead, this, std::placeholders::_1, std::placeholders::_2, nullptr);
 	pfunction = new ev_function_t(function);
 	udp_ev_ = event_new(evbase_, g_rtp_session.GetRTPSock(), EV_READ | EV_PERSIST, event_func_proxy, pfunction);
-	RETURN_VAL_IF_FAIL( udp_ev_ != nullptr, -1 );
+	RETURN_VAL_IF_FAIL(udp_ev_ != nullptr, PJ_EINVAL);
 
 	ret = event_add(udp_ev_, NULL);
-	RETURN_VAL_IF_FAIL( ret == 0, -1 );
+	RETURN_VAL_IF_FAIL(ret == 0, PJ_EINVAL);
 
 	function = std::bind(&ScreenMgr::EventOnPipe, this, std::placeholders::_1, std::placeholders::_2, nullptr);
 	pfunction = new ev_function_t(function);
 	pipe_ev_ = event_new(evbase_, pipe_fds_[0], EV_READ | EV_PERSIST, event_func_proxy, pfunction);
-	RETURN_VAL_IF_FAIL( pipe_ev_ != nullptr, -1 );
+	RETURN_VAL_IF_FAIL(pipe_ev_ != nullptr, PJ_EINVAL);
 
 	ret = event_add(pipe_ev_, NULL);
-	RETURN_VAL_IF_FAIL( ret == 0, -1 );
+	RETURN_VAL_IF_FAIL(ret == 0, PJ_EINVAL);
 
 	titles_ = new TitlesCtl();
 	pj_assert(titles_ != nullptr);
-	titles_->Prepare(wrapper_, IDC_ROOM_TREE_CTL_INDEX);
+	status = titles_->Prepare(wrapper_, IDC_ROOM_TREE_CTL_INDEX);
+	RETURN_VAL_IF_FAIL(status == PJ_SUCCESS, status);
 
 	for(pj_uint32_t idx = 0; idx < MAXIMAL_SCREEN_NUM; ++ idx)
 	{
 		g_screens[idx] = new Screen(idx);
 		status = g_screens[idx]->Prepare(pool_, CRect(0, 0, width_, height_), wrapper_, IDC_WALL_BASE_INDEX + idx);
 	}
+
+	PJ_LOG(5, (__ABS_FILE__, "Prepare screenmgr ok!"));
 
 	return status;
 }
@@ -148,6 +160,8 @@ pj_status_t ScreenMgr::Launch()
 	{
 		g_screens[idx]->Launch();
 	}
+
+	PJ_LOG(5, (__ABS_FILE__, "Launch screenmgr ok!"));
 
 	return PJ_SUCCESS;
 }
@@ -598,12 +612,9 @@ void ScreenMgr::EventOnTcpRead(evutil_socket_t fd, short event, void *arg)
 		event_del(proxy->tcp_ev_);
 		event_free(proxy->tcp_ev_);
 
-		std::function<pj_status_t ()> disconnection = std::bind(&ScreenMgr::DelProxy, this, proxy);
-		std::function<pj_status_t ()> *pdisconnection = new std::function<pj_status_t ()>(disconnection);
-		pj_assert(pdisconnection != nullptr);
+		PJ_LOG(5, (__ABS_FILE__, "EventOnTcpRead() => Proxy was disconnected, code %d", recvlen));
 
-		pj_ssize_t sndlen = sizeof(pdisconnection);
-		pj_sock_send(pipe_fds_[1], &pdisconnection, &sndlen, 0);
+		DelProxy(proxy);
 	}
 }
 

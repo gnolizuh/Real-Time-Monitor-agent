@@ -4,13 +4,11 @@
 extern Config g_client_config;
 RTPSession g_rtp_session;
 
-pj_status_t RTPSession::Open(pj_sock_t &rtp_sock)
+pj_status_t RTPSession::Open()
 {
 	pj_status_t status;
 	status = pj_open_udp_transport(&g_client_config.local_ip, g_client_config.local_media_port, rtp_sock_);
 	RETURN_VAL_IF_FAIL( status == PJ_SUCCESS, status );
-
-	rtp_sock = rtp_sock_;
 
 	status = pjmedia_rtp_session_init(&rtp_out_session_, RTP_EXPAND_PAYLOAD_TYPE, pj_rand());
 	RETURN_VAL_IF_FAIL( status == PJ_SUCCESS, status );

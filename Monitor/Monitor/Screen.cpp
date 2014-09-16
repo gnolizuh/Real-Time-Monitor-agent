@@ -2,6 +2,12 @@
 #include "afxdialogex.h"
 #include "Screen.h"
 
+#ifdef __ABS_FILE__
+#undef __ABS_FILE__
+#endif
+
+#define __ABS_FILE__ "Screen.cpp"
+
 BEGIN_MESSAGE_MAP(Screen, CWnd)
 	ON_WM_LBUTTONUP()
 	ON_WM_LBUTTONDBLCLK()
@@ -41,7 +47,8 @@ pj_status_t Screen::Prepare(pj_pool_t *pool,
 	enum { M = 32 };
 
 	BOOL result;
-	result = Create(nullptr, nullptr, WS_BORDER | WS_VISIBLE | WS_CHILD,
+	result = Create(nullptr, nullptr, WS_VISIBLE | WS_TABSTOP | WS_CHILD | WS_BORDER
+		| TVS_HASBUTTONS | TVS_LINESATROOT | TVS_HASLINES,
 		rect, (CWnd *)wrapper, uid);
 	RETURN_VAL_IF_FAIL(result, PJ_EINVAL);
 
@@ -80,13 +87,13 @@ pj_status_t Screen::Prepare(pj_pool_t *pool,
 		PJMEDIA_MAX_MRU,
 		1000 * 1 / 25,
 		jb_max, &stream_->jb);
-	PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
+	RETURN_VAL_IF_FAIL(status == PJ_SUCCESS, status);
 
 	status = pjmedia_rtp_session_init(&stream_->dec->rtp, RTP_MEDIA_VIDEO_TYPE, 0);
-	PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
+	RETURN_VAL_IF_FAIL(status == PJ_SUCCESS, status);
 
 	status = pj_mutex_create_simple(pool, NULL, &stream_->jb_mutex);
-	PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
+	RETURN_VAL_IF_FAIL(status == PJ_SUCCESS, status);
 
 	pjmedia_vid_codec_mgr *codec_mgr = pjmedia_vid_codec_mgr_instance();
 
@@ -98,26 +105,27 @@ pj_status_t Screen::Prepare(pj_pool_t *pool,
 		&info_cnt, 
 		&codec_info,
 		NULL);
-	PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
+	RETURN_VAL_IF_FAIL(status == PJ_SUCCESS, status);
 
 	status = pjmedia_vid_codec_mgr_alloc_codec(codec_mgr, 
 		codec_info,
 		&stream_->codec);
-	PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
+	RETURN_VAL_IF_FAIL(status == PJ_SUCCESS, status);
 
 	 /* Init and open the codec. */
     status = pjmedia_vid_codec_init(stream_->codec, pool);
-    PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
+    RETURN_VAL_IF_FAIL(status == PJ_SUCCESS, status);
 
 	pjmedia_vid_codec_param info_param;
 	status = pjmedia_vid_codec_mgr_get_default_param(codec_mgr,
 		codec_info,
 		&info_param);
-	PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
+	RETURN_VAL_IF_FAIL(status == PJ_SUCCESS, status);
 
     status = pjmedia_vid_codec_open(stream_->codec, &info_param);
-    if (status != PJ_SUCCESS)
-	return status;
+	RETURN_VAL_IF_FAIL(status == PJ_SUCCESS, status);
+
+	PJ_LOG(5, (__ABS_FILE__, "Prepare screen index[%u] size[%dx%d] ok!", index_, WIDTH, HEIGHT));
 
 	return PJ_SUCCESS;
 }
@@ -126,6 +134,8 @@ pj_status_t Screen::Launch()
 {
 	audio_thread_pool_.Start();
 	video_thread_pool_.Start();
+
+	PJ_LOG(5, (__ABS_FILE__, "Launch screen index[%u] ok!", index_));
 
 	return PJ_SUCCESS;
 }
@@ -356,12 +366,16 @@ pj_status_t Screen::ConnectUser(User *user)
 	media_active_ = PJ_TRUE;
 	user_ = user;
 
+	PJ_LOG(5, (__ABS_FILE__, "screen[%u] was connected to new user[%ld]", index_, user->user_id_));
+
 	return PJ_SUCCESS;
 }
 
 pj_status_t Screen::DisconnectUser()
 {
 	RETURN_VAL_IF_FAIL(user_, PJ_EINVAL);
+
+	PJ_LOG(5, (__ABS_FILE__, "screen[%u] was disconnected. Old user[%ld]", index_, user_->user_id_));
 
 	media_active_ = PJ_FALSE;
 	user_ = nullptr;

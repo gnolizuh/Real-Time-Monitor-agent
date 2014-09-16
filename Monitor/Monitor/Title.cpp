@@ -45,7 +45,7 @@ void Title::AddNode(pj_uint32_t id, const pj_str_t &name, pj_uint32_t order, pj_
 	WCHAR gb_buf[128] = {0};
 	UTF8_to_GB2312(gb_buf, sizeof(gb_buf), name);
 
-	DelNode(id);  // Make sure it isn't exist!
+	DelNode(id);  // Make sure it wasn't exist!
 
 	node_map_t::mapped_type node = new TitleNode(id, name, order, usercount);
 	pj_assert(node);
@@ -165,6 +165,6 @@ BOOL Title::OnToolTipText(UINT id, NMHDR *pNMHDR, LRESULT *pResult)
 	{
 		lstrcpyn(pTTTW->szText, strTipText, 80);
 	}
- 
+
 	return TRUE;
 }

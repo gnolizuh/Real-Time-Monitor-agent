@@ -1,6 +1,12 @@
 #include "stdafx.h"
 #include "AvsProxy.h"
 
+#ifdef __ABS_FILE__
+#undef __ABS_FILE__
+#endif
+
+#define __ABS_FILE__ "AvsProxy.cpp"
+
 extern Config g_client_config;
 extern index_map_t g_av_index_map[2];
 extern Screen *g_screens[MAXIMAL_SCREEN_NUM];
@@ -38,6 +44,9 @@ pj_status_t AvsProxy::Login()
 
 	status_ = AVS_PROXY_STATUS_LOGINING;
 
+	PJ_LOG(5, (__ABS_FILE__, "Login() => Send REQUEST_FROM_CLIENT_TO_AVSPROXY_LOGIN to Proxy id[%u] local_ip[%s] media_port[%u] ok",
+		id_, g_client_config.local_ip.ptr, g_client_config.local_media_port));
+
 	return PJ_SUCCESS;
 }
 
@@ -59,6 +68,8 @@ pj_status_t AvsProxy::OnRxLogin()
 
 	status_ = AVS_PROXY_STATUS_NATING;
 
+	PJ_LOG(5, (__ABS_FILE__, "OnRxLogin() => Send three REQUEST_FROM_CLIENT_TO_AVSPROXY_NAT datagrams to Proxy id[%u] ok", id_));
+
 	return PJ_SUCCESS;
 }
 
@@ -67,6 +78,8 @@ pj_status_t AvsProxy::OnRxNAT()
 	RETURN_VAL_IF_FAIL(status_ == AVS_PROXY_STATUS_NATING, PJ_SUCCESS);
 
 	status_ = AVS_PROXY_STATUS_ONLINE;
+
+	PJ_LOG(5, (__ABS_FILE__, "OnRxNAT() => Receive NAT response from proxy id[%u]. Proxy is online now.", id_));
 
 	lock_guard<mutex> lock(waits_rooms_lock_);
 	for(pj_uint32_t i = 0; i < waits_rooms_.size(); ++ i)
@@ -91,6 +104,8 @@ pj_status_t AvsProxy::Logout()
 	logout.client_id = g_client_config.client_id;
 	logout.Serialize();
 
+	PJ_LOG(5, (__ABS_FILE__, "Logout() => Send REQUEST_FROM_CLIENT_TO_AVSPROXY_LOGOUT to Proxy id[%u] ok", id_));
+
 	pj_ssize_t sndlen = sizeof(logout);
 	pj_status_t status = SendTCPPacket(&logout, &sndlen);
 	RETURN_VAL_IF_FAIL(status == PJ_SUCCESS, status);
@@ -100,10 +115,18 @@ pj_status_t AvsProxy::Logout()
 
 void AvsProxy::Destory()
 {
+	PJ_LOG(5, (__ABS_FILE__, "Destory() => Destory proxy[%u]", id_));
+
 	if (ip_.ptr != nullptr)
 	{
 		free(ip_.ptr);
 		ip_.ptr = nullptr;
+	}
+
+	if(pfunction_)
+	{
+		delete pfunction_;
+		pfunction_ = nullptr;
 	}
 
 	lock_guard<mutex> lock(rooms_lock_);
@@ -113,33 +136,7 @@ void AvsProxy::Destory()
 		room_map_t::mapped_type room = proom->second;
 		if (room != nullptr)
 		{
-			users_map_t::iterator puser = room->GetUsers().begin();
-			for (; puser != room->GetUsers().end(); ++ puser)
-			{
-				users_map_t::mapped_type user = puser->second;
-				if (user != nullptr)
-				{
-					if (user->GetScreenIndex() != INVALID_SCREEN_INDEX)
-					{
-						// 如果这个用户已经在屏幕上显示
-						if (user->GetScreenIndex() >= 0 && user->screen_idx_ < MAXIMAL_SCREEN_NUM)
-						{
-							Screen *screen = g_screens[user->screen_idx_];
-
-							if (screen != nullptr) // 清除user和screen之间的联系
-							{
-								screen->DisconnectUser();
-								user->DisconnectScreen();
-
-								g_av_index_map[AUDIO_INDEX].erase(user->audio_ssrc_);
-								g_av_index_map[VIDEO_INDEX].erase(user->video_ssrc_);
-							}
-						}
-					}
-				}
-
-				room->DelUser(user->user_id_); // 然后删除这个用户
-			}
+			room->Destory();
 			DelRoom(room->id_, room);
 		}
 	}
@@ -156,6 +153,10 @@ pj_status_t AvsProxy::LinkRoomUser(User *user)
 	link_room_user.room_id = user->title_room_->id_;
 	link_room_user.user_id = user->user_id_;
 	link_room_user.link_media_mask = MEDIA_MASK_VIDEO;
+
+	PJ_LOG(5, (__ABS_FILE__, "LinkRoomUser() => Send REQUEST_FROM_CLIENT_TO_AVSPROXY_LINK_ROOM_USER to Proxy id[%u] roomid[%d] userid[%ld]",
+		id_, user->title_room_->id_, user->user_id_));
+
 	link_room_user.Serialize();
 
 	pj_ssize_t sndlen = sizeof(link_room_user);
@@ -173,6 +174,10 @@ pj_status_t AvsProxy::UnlinkRoomUser(User *user)
 	unlink_room_user.room_id = user->title_room_->id_;
 	unlink_room_user.user_id = user->user_id_;
 	unlink_room_user.unlink_media_mask = MEDIA_MASK_VIDEO;
+	
+	PJ_LOG(5, (__ABS_FILE__, "UnlinkRoomUser() => Send REQUEST_FROM_CLIENT_TO_AVSPROXY_UNLINK_ROOM_USER to Proxy id[%u] roomid[%d] userid[%ld]",
+		id_, user->title_room_->id_, user->user_id_));
+
 	unlink_room_user.Serialize();
 
 	pj_ssize_t sndlen = sizeof(unlink_room_user);
@@ -190,6 +195,10 @@ pj_status_t AvsProxy::LinkRoom(TitleRoom *title_room)
 		link_room.proxy_id = id_;
 		link_room.client_id = g_client_config.client_id;
 		link_room.room_id = title_room->id_;
+
+		PJ_LOG(5, (__ABS_FILE__, "LinkRoom() => Send REQUEST_FROM_CLIENT_TO_AVSPROXY_LINK_ROOM to Proxy id[%u] roomid[%d]",
+			id_, title_room->id_));
+
 		link_room.Serialize();
 
 		pj_ssize_t sndlen = sizeof(link_room);
@@ -213,6 +222,10 @@ pj_status_t AvsProxy::UnlinkRoom(TitleRoom *title_room)
 	unlink_room.proxy_id = id_;
 	unlink_room.client_id = g_client_config.client_id;
 	unlink_room.room_id = title_room->id_;
+
+	PJ_LOG(5, (__ABS_FILE__, "UnlinkRoom() => Send REQUEST_FROM_CLIENT_TO_AVSPROXY_UNLINK_ROOM to Proxy id[%u] roomid[%d]",
+		id_, title_room->id_));
+
 	unlink_room.Serialize();
 
 	pj_ssize_t sndlen = sizeof(unlink_room);

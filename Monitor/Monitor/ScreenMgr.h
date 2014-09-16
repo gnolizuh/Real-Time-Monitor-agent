@@ -63,7 +63,7 @@ public:
 	~ScreenMgr();
 
 	pj_status_t LoginProxy();
-	pj_status_t Prepare(const pj_str_t &log_file_name);
+	pj_status_t Prepare();
 	pj_status_t Launch();
 	void        Destory();
 	pj_status_t OnLinkRoom(TitleRoom *title_room);

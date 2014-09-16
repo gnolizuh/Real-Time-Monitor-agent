@@ -5,6 +5,7 @@
 #include "resource.h"
 #include "Config.h"
 #include "Node.h"
+#include "Screen.h"
 #include "AvsProxy.h"
 #include "Com.h"
 
@@ -65,13 +66,15 @@ class TitleRoom
 public:
 	TitleRoom(CTreeCtrl *tree_ctrl, pj_int32_t id, const pj_str_t &name, pj_uint32_t order, pj_uint32_t usercount);
 	virtual ~TitleRoom();
+	
 	inline users_map_t &GetUsers()
 	{
 		return users_;
 	}
 
+	void  Destory();
 	User *AddUser(pj_int64_t user_id);
-	void  DelUser(pj_int64_t user_id);
+	void  DelUser(pj_int64_t user_id, users_map_t::iterator &puser);
 	User *GetUser(pj_int64_t user_id);
 	void  ModUser(User *user, pj_uint32_t audio_ssrc, pj_uint32_t video_ssrc);
 	pj_status_t SendTCPPacket(const void *buf, pj_ssize_t *len);

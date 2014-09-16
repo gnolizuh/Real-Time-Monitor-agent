@@ -12,6 +12,12 @@
 #define new DEBUG_NEW
 #endif
 
+#ifdef __ABS_FILE__
+#undef __ABS_FILE__
+#endif
+
+#define __ABS_FILE__ "Monitor.cpp"
+
 extern Config g_client_config;
 // 用于应用程序“关于”菜单项的 CAboutDlg 对话框
 
@@ -97,6 +103,20 @@ BEGIN_MESSAGE_MAP(CMonitorDlg, CDialogEx)
 	ON_MESSAGE(WM_SHRINKEDROOM, &CMonitorDlg::OnUnlinkRoom)
 END_MESSAGE_MAP()
 
+void GetDesktopResolution(int& horizontal, int& vertical)
+{
+   RECT desktop;
+   // Get a handle to the desktop window
+   const HWND hDesktop = GetDesktopWindow();
+   // Get the size of screen to the variable desktop
+   GetWindowRect(hDesktop, &desktop);
+   // The top left corner will have coordinates (0,0)
+   // and the bottom right corner will have coordinates
+   // (horizontal, vertical)
+   horizontal = desktop.right;
+   vertical = desktop.bottom;
+}
+
 // CMonitorDlg 消息处理程序
 static ScreenMgr *g_screen_mgr = NULL;
 BOOL CMonitorDlg::OnInitDialog()
@@ -138,27 +158,35 @@ BOOL CMonitorDlg::OnInitDialog()
 	SDL_Init( SDL_INIT_VIDEO );
 	av_register_all();
 	pj_init();
+	
+	PJ_LOG(5, (__ABS_FILE__, "Monitor start running....."));
 
 	pj_status_t status;
 	status = init_param();
-	pj_assert(status == PJ_SUCCESS);
+	RETURN_VAL_IF_FAIL(status == PJ_SUCCESS, TRUE);
 
 	g_screen_mgr = new ScreenMgr(this, 10, g_client_config.local_ip, g_client_config.local_media_port);
-	pj_assert(g_screen_mgr != nullptr);
+	RETURN_VAL_IF_FAIL(g_screen_mgr != nullptr, TRUE);
 
-	status = g_screen_mgr->Prepare(g_client_config.log_file_name);
-	pj_assert(status == PJ_SUCCESS);
+	status = g_screen_mgr->Prepare();
+	RETURN_VAL_IF_FAIL(status == PJ_SUCCESS, TRUE);
+
+	PJ_LOG(5, (__ABS_FILE__, "Monitor prepare ok!"));
 
 	status = g_screen_mgr->Launch();
-	pj_assert(status == PJ_SUCCESS);
+	RETURN_VAL_IF_FAIL(status == PJ_SUCCESS, TRUE);
+
+	PJ_LOG(5, (__ABS_FILE__, "Monitor launch ok!"));
 
 	g_screen_mgr->Adjest(width, height);
 
-	MoveWindow(CRect(0, 0, width, height));
+	int screen_width = 0;
+	int screen_height = 0;
+	GetDesktopResolution(screen_width, screen_height);
+	MoveWindow(CRect(screen_width/2 - width, screen_height/2 - height/2, width, height));
 	ShowWindow(SW_SHOW);
 
 	GetDlgItem(IDC_BUTTON1)->ShowWindow(SW_HIDE);
-	PJ_LOG(1, (__FILE__, "Client start....."));
 
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
 }
@@ -308,7 +336,11 @@ LRESULT CMonitorDlg::OnLinkRoom(WPARAM wParam, LPARAM lParam)
 	TitleRoom *title_room = (TitleRoom *)lParam;
 	RETURN_VAL_IF_FAIL(title_room, true);
 
-	g_screen_mgr->OnLinkRoom(title_room);
+	pj_status_t status = g_screen_mgr->OnLinkRoom(title_room);
+	if(status != PJ_SUCCESS)
+	{
+		::AfxMessageBox(L"获取房间列表失败");
+	}
 
 	return true;
 }
@@ -318,7 +350,7 @@ LRESULT CMonitorDlg::OnUnlinkRoom(WPARAM wParam, LPARAM lParam)
 	TitleRoom *title_room = (TitleRoom *)lParam;
 	RETURN_VAL_IF_FAIL(title_room, true);
 
-	g_screen_mgr->OnUnlinkRoom(title_room);
+	pj_status_t status = g_screen_mgr->OnUnlinkRoom(title_room);
 
 	return true;
 }

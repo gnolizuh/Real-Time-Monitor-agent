@@ -11,7 +11,7 @@ using std::mutex;
 class RTPSession
 {
 public:
-	pj_status_t Open(pj_sock_t &rtp_sock);
+	pj_status_t Open();
 	void        Close();
 	pj_status_t SendRTPPacket(pj_str_t &ip, pj_uint16_t port, const void *payload, pj_ssize_t payload_len);
 	inline pj_sock_t GetRTPSock() const { return rtp_sock_; }
