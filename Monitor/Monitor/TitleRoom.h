@@ -72,7 +72,7 @@ public:
 		return users_;
 	}
 
-	void  Destory();
+	virtual void Destory();
 	User *AddUser(pj_int64_t user_id);
 	void  DelUser(pj_int64_t user_id, users_map_t::iterator &puser);
 	User *GetUser(pj_int64_t user_id);

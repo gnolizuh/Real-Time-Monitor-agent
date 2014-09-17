@@ -21,15 +21,19 @@ class Node
 public:
 	Node(pj_int32_t id, const pj_str_t &name, pj_uint32_t order, pj_uint32_t usercount, pj_uint8_t node_type);
 	virtual ~Node() {}
+
+	void Update(const pj_str_t &name, order_t order, pj_uint32_t usercount);
+	virtual void Destory() {}
 	virtual void OnItemExpanded(CTreeCtrl &tree_ctrl, Node &parent) {}
 	virtual void OnItemShrinked(CTreeCtrl &tree_ctrl, Node &parent) {}
 
 protected:
-	void AddNull(CTreeCtrl &tree_ctrl, HTREEITEM hParent);
-	void AddNodeOrRoom(pj_int32_t id, Node *node, CTreeCtrl &tree_ctrl, HTREEITEM hParent);
-	void DelNodeOrRoom(pj_int32_t id, CTreeCtrl &tree_ctrl);
-	void DelAll(CTreeCtrl &tree_ctrl, Node &parent);
-	virtual void ParseXML(const vector<pj_uint8_t> &xml) {}
+	virtual void      AddNull(CTreeCtrl &tree_ctrl, HTREEITEM hParent);
+	virtual pj_bool_t GetNodeOrRoom(pj_int32_t id, Node *&node);
+	virtual void      DelAll(CTreeCtrl &tree_ctrl, Node &parent);
+	virtual void      AddNodeOrRoom(pj_int32_t id, Node *node, CTreeCtrl &tree_ctrl, HTREEITEM hParent);
+	virtual void      DelNodeOrRoom(pj_int32_t id, CTreeCtrl &tree_ctrl);
+	virtual void      ParseXML(const vector<pj_uint8_t> &xml) {}
 
 public:
 	HTREEITEM   tree_item_;

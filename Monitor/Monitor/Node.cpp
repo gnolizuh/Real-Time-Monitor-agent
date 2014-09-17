@@ -13,6 +13,19 @@ Node::Node(pj_int32_t id, const pj_str_t &name, pj_uint32_t order, pj_uint32_t u
 {
 }
 
+void Node::Update(const pj_str_t &name, order_t order, pj_uint32_t usercount)
+{
+	if(name_.ptr != nullptr)
+	{
+		free(name_.ptr);
+		name_.ptr = nullptr;
+	}
+
+	name_      = pj_str(strdup(name.ptr));
+	order_     = order;
+	usercount_ = usercount;
+}
+
 void Node::AddNull(CTreeCtrl &tree_ctrl, HTREEITEM hParent)
 {
 	TVINSERTSTRUCT tvInsert;
@@ -23,6 +36,48 @@ void Node::AddNull(CTreeCtrl &tree_ctrl, HTREEITEM hParent)
 	tree_ctrl.InsertItem(&tvInsert);
 }
 
+void Node::DelAll(CTreeCtrl &tree_ctrl, Node &parent)
+{
+	HTREEITEM node = tree_ctrl.GetChildItem(parent.tree_item_);
+	HTREEITEM next = node;
+	while(next)
+	{
+		node = next;
+		next = tree_ctrl.GetNextSiblingItem(next);
+		tree_ctrl.DeleteItem(node);
+	}
+
+	for(node_map_t::iterator pnode = nodes_.begin();
+		pnode != nodes_.end();
+		++ pnode)
+	{
+		node_map_t::mapped_type node = pnode->second;
+		if(node != nullptr)
+		{
+			delete node;
+			node = nullptr;
+		}
+	}
+
+	nodes_.clear();
+	nodes_order_.clear();
+}
+
+pj_bool_t Node::GetNodeOrRoom(pj_int32_t id, Node *&node)
+{
+	node_map_t::iterator pnode = nodes_.find(id);
+	if(pnode != nodes_.end())
+	{
+		node = pnode->second;
+		return PJ_TRUE;
+	}
+	else
+	{
+		node = nullptr;
+		return PJ_FALSE;
+	}
+}
+
 void Node::AddNodeOrRoom(pj_int32_t id,
 						Node *node,
 						CTreeCtrl &tree_ctrl,
@@ -30,8 +85,6 @@ void Node::AddNodeOrRoom(pj_int32_t id,
 {
 	WCHAR gb_buf[128] = {0};
 	UTF8_to_GB2312(gb_buf, sizeof(gb_buf), node->name_);
-
-	DelNodeOrRoom(id, tree_ctrl);  // Make sure it isn't exist!
 
 	nodes_.insert(node_map_t::value_type(id, node));
 
@@ -68,28 +121,3 @@ void Node::DelNodeOrRoom(pj_int32_t id, CTreeCtrl &tree_ctrl)
 	node = nullptr;
 }
 
-void Node::DelAll(CTreeCtrl &tree_ctrl, Node &parent)
-{
-	HTREEITEM node = tree_ctrl.GetChildItem(parent.tree_item_);
-	HTREEITEM next = node;
-	while(next)
-	{
-		node = next;
-		next = tree_ctrl.GetNextSiblingItem(next);
-		tree_ctrl.DeleteItem(node);
-	}
-
-	for(node_map_t::iterator pnode = nodes_.begin();
-		pnode != nodes_.end();
-		++ pnode)
-	{
-		node_map_t::mapped_type node = pnode->second;
-		pj_assert(node);
-
-		delete node;
-		node = nullptr;
-	}
-
-	nodes_.clear();
-	nodes_order_.clear();
-}
