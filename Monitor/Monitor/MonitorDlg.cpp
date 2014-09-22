@@ -152,9 +152,6 @@ BOOL CMonitorDlg::OnInitDialog()
 	CRect rect;
 	GetClientRect(&rect);
 
-	pj_int32_t width = 200 + 176 * 5;
-	pj_int32_t height = 144 * 3;
-
 	SDL_Init( SDL_INIT_VIDEO );
 	av_register_all();
 	pj_init();

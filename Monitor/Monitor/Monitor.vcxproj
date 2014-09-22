@@ -143,6 +143,7 @@
     <ClInclude Include="TitlesCtl.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="ToolTip.h" />
+    <ClInclude Include="WatchsList.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AvsProxy.cpp" />
@@ -176,6 +177,7 @@
     <ClCompile Include="TitleRoom.cpp" />
     <ClCompile Include="TitlesCtl.cpp" />
     <ClCompile Include="ToolTip.cpp" />
+    <ClCompile Include="WatchsList.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Monitor.rc" />

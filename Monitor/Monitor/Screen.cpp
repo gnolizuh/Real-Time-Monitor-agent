@@ -418,7 +418,7 @@ void Screen::OnMouseMove(UINT nFlags, CPoint point)
 			TrackMouseEvent(&tme);
 
 			::SendMessage(g_hwndTrackingTT, TTM_TRACKACTIVATE, (WPARAM)TRUE, (LPARAM)&g_toolItem);
- 
+
 			g_TrackingMouse = TRUE; 
 		}
 

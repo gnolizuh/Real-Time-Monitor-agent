@@ -225,5 +225,19 @@ void Title::OnMouseLeave()
 
 void Title::OnLookUpNode(UINT nID)
 {
+	// 清空已有的list
+	// 清空已有的screen
+
+	// 遍历所有节点
+	// 1. 如果节点不是房间, 则继续往下遍历
+	// 2. 如果节点是房间, 则尝试获取此房间对应的AVS信息. 如果获取失败, 则遍历兄弟节点. 回到1.
+	// 3. 如果获取AVS信息成功, Link此Room. 退出并等待UsersInfo返回.
+	// 4. 当UsersInfo返回时, insert到list中, 如果list.size() >= 15就停止遍历
+
+	// ** 当用户上麦下麦时, 更新窗口对应的用户, 并更新list
+
+	// 上一页: Unlink所有User. screen0中用户在list的MIN(index - 15, 0)
+	// 下一页: Unlink所有User. screenLAST中用户在list的MIN(index - 15, 0)
+
 	return;
 }

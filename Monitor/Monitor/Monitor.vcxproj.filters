@@ -138,6 +138,9 @@
     <ClInclude Include="ToolTip.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="WatchsList.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Monitor.cpp">
@@ -213,6 +216,9 @@
       <Filter>Scene\AvsProxyScene\src</Filter>
     </ClCompile>
     <ClCompile Include="ToolTip.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="WatchsList.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

@@ -178,7 +178,7 @@ void TitleRoom::ModUser(User *user, pj_uint32_t audio_ssrc, pj_uint32_t video_ss
 	user->video_ssrc_ = video_ssrc;
 
 	PJ_LOG(5, (__ABS_FILE__, "Room[%d] modify an old user[%ld] audio_ssrc[%u] video_ssrc[%u]",
-		id_, user->user_id_, audio_ssrc, video_ssrc));
+		id_, user->user_id_, user->audio_ssrc_, user->video_ssrc_));
 }
 
 pj_status_t TitleRoom::SendTCPPacket(const void *buf, pj_ssize_t *len)
