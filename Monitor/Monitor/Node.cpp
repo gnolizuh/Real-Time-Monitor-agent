@@ -30,6 +30,7 @@ void Node::AddNull(CTreeCtrl &tree_ctrl, HTREEITEM hParent)
 {
 	TVINSERTSTRUCT tvInsert;
 	tvInsert.hParent = hParent;
+	tvInsert.item.lParam = (LPARAM)0;
 	tvInsert.item.pszText = _T("");
 	tvInsert.item.mask = LVIF_TEXT | TVIF_PARAM;
 
@@ -99,6 +100,7 @@ void Node::AddNodeOrRoom(pj_int32_t id,
 
 	tvInsert.hParent = node->tree_item_;
 	tvInsert.item.pszText = _T("");
+	tvInsert.item.lParam = (LPARAM)0;
 	tvInsert.item.mask = LVIF_TEXT | TVIF_PARAM;
 
 	tree_ctrl.InsertItem(&tvInsert);

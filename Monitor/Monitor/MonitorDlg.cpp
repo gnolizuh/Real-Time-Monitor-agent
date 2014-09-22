@@ -49,7 +49,6 @@ void CAboutDlg::DoDataExchange(CDataExchange* pDX)
 BEGIN_MESSAGE_MAP(CAboutDlg, CDialogEx)
 END_MESSAGE_MAP()
 
-
 // CMonitorDlg ¶Ô»°¿ò
 
 static pj_status_t init_param()
@@ -95,6 +94,7 @@ BEGIN_MESSAGE_MAP(CMonitorDlg, CDialogEx)
 	ON_WM_SIZE()
 	ON_WM_GETMINMAXINFO()
 	ON_WM_LBUTTONUP()
+	ON_WM_MOUSEMOVE()
 	ON_BN_CLICKED(IDC_BUTTON1, &CMonitorDlg::OnChangeLayout)
 	ON_MESSAGE(WM_SELECT_USER, &CMonitorDlg::OnSelectUser)
 	ON_MESSAGE(WM_LINK_ROOM_USER, &CMonitorDlg::OnLinkRoomUser)
@@ -152,8 +152,8 @@ BOOL CMonitorDlg::OnInitDialog()
 	CRect rect;
 	GetClientRect(&rect);
 
-	pj_int32_t width = abs(rect.bottom - rect.top);
-	pj_int32_t height = abs(rect.right - rect.left);
+	pj_int32_t width = 200 + 176 * 5;
+	pj_int32_t height = 144 * 3;
 
 	SDL_Init( SDL_INIT_VIDEO );
 	av_register_all();
@@ -178,13 +178,9 @@ BOOL CMonitorDlg::OnInitDialog()
 
 	PJ_LOG(5, (__ABS_FILE__, "Monitor launch ok!"));
 
-	g_screen_mgr->Adjest(width, height);
+	g_hwndTrackingTT = CreateTrackingToolTip(IDOK, m_hWnd, _T("ToolTip")); 
 
-	int screen_width = 0;
-	int screen_height = 0;
-	GetDesktopResolution(screen_width, screen_height);
-	MoveWindow(CRect(screen_width/2 - width, screen_height/2 - height/2, width, height));
-	ShowWindow(SW_SHOW);
+	ShowWindow(SW_MAXIMIZE);
 
 	GetDlgItem(IDC_BUTTON1)->ShowWindow(SW_HIDE);
 
@@ -268,22 +264,14 @@ void CMonitorDlg::OnChangeLayout()
 {
 	struct resolution
 	{
-		pj_uint32_t width;
-		pj_uint32_t height;
 		enum_screen_mgr_resolution_t res;
-	} ress[4] = 
-	{
-		{ 400, 400, SCREEN_RES_1x1 },
-		{ 200, 200, SCREEN_RES_2x2 },
-		{ 100, 100, SCREEN_RES_1x5 },
-		{ 100, 100, SCREEN_RES_3x3 },
-	};
+	} ress[SCREEN_RES_END] = { SCREEN_RES_1x1, SCREEN_RES_2x2, SCREEN_RES_1x5, SCREEN_RES_3x3, SCREEN_RES_3x5};
 
 	static enum_screen_mgr_resolution_t g_res_type = SCREEN_RES_1x1;
 
 	g_screen_mgr->ChangeLayout(ress[g_res_type].res);
 
-	g_res_type = (enum_screen_mgr_resolution_t)(( g_res_type + 1 ) % 4);
+	g_res_type = (enum_screen_mgr_resolution_t)(( g_res_type + 1 ) % SCREEN_RES_END);
 }
 
 LRESULT CMonitorDlg::OnSelectUser(WPARAM wParam, LPARAM lParam)

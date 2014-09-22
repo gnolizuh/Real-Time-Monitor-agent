@@ -13,6 +13,7 @@
 #include "Scene.h"
 #include "Screen.h"
 #include "Config.h"
+#include "ToolTip.h"
 #include "TitlesCtl.h"
 #include "RoomsInfoScene.h"
 #include "ModMediaScene.h"
@@ -41,6 +42,12 @@ typedef struct
 	pj_uint32_t x;
 	pj_uint32_t y;
 } resolution_t;
+
+typedef struct
+{
+	pj_uint32_t h; // horizonal
+	pj_uint32_t v; // vertical
+} round_t;
 
 using std::string;
 using std::thread;
@@ -102,6 +109,7 @@ private:
 	void ChangeLayout_2x2(pj_uint32_t width, pj_uint32_t height);
 	void ChangeLayout_1x5(pj_uint32_t width, pj_uint32_t height);
 	void ChangeLayout_3x3(pj_uint32_t width, pj_uint32_t height);
+	void ChangeLayout_3x5(pj_uint32_t width, pj_uint32_t height);
 
 private:
 	const CWnd         *wrapper_;
@@ -124,7 +132,7 @@ private:
 	mutex               linked_proxys_lock_;
 	proxy_map_t         linked_proxys_;
 	vector<screenmgr_func_t> screenmgr_func_array_;
-	vector<pj_uint32_t> num_blocks_;
+	vector<round_t>     num_blocks_;
 	enum_screen_mgr_resolution_t screen_mgr_res_;
 	PoolThread<std::function<void ()>> sync_thread_pool_;
 

@@ -46,6 +46,8 @@ protected:
 	DECLARE_MESSAGE_MAP()
 
 private:
+	static TOOLINFO  g_tool_item;
+	static HINSTANCE g_hInst;
 	pj_bool_t is_draging_;
 	User      *draging_user_;
 };

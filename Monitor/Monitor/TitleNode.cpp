@@ -18,7 +18,7 @@ TitleNode::~TitleNode()
 {
 }
 
-void TitleNode::Destory()
+void TitleNode::OnDestory()
 {
 	node_map_t::iterator pnode = nodes_.begin();
 	for(; pnode != nodes_.end(); ++ pnode)
@@ -26,7 +26,7 @@ void TitleNode::Destory()
 		node_map_t::mapped_type node = pnode->second;
 		if(node != nullptr)
 		{
-			node->Destory();
+			node->OnDestory();
 			delete node;
 			node = nullptr;
 		}
@@ -139,7 +139,7 @@ void TitleNode::KickoutRedundantNodes(const set<node_map_t::key_type> &nodes_id)
 			pnode = nodes_.erase(pnode);
 			if(node != nullptr)
 			{
-				node->Destory();
+				node->OnDestory();
 				delete node;
 				node = nullptr;
 			}
@@ -149,13 +149,4 @@ void TitleNode::KickoutRedundantNodes(const set<node_map_t::key_type> &nodes_id)
 			++ pnode;
 		}
 	}
-}
-
-void TitleNode::AddNodeOrRoom(pj_int32_t id, Node *node, CTreeCtrl &tree_ctrl, HTREEITEM hParent)
-{
-	Node::AddNodeOrRoom(id, node, tree_ctrl, hParent);
-}
-
-void TitleNode::DelNodeOrRoom(pj_int32_t id, CTreeCtrl &tree_ctrl)
-{
 }

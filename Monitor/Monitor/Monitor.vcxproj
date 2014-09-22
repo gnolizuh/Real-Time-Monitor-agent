@@ -83,12 +83,16 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
+      <AdditionalIncludeDirectories>C:\Users\Administrator\Documents\GitHub\pjsip-lib-support-video\pjlib\include;C:\Users\Administrator\Documents\GitHub\pjsip-lib-support-video\pjlib-util\include;C:\Users\Administrator\Documents\GitHub\pjsip-lib-support-video\pjnath\include;C:\Users\Administrator\Documents\GitHub\pjsip-lib-support-video\pjmedia\include;C:\Users\Administrator\Documents\GitHub\pjsip-lib-support-video\pjsip\include;D:\Codes\SDL2-2.0.3\include;D:\Codes\ffmpeg-lib\include;D:\Codes\libevent-lib\libevent-2.0.21-stable\include;D:\Codes\libevent-lib\libevent-2.0.21-stable\WIN32-Code;D:\Codes\libevent-lib\libevent-2.0.21-stable;C:\Users\Administrator\Documents\Visual Studio 2012\Projects\Monitor\Monitor\Scene\AvsProxyScene\inc;C:\Users\Administrator\Documents\Visual Studio 2012\Projects\Monitor\Monitor\Scene;C:\Users\Administrator\Documents\Visual Studio 2012\Projects\Monitor\Monitor\pugixml;C:\Users\Administrator\Documents\Visual Studio 2012\Projects\Monitor\Monitor;C:\Users\Administrator\Documents\Visual Studio 2012\Projects\Monitor\Monitor\happyhttp;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalLibraryDirectories>D:\Codes\pjproject-build\pjproject-2.2.1\pjlib\lib;D:\Codes\pjproject-build\pjproject-2.2.1\pjlib-util\lib;D:\Codes\pjproject-build\pjproject-2.2.1\pjnath\lib;D:\Codes\pjproject-build\pjproject-2.2.1\pjmedia\lib;D:\Codes\pjproject-build\pjproject-2.2.1\pjsip\lib;D:\Codes\pjproject-build\pjproject-2.2.1\third_party\lib;D:\Codes\SDL2-2.0.3\lib\x86;D:\Codes\ffmpeg-lib\lib;D:\Codes\libevent-lib\libevent-2.0.21-stable;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>SDL2.lib;pjlib-i386-Win32-vc8-Release-Dynamic.lib;pjlib-util-i386-Win32-vc8-Release-Dynamic.lib;pjnath-i386-Win32-vc8-Release-Dynamic.lib;pjmedia-i386-Win32-vc8-Release-Dynamic.lib;pjmedia-codec-i386-Win32-vc8-Release-Dynamic.lib;pjmedia-audiodev-i386-Win32-vc8-Release-Dynamic.lib;pjmedia-videodev-i386-Win32-vc8-Release-Dynamic.lib;pjsip-core-i386-Win32-vc8-Release-Dynamic.lib;pjsip-ua-i386-Win32-vc8-Release-Dynamic.lib;pjsip-simple-i386-Win32-vc8-Release-Dynamic.lib;pjsua-lib-i386-Win32-vc8-Release-Dynamic.lib;libgsmcodec-i386-Win32-vc8-Release-Dynamic.lib;libilbccodec-i386-Win32-vc8-Release-Dynamic.lib;libportaudio-i386-Win32-vc8-Release-Dynamic.lib;libresample-i386-Win32-vc8-Release-Dynamic.lib;libspeex-i386-Win32-vc8-Release-Dynamic.lib;libsrtp-i386-Win32-vc8-Release-Dynamic.lib;libg7221codec-i386-Win32-vc8-Release-Dynamic.lib;libbaseclasses-i386-Win32-vc8-Release-Dynamic.lib;avcodec.lib;avformat.lib;avutil.lib;libevent.dll.a;libevent_core.dll.a;libevent_extra.dll.a;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalOptions>/SAFESEH:NO %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <Midl>
       <MkTypLibCompatible>false</MkTypLibCompatible>
@@ -138,6 +142,7 @@
     <ClInclude Include="TitleRoom.h" />
     <ClInclude Include="TitlesCtl.h" />
     <ClInclude Include="targetver.h" />
+    <ClInclude Include="ToolTip.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AvsProxy.cpp" />
@@ -149,6 +154,7 @@
     <ClCompile Include="Node.cpp" />
     <ClCompile Include="pugixml\pugixml.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="RTPSession.cpp" />
     <ClCompile Include="Scene\AvsProxyScene\src\AddUserScene.cpp" />
@@ -169,6 +175,7 @@
     <ClCompile Include="TitleNode.cpp" />
     <ClCompile Include="TitleRoom.cpp" />
     <ClCompile Include="TitlesCtl.cpp" />
+    <ClCompile Include="ToolTip.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Monitor.rc" />

@@ -23,7 +23,7 @@ public:
 	virtual ~Node() {}
 
 	void Update(const pj_str_t &name, order_t order, pj_uint32_t usercount);
-	virtual void Destory() {}
+	virtual void OnDestory() {}
 	virtual void OnItemExpanded(CTreeCtrl &tree_ctrl, Node &parent) {}
 	virtual void OnItemShrinked(CTreeCtrl &tree_ctrl, Node &parent) {}
 

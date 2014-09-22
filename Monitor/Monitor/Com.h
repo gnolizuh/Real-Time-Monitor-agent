@@ -37,7 +37,7 @@ typedef vector<index_map_t> av_index_map_t;
 typedef pj_uint32_t order_t;
 
 #define INVALID_SCREEN_INDEX      -1
-#define MAXIMAL_SCREEN_NUM         9
+#define MAXIMAL_SCREEN_NUM         15
 #define MAXIMAL_THREAD_NUM         1
 #define MAX_STORAGE_SIZE           1024
 #define MAX_TRANSMISSION_UNIT_SIZE 1500
@@ -52,6 +52,7 @@ typedef enum __enum_screen_mgr_resolution_type__
 	SCREEN_RES_2x2,
 	SCREEN_RES_1x5,
 	SCREEN_RES_3x3,
+	SCREEN_RES_3x5,
 	SCREEN_RES_END,            // useless
 } enum_screen_mgr_resolution_t;
 

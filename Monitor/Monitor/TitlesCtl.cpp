@@ -35,7 +35,7 @@ pj_status_t TitlesCtl::Launch()
 	return PJ_SUCCESS;
 }
 
-void TitlesCtl::Destory()
+void TitlesCtl::OnDestory()
 {
 }
 

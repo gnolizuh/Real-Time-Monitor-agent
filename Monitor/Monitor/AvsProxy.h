@@ -36,7 +36,7 @@ public:
 	pj_status_t LinkRoom(TitleRoom *title_room);
 	pj_status_t UnlinkRoom(TitleRoom *title_room);
 	pj_status_t AddRoom(pj_int32_t room_id, TitleRoom *title_room);
-	pj_status_t DelRoom(pj_int32_t room_id, TitleRoom *title_room);
+	pj_status_t DelRoom(pj_int32_t room_id, TitleRoom *title_room, room_map_t::iterator &proom);
 	pj_status_t GetRoom(pj_int32_t room_id, TitleRoom *&title_room);
 	pj_uint32_t GetRoomSize();
 	pj_status_t SendTCPPacket(const void *buf, pj_ssize_t *len);

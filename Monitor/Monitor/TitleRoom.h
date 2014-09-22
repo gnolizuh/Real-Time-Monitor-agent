@@ -11,12 +11,14 @@
 
 class TitleRoom;
 class User
+	: public Node
 {
 public:
-	User(pj_int64_t user_id, TitleRoom *title_room)
-		: tree_item_(nullptr)
-		, screen_idx_(INVALID_SCREEN_INDEX)
+	User(pj_int64_t user_id, pj_uint32_t mic_id, TitleRoom *title_room)
+		: Node(0, pj_str(""), 0, 0, TITLE_USER)
 		, user_id_(user_id)
+		, mic_id_(mic_id)
+		, screen_idx_(INVALID_SCREEN_INDEX)
 		, title_room_(title_room)
 		, audio_ssrc_(0)
 		, video_ssrc_(0)
@@ -50,9 +52,9 @@ public:
 			&& video_ssrc_ == user.video_ssrc_);
 	}
 
-	HTREEITEM   tree_item_;
-	pj_uint32_t screen_idx_;
 	pj_int64_t  user_id_;
+	pj_uint32_t mic_id_;
+	pj_uint32_t screen_idx_;
 	TitleRoom  *title_room_;
 	pj_uint32_t audio_ssrc_;
 	pj_uint32_t video_ssrc_;
@@ -72,8 +74,9 @@ public:
 		return users_;
 	}
 
-	virtual void Destory();
-	User *AddUser(pj_int64_t user_id);
+	void OnCreate(AvsProxy *proxy);
+	virtual void OnDestory();
+	User *AddUser(pj_int64_t user_id, pj_uint32_t mic_id);
 	void  DelUser(pj_int64_t user_id, users_map_t::iterator &puser);
 	User *GetUser(pj_int64_t user_id);
 	void  ModUser(User *user, pj_uint32_t audio_ssrc, pj_uint32_t video_ssrc);

@@ -15,12 +15,10 @@ public:
 	virtual ~TitleNode();
 
 	void KickoutRedundantNodes(const set<node_map_t::key_type> &nodes_id);
-	virtual void Destory();
+	virtual void OnDestory();
 	virtual void OnItemExpanded(CTreeCtrl &tree_ctrl, Node &parent);
 
 protected:
-	virtual void AddNodeOrRoom(pj_int32_t id, Node *node, CTreeCtrl &tree_ctrl, HTREEITEM hParent);
-	virtual void DelNodeOrRoom(pj_int32_t id, CTreeCtrl &tree_ctrl);
 	virtual void ParseXML(const vector<pj_uint8_t> &xml, CTreeCtrl &tree_ctrl, Node &parent);
 };
 

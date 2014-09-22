@@ -32,7 +32,7 @@ ScreenMgr::ScreenMgr(CWnd *wrapper,
 	, wrapper_(wrapper)
 	, width_(MININUM_SCREEN_WIDTH)
 	, height_(NIMINUM_SCREEN_HEIGHT)
-	, screen_mgr_res_(SCREEN_RES_3x3)
+	, screen_mgr_res_(SCREEN_RES_3x5)
 	, vertical_padding_(MININUM_PADDING)
 	, horizontal_padding_(MININUM_PADDING)
 	, client_id_(client_id)
@@ -51,14 +51,22 @@ ScreenMgr::ScreenMgr(CWnd *wrapper,
 	, sync_thread_pool_(1)
 	, num_blocks_()
 {
+	round_t round;
 	screenmgr_func_array_.push_back(&ScreenMgr::ChangeLayout_1x1);
-	num_blocks_.push_back(1);
+	round.v = 1; round.h = 1;
+	num_blocks_.push_back(round);
 	screenmgr_func_array_.push_back(&ScreenMgr::ChangeLayout_2x2);
-	num_blocks_.push_back(2);
+	round.v = 2; round.h = 2;
+	num_blocks_.push_back(round);
 	screenmgr_func_array_.push_back(&ScreenMgr::ChangeLayout_1x5);
-	num_blocks_.push_back(3);
+	round.v = 3; round.h = 3;
+	num_blocks_.push_back(round);
 	screenmgr_func_array_.push_back(&ScreenMgr::ChangeLayout_3x3);
-	num_blocks_.push_back(3);
+	round.v = 3; round.h = 3;
+	num_blocks_.push_back(round);
+	screenmgr_func_array_.push_back(&ScreenMgr::ChangeLayout_3x5);
+	round.v = 3; round.h = 5;
+	num_blocks_.push_back(round);
 }
 
 ScreenMgr::~ScreenMgr()
@@ -274,12 +282,12 @@ void ScreenMgr::ChangeLayout(enum_screen_mgr_resolution_t resolution)
 	screen_mgr_res_ = resolution;
 
 	// 沿用上一次的cx,cy. 以免窗口大小被计算后越来越小.
-	pj_uint32_t divisor = num_blocks_[GET_FUNC_INDEX(screen_mgr_res_)];
+	round_t divisor = num_blocks_[GET_FUNC_INDEX(screen_mgr_res_)];
 	pj_uint32_t width = width_, height = height_;
 	pj_uint32_t round_width, round_height;
 	pj_uint32_t tmp_width = width - MININUM_TREE_CTL_WIDTH;
-	round_width = ROUND(tmp_width, divisor);
-	round_height = ROUND(height, divisor);
+	round_width = ROUND(tmp_width, divisor.h);
+	round_height = ROUND(height, divisor.v);
 
 	HideAll();
 
@@ -294,9 +302,9 @@ void ScreenMgr::GetSuitedSize(LPRECT lpRect)
 	screens_width = lpRect->right - lpRect->left - 2 * SIDE_SIZE - MININUM_TREE_CTL_WIDTH;
 	height = lpRect->bottom - lpRect->top - SIDE_SIZE - TOP_SIDE_SIZE;
 
-	pj_uint32_t divisor = num_blocks_[GET_FUNC_INDEX(screen_mgr_res_)];
-	ROUND(screens_width, divisor);
-	ROUND(height, divisor);
+	round_t divisor = num_blocks_[GET_FUNC_INDEX(screen_mgr_res_)];
+	ROUND(screens_width, divisor.h);
+	ROUND(height, divisor.v);
 
 	lpRect->right = lpRect->left + MININUM_TREE_CTL_WIDTH + screens_width + 2 * SIDE_SIZE;
 	lpRect->bottom = lpRect->top + height + SIDE_SIZE + TOP_SIDE_SIZE;
@@ -309,18 +317,18 @@ void ScreenMgr::Adjest(pj_int32_t &cx, pj_int32_t &cy)
 	width_ = cx;
 	height_ = cy;
 
-	pj_uint32_t divisor = num_blocks_[GET_FUNC_INDEX(screen_mgr_res_)];
+	round_t divisor = num_blocks_[GET_FUNC_INDEX(screen_mgr_res_)];
 	pj_uint32_t round_width, round_height;
 	pj_uint32_t tmp_width = cx - MININUM_TREE_CTL_WIDTH;
-	round_width  = ROUND(tmp_width, divisor);
-	round_height = ROUND(cy, divisor);
+	round_width  = ROUND(tmp_width, divisor.h);
+	round_height = ROUND(cy, divisor.v);
 
 	(this->* screenmgr_func_array_[GET_FUNC_INDEX(screen_mgr_res_)])(round_width, round_height);
 }
 
 void ScreenMgr::ChangeLayout_1x1(pj_uint32_t width, pj_uint32_t height)
 {
-	CRect rect(0, 0, MININUM_TREE_CTL_WIDTH, height * num_blocks_[0]);
+	CRect rect(0, 0, MININUM_TREE_CTL_WIDTH, height * num_blocks_[0].v);
 	titles_->MoveToRect(rect);
 
 	g_screens[0]->MoveToRect(CRect(MININUM_TREE_CTL_WIDTH, 0, MININUM_TREE_CTL_WIDTH + width, height));
@@ -328,31 +336,31 @@ void ScreenMgr::ChangeLayout_1x1(pj_uint32_t width, pj_uint32_t height)
 
 void ScreenMgr::ChangeLayout_2x2(pj_uint32_t width, pj_uint32_t height)
 {
-	CRect rect(0, 0, MININUM_TREE_CTL_WIDTH, height * num_blocks_[1]);
+	CRect rect(0, 0, MININUM_TREE_CTL_WIDTH, height * num_blocks_[1].v);
 	titles_->MoveToRect(rect);
 
 	pj_uint32_t lstart = MININUM_TREE_CTL_WIDTH;
 
+	int idx = 0;
 	const unsigned MAX_COL = 2, MAX_ROW = 2;
 	for ( unsigned row = 0; row < MAX_COL; ++ row )
 	{
 		for ( unsigned col = 0; col < MAX_ROW; ++ col )
 		{
-			unsigned idx = col + row * MAX_COL;
 			CRect rect;
 			rect.left  = col * width + col * horizontal_padding_ + lstart;
 			rect.top   = row * height + row * vertical_padding_;
 			rect.right = rect.left + width;
 			rect.bottom = rect.top + height;
 
-			g_screens[idx]->MoveToRect(rect);
+			g_screens[idx ++]->MoveToRect(rect);
 		}
 	}
 }
 
 void ScreenMgr::ChangeLayout_1x5(pj_uint32_t width, pj_uint32_t height)
 {
-	CRect rect(0, 0, MININUM_TREE_CTL_WIDTH, height * num_blocks_[2]);
+	CRect rect(0, 0, MININUM_TREE_CTL_WIDTH, height * num_blocks_[2].v);
 	titles_->MoveToRect(rect);
 
 	pj_uint32_t lstart = MININUM_TREE_CTL_WIDTH;
@@ -389,24 +397,48 @@ void ScreenMgr::ChangeLayout_1x5(pj_uint32_t width, pj_uint32_t height)
 
 void ScreenMgr::ChangeLayout_3x3(pj_uint32_t width, pj_uint32_t height)
 {
-	CRect rect(0, 0, MININUM_TREE_CTL_WIDTH, height * num_blocks_[3]);
+	CRect rect(0, 0, MININUM_TREE_CTL_WIDTH, height * num_blocks_[3].v);
 	titles_->MoveToRect(rect);
 
 	pj_uint32_t lstart = MININUM_TREE_CTL_WIDTH;
 
+	int idx = 0;
 	const unsigned MAX_COL = 3, MAX_ROW = 3;
 	for ( unsigned row = 0; row < MAX_COL; ++ row )
 	{
 		for ( unsigned col = 0; col < MAX_ROW; ++ col )
 		{
-			unsigned idx = col + row * MAX_COL;
 			CRect rect;
 			rect.left  = col * width + col * horizontal_padding_ + lstart;
 			rect.top   = row * height + row * vertical_padding_;
 			rect.right = rect.left + width;
 			rect.bottom = rect.top + height;
 
-			g_screens[idx]->MoveToRect(rect);
+			g_screens[idx ++]->MoveToRect(rect);
+		}
+	}
+}
+
+void ScreenMgr::ChangeLayout_3x5(pj_uint32_t width, pj_uint32_t height)
+{
+	CRect rect(0, 0, MININUM_TREE_CTL_WIDTH, height * num_blocks_[4].v);
+	titles_->MoveToRect(rect);
+
+	pj_uint32_t lstart = MININUM_TREE_CTL_WIDTH;
+
+	int idx = 0;
+	const unsigned MAX_COL = 3, MAX_ROW = 5;
+	for ( unsigned row = 0; row < MAX_COL; ++ row )
+	{
+		for ( unsigned col = 0; col < MAX_ROW; ++ col )
+		{
+			CRect rect;
+			rect.left  = col * width + col * horizontal_padding_ + lstart;
+			rect.top   = row * height + row * vertical_padding_;
+			rect.right = rect.left + width;
+			rect.bottom = rect.top + height;
+
+			g_screens[idx ++]->MoveToRect(rect);
 		}
 	}
 }

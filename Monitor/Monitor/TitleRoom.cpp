@@ -21,9 +21,13 @@ TitleRoom::~TitleRoom()
 {
 }
 
-void TitleRoom::Destory()
+void TitleRoom::OnCreate(AvsProxy *proxy)
 {
-	lock_guard<mutex> lock(room_lock_);
+	proxy_ = proxy;
+}
+
+void TitleRoom::OnDestory()
+{
 	users_map_t::iterator puser = users_.begin();
 	for (; puser != users_.end();)
 	{
@@ -51,6 +55,8 @@ void TitleRoom::Destory()
 
 		DelUser(user->user_id_, puser); // 然后删除这个用户
 	}
+
+	proxy_ = nullptr;
 
 	PJ_LOG(5, (__ABS_FILE__, "Room[%d] was destoryed!", id_));
 }
@@ -87,7 +93,7 @@ void TitleRoom::OnItemShrinked(CTreeCtrl &tree_ctrl, Node &parent)
 	::SendMessage(AfxGetMainWnd()->m_hWnd, WM_SHRINKEDROOM, 0, (LPARAM)this);
 }
 
-User *TitleRoom::AddUser(pj_int64_t user_id)
+User *TitleRoom::AddUser(pj_int64_t user_id, pj_uint32_t mic_id)
 {
 	lock_guard<mutex> lock(room_lock_);
 	if(users_.empty())
@@ -105,7 +111,7 @@ User *TitleRoom::AddUser(pj_int64_t user_id)
 	}
 	else
 	{
-		user = new User(user_id, this);
+		user = new User(user_id, mic_id, this);
 		users_[user_id] = user;
 
 		wchar_t str_user_id[32];

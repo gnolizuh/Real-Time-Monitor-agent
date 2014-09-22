@@ -9,6 +9,8 @@
 #define __ABS_FILE__ "Screen.cpp"
 
 BEGIN_MESSAGE_MAP(Screen, CWnd)
+	ON_WM_MOUSEMOVE()
+	ON_WM_MOUSELEAVE()
 	ON_WM_LBUTTONUP()
 	ON_WM_LBUTTONDBLCLK()
 END_MESSAGE_MAP()
@@ -28,7 +30,6 @@ Screen::Screen(pj_uint32_t index)
 	, media_active_(PJ_FALSE)
 	, call_status_(0)
 	, stream_(nullptr)
-	, video_mutex_()
 {
 }
 
@@ -159,13 +160,19 @@ void Screen::HideWindow()
 	ShowWindow(SW_HIDE);
 }
 
+void Screen::UpdateWindow()
+{
+	lock_guard<std::mutex> internal_lock(render_mutex_);
+	CWnd::UpdateWindow();
+}
+
 void Screen::Painting(const void *pixels)
 {
 	lock_guard<std::mutex> internal_lock(render_mutex_);
 	int pitch = WIDTH * SDL_BYTESPERPIXEL(SDL_PIXELFORMAT_IYUV);
 	SDL_Rect sdl_rect = {0, 0, WIDTH, HEIGHT};
 
-	SDL_UpdateTexture(texture_, &sdl_rect, pixels, pitch);
+	SDL_UpdateTexture(texture_, &sdl_rect, pixels, pixels != nullptr ? pitch : 0);
 	SDL_RenderClear(render_);
 	SDL_RenderCopy(render_, texture_, NULL, NULL);
 	SDL_RenderPresent(render_);
@@ -173,19 +180,26 @@ void Screen::Painting(const void *pixels)
 
 void Screen::AudioScene(const pj_uint8_t *rtp_frame, pj_uint16_t framelen)
 {
-	RETURN_IF_FAIL(media_active_);
+	{
+		lock_guard<mutex> lock(media_active_lock_);
+		RETURN_IF_FAIL(media_active_);
+	}
 	RETURN_IF_FAIL(rtp_frame && framelen > 0);
 
-	audio_thread_pool_.Schedule(std::bind(&Screen::OnRxVideo, this, vector<pj_uint8_t>(rtp_frame, rtp_frame + framelen)));
+	audio_thread_pool_.Schedule(std::bind(&Screen::OnRxAudio, this, vector<pj_uint8_t>(rtp_frame, rtp_frame + framelen)));
 }
 
 void Screen::OnRxAudio(const vector<pj_uint8_t> &audio_frame)
 {
+	RETURN_IF_FAIL(audio_frame.size() > 0);
 }
 
 void Screen::VideoScene(const pj_uint8_t *rtp_frame, pj_uint16_t framelen)
 {
-	RETURN_IF_FAIL(media_active_);
+	{
+		lock_guard<mutex> lock(media_active_lock_);
+		RETURN_IF_FAIL(media_active_);
+	}
 	RETURN_IF_FAIL(rtp_frame && framelen > 0);
 
 	video_thread_pool_.Schedule(std::bind(&Screen::OnRxVideo, this, vector<pj_uint8_t>(rtp_frame, rtp_frame + framelen)));
@@ -363,7 +377,10 @@ pj_status_t Screen::ConnectUser(User *user)
 {
 	RETURN_VAL_IF_FAIL(user, PJ_EINVAL);
 
-	media_active_ = PJ_TRUE;
+	{
+		lock_guard<mutex> lock(media_active_lock_);
+		media_active_ = PJ_TRUE;
+	}
 	user_ = user;
 
 	PJ_LOG(5, (__ABS_FILE__, "screen[%u] was connected to new user[%ld]", index_, user->user_id_));
@@ -377,10 +394,73 @@ pj_status_t Screen::DisconnectUser()
 
 	PJ_LOG(5, (__ABS_FILE__, "screen[%u] was disconnected. Old user[%ld]", index_, user_->user_id_));
 
-	media_active_ = PJ_FALSE;
+	{
+		lock_guard<mutex> lock(media_active_lock_);
+		media_active_ = PJ_FALSE;
+	}
 	user_ = nullptr;
+	this->UpdateWindow();
 
 	return PJ_SUCCESS;
+}
+
+static Screen *old_screen = nullptr;
+void Screen::OnMouseMove(UINT nFlags, CPoint point)
+{
+	if(user_ != nullptr)
+	{
+		if (!g_TrackingMouse)
+		{
+			TRACKMOUSEEVENT tme = {sizeof(TRACKMOUSEEVENT)};
+			tme.hwndTrack = m_hWnd;
+			tme.dwFlags = TME_LEAVE;
+
+			TrackMouseEvent(&tme);
+
+			::SendMessage(g_hwndTrackingTT, TTM_TRACKACTIVATE, (WPARAM)TRUE, (LPARAM)&g_toolItem);
+ 
+			g_TrackingMouse = TRUE; 
+		}
+
+		if(old_screen != this)
+		{
+			old_screen = this;
+
+			TitleRoom *title_room = user_->title_room_;
+			if(title_room != nullptr)
+			{
+				WCHAR coords[128];
+				swprintf_s(coords, ARRAYSIZE(coords), _T("所属房间ID: %d 用户ID: %ld"), title_room->id_, user_->user_id_);
+				g_toolItem.lpszText = coords;
+				::SendMessage(g_hwndTrackingTT, TTM_SETTOOLINFO, 0, (LPARAM)&g_toolItem);
+
+				POINT pt = {point.x, point.y};
+				::ClientToScreen(m_hWnd, &pt);
+				::SendMessage(g_hwndTrackingTT, TTM_TRACKPOSITION, 0, (LPARAM)MAKELONG(pt.x + 10, pt.y));
+			}
+		}
+	}
+
+	if(user_ != nullptr)
+	{
+		POINT pt = {point.x, point.y};
+		::ClientToScreen(m_hWnd, &pt);
+		::SendMessage(g_hwndTrackingTT, TTM_TRACKPOSITION, 0, (LPARAM)MAKELONG(pt.x + 10, pt.y));
+	}
+
+	return CWnd::OnMouseMove(nFlags, point);
+}
+
+void Screen::OnMouseLeave()
+{
+	if(g_TrackingMouse)
+	{
+		::SendMessage(g_hwndTrackingTT, TTM_TRACKACTIVATE, (WPARAM)FALSE, (LPARAM)&g_toolItem);
+		g_TrackingMouse = FALSE;
+	}
+	old_screen = nullptr;
+	
+	CWnd::OnMouseLeave();
 }
 
 void Screen::OnLButtonUp(UINT nFlags, CPoint point)

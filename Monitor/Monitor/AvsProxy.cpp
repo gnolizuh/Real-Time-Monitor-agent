@@ -129,15 +129,17 @@ void AvsProxy::Destory()
 		pfunction_ = nullptr;
 	}
 
-	lock_guard<mutex> lock(rooms_lock_);
 	room_map_t::iterator proom = rooms_.begin();
-	for (; proom != rooms_.end(); ++ proom)
+	for (; proom != rooms_.end();)
 	{
 		room_map_t::mapped_type room = proom->second;
 		if (room != nullptr)
 		{
-			room->Destory();
-			DelRoom(room->id_, room);
+			DelRoom(room->id_, room, proom);
+		}
+		else
+		{
+			++ proom;
 		}
 	}
 }
@@ -215,7 +217,8 @@ pj_status_t AvsProxy::LinkRoom(TitleRoom *title_room)
 
 pj_status_t AvsProxy::UnlinkRoom(TitleRoom *title_room)
 {
-	RETURN_VAL_IF_FAIL(DelRoom(title_room->id_, title_room) == PJ_SUCCESS, PJ_ENOTFOUND);
+	room_map_t::iterator proom;
+	RETURN_VAL_IF_FAIL(DelRoom(title_room->id_, title_room, proom) == PJ_SUCCESS, PJ_ENOTFOUND);
 
 	request_to_avs_proxy_link_room_t unlink_room;
 	unlink_room.client_request_type = REQUEST_FROM_CLIENT_TO_AVSPROXY_UNLINK_ROOM;
@@ -239,19 +242,19 @@ pj_status_t AvsProxy::AddRoom(pj_int32_t room_id, TitleRoom *title_room)
 	RETURN_VAL_IF_FAIL(proom == rooms_.end(), PJ_EEXISTS);
 
 	rooms_.insert(room_map_t::value_type(room_id, title_room));
-	title_room->proxy_ = this;
+	title_room->OnCreate(this);
 
 	return PJ_SUCCESS;
 }
 
-pj_status_t AvsProxy::DelRoom(pj_int32_t room_id, TitleRoom *title_room)
+pj_status_t AvsProxy::DelRoom(pj_int32_t room_id, TitleRoom *title_room, room_map_t::iterator &proom)
 {
 	lock_guard<mutex> lock(rooms_lock_);
-	room_map_t::iterator proom = rooms_.find(room_id);
+	proom = rooms_.find(room_id);
 	RETURN_VAL_IF_FAIL(proom != rooms_.end(), PJ_ENOTFOUND);
 
-	rooms_.erase(proom);
-	title_room->proxy_ = nullptr;
+	proom = rooms_.erase(proom);
+	title_room->OnDestory();
 
 	return PJ_SUCCESS;
 }

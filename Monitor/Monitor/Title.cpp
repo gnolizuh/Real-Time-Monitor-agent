@@ -2,10 +2,13 @@
 #include "Title.h"
 
 BEGIN_MESSAGE_MAP(Title, CTreeCtrl)
-	ON_NOTIFY_REFLECT(TVN_ITEMEXPANDED, OnItemExpanded)
-	ON_NOTIFY_REFLECT(TVN_BEGINDRAG,    OnTvnBeginDrag)
-	ON_NOTIFY_EX_RANGE(TTN_NEEDTEXTW, 0, 0xFFFF, OnToolTipText)
-    ON_NOTIFY_EX_RANGE(TTN_NEEDTEXTA, 0, 0xFFFF, OnToolTipText)
+	ON_WM_CONTEXTMENU()
+	ON_WM_MOUSEMOVE()
+	ON_WM_MOUSELEAVE()
+	ON_NOTIFY_REFLECT(TVN_ITEMEXPANDED, &Title::OnItemExpanded)
+	ON_NOTIFY_REFLECT(TVN_BEGINDRAG,    &Title::OnTvnBeginDrag)
+	ON_NOTIFY_REFLECT(NM_RCLICK,       &Title::OnRightButtonClick)
+	ON_COMMAND_RANGE(IDC_MENU_LOOKUP, IDC_MENU_LOOKUP, &Title::OnLookUpNode)
 END_MESSAGE_MAP()
 
 Title::Title(pj_uint32_t id, const pj_str_t &name, order_t order)
@@ -36,52 +39,17 @@ pj_status_t Title::Launch()
 	return PJ_SUCCESS;
 }
 
-void Title::Destory()
+void Title::OnDestory()
 {
 }
 
 void Title::AddNode(pj_uint32_t id, const pj_str_t &name, pj_uint32_t order, pj_uint32_t usercount)
 {
-	WCHAR gb_buf[128] = {0};
-	UTF8_to_GB2312(gb_buf, sizeof(gb_buf), name);
-
-	DelNode(id);  // Make sure it wasn't exist!
+	DelNodeOrRoom(id, *this);  // Make sure it wasn't exist!
 
 	node_map_t::mapped_type node = new TitleNode(id, name, order, usercount);
 	pj_assert(node);
-	nodes_.insert(node_map_t::value_type(id, node));
-
-	TVINSERTSTRUCT tvInsert;
-	tvInsert.hParent = TVI_ROOT;
-	tvInsert.hInsertAfter = GetNextItem(node->tree_item_, TVGN_NEXT);
-	tvInsert.item.lParam = (LPARAM)node;
-	tvInsert.item.pszText = gb_buf;
-	tvInsert.item.mask = LVIF_TEXT | TVIF_PARAM;
-
-	node->tree_item_ = InsertItem(&tvInsert);
-
-	tvInsert.hParent = node->tree_item_;
-	tvInsert.item.pszText = _T("");
-	tvInsert.item.mask = LVIF_TEXT | TVIF_PARAM;
-
-	InsertItem(&tvInsert);
-
-	nodes_order_.insert(node);
-}
-
-void Title::DelNode(pj_uint32_t id)
-{
-	node_map_t::iterator pnode = nodes_.find(id);
-	RETURN_IF_FAIL(pnode != nodes_.end());
-
-	node_map_t::mapped_type node = pnode->second;
-	pj_assert(node);
-	nodes_.erase(pnode);
-
-	DeleteItem(node->tree_item_);
-
-	delete node;
-	node = nullptr;
+	AddNodeOrRoom(id, node, *this, TVI_ROOT);
 }
 
 void Title::MoveToRect(const CRect &rect)
@@ -132,39 +100,130 @@ void Title::OnTvnBeginDrag(NMHDR *pNMHDR, LRESULT *pResult)
 	}
 }
 
-BOOL Title::OnToolTipText(UINT id, NMHDR *pNMHDR, LRESULT *pResult)
+void Title::OnRightButtonClick(NMHDR *pNMHDR, LRESULT *pResult)
 {
-	TOOLTIPTEXTA *pTTTA = (TOOLTIPTEXTA *)pNMHDR;
-	TOOLTIPTEXTW *pTTTW = (TOOLTIPTEXTW *)pNMHDR;
+	CPoint point;
+    GetCursorPos(&point);
 
-	const MSG *pMessage = GetCurrentMessage(); 
-	RETURN_VAL_IF_FAIL(pMessage != nullptr, FALSE);
+    CPoint pointInTree = point;
+    ScreenToClient(&pointInTree);
 
-	CPoint pt = pMessage->pt;  
-	ScreenToClient(&pt);
+    HTREEITEM item;
+    UINT flag = TVHT_ONITEM;
+    item = HitTest(pointInTree, &flag);
+    if(item != nullptr)
+    {
+        SelectItem(item);
+		Node *node = reinterpret_cast<Node *>(GetItemData(item));
+		if(node != nullptr)
+		{
+			CString menu_str;
+			switch(node->node_type_)
+			{
+				case TITLE_NODE:
+					menu_str.Format(L"查看大区");
+					break;
+				case TITLE_ROOM:
+					menu_str.Format(L"查看房间");
+					break;
+				default:
+					return;
+			}
 
-	UINT nFlags;
-	HTREEITEM hitem = HitTest(pt, &nFlags);
-	RETURN_VAL_IF_FAIL(hitem != nullptr, true);
+			CMenu menu;
+			if(menu.CreatePopupMenu())
+			{
+				menu.AppendMenu(MF_STRING, IDC_MENU_LOOKUP, menu_str);
+				menu.TrackPopupMenu(TPM_LEFTALIGN, pointInTree.x, pointInTree.y, this);
+			}
+		}
+		*pResult = 0;
+    }
+}
 
-	if(!ItemHasChildren(hitem))
-	{
-		return true;
+static Node *old_node = nullptr;
+void Title::OnMouseMove(UINT nFlags, CPoint point)
+{
+	static int oldX, oldY;
+    int newX = point.x, newY = point.y;
+
+	if ((newX != oldX) || (newY != oldY))
+    {
+        oldX = newX;
+        oldY = newY;
 	}
 
-	Node *node = reinterpret_cast<Node *>(GetItemData(hitem));
-	RETURN_VAL_IF_FAIL(node != nullptr, FALSE);
-
-	CString strTipText;
-	strTipText.Format(L"房间ID: %d 人数: %u", node->id_, node->usercount_);
-	if (pNMHDR->code == TTN_NEEDTEXTA)
+	HTREEITEM hitem = HitTest(point, &nFlags);
+	if(hitem != nullptr)
 	{
-		_wcstombsz(pTTTA->szText, strTipText, 80);
+		if (!g_TrackingMouse)
+		{
+			TRACKMOUSEEVENT tme = {sizeof(TRACKMOUSEEVENT)};
+			tme.hwndTrack = m_hWnd;
+			tme.dwFlags = TME_LEAVE;
+
+			TrackMouseEvent(&tme);
+
+			::SendMessage(g_hwndTrackingTT, TTM_TRACKACTIVATE, (WPARAM)TRUE, (LPARAM)&g_toolItem);
+ 
+			g_TrackingMouse = TRUE; 
+		}
+
+		Node *new_node = reinterpret_cast<Node *>(GetItemData(hitem));
+		if(new_node != nullptr)
+		{
+			if(new_node != old_node)
+			{
+				old_node = new_node;
+				WCHAR coords[128];
+				switch(new_node->node_type_)
+				{
+					case TITLE_NODE:
+						swprintf_s(coords, ARRAYSIZE(coords), _T("大区ID: %d 人数: %u"), new_node->id_, new_node->usercount_);
+						break;
+					case TITLE_ROOM:
+						swprintf_s(coords, ARRAYSIZE(coords), _T("房间ID: %d 人数: %u"), new_node->id_, new_node->usercount_);
+						break;
+					case TITLE_USER:
+						swprintf_s(coords, ARRAYSIZE(coords), _T("音频通道: %u 视频通道: %u 麦序: %u"),
+							reinterpret_cast<User *>(new_node)->audio_ssrc_,
+							reinterpret_cast<User *>(new_node)->video_ssrc_,
+							reinterpret_cast<User *>(new_node)->mic_id_);
+						break;
+					default:
+						break;
+				}
+
+				g_toolItem.lpszText = coords;
+				::SendMessage(g_hwndTrackingTT, TTM_SETTOOLINFO, 0, (LPARAM)&g_toolItem);
+
+				POINT pt = {newX, newY};
+				::ClientToScreen(m_hWnd, &pt);
+				::SendMessage(g_hwndTrackingTT, TTM_TRACKPOSITION, 0, (LPARAM)MAKELONG(pt.x + 10, pt.y - 20));
+			}
+		}
 	}
 	else
 	{
-		lstrcpyn(pTTTW->szText, strTipText, 80);
+		::SendMessage(g_hwndTrackingTT, TTM_TRACKACTIVATE, (WPARAM)FALSE, (LPARAM)&g_toolItem);
+		g_TrackingMouse = FALSE;
 	}
 
-	return TRUE;
+	CTreeCtrl::OnMouseMove(nFlags, point); 
+}
+
+void Title::OnMouseLeave()
+{
+	if(g_TrackingMouse)
+	{
+		::SendMessage(g_hwndTrackingTT, TTM_TRACKACTIVATE, (WPARAM)FALSE, (LPARAM)&g_toolItem);
+		g_TrackingMouse = FALSE;
+	}
+
+	CTreeCtrl::OnMouseLeave();
+}
+
+void Title::OnLookUpNode(UINT nID)
+{
+	return;
 }

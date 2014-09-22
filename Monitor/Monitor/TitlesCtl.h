@@ -24,17 +24,17 @@ class TitlesCtl
 public:
 	TitlesCtl();
 
-	pj_status_t Prepare(const CWnd *wrapper, pj_uint32_t uid);
-	pj_status_t Launch();
-	void        Destory();
-	void        ParseXML(const vector<pj_uint8_t> &xml, pj_uint32_t uid);
-	void        Perform();
-	Title      *AddTitle(pj_int32_t room_id);
-	void        DelTitle(pj_int32_t room_id);
-	Title      *GetTitle(pj_int32_t room_id);
-	void        GetTreeCtrlRect(LPRECT lpRect);
-	void        MoveToRect(const CRect &rect);
-	void        HideWindow();
+	pj_status_t  Prepare(const CWnd *wrapper, pj_uint32_t uid);
+	pj_status_t  Launch();
+	virtual void OnDestory();
+	void         ParseXML(const vector<pj_uint8_t> &xml, pj_uint32_t uid);
+	void         Perform();
+	Title       *AddTitle(pj_int32_t room_id);
+	void         DelTitle(pj_int32_t room_id);
+	Title       *GetTitle(pj_int32_t room_id);
+	void         GetTreeCtrlRect(LPRECT lpRect);
+	void         MoveToRect(const CRect &rect);
+	void         HideWindow();
 
 protected:
 	afx_msg void OnSelChange(NMHDR* pNMHDR, LRESULT* pResult);

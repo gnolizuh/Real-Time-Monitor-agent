@@ -135,6 +135,9 @@
     <ClInclude Include="NATScene.h">
       <Filter>Scene\AvsProxyScene\inc</Filter>
     </ClInclude>
+    <ClInclude Include="ToolTip.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Monitor.cpp">
@@ -208,6 +211,9 @@
     </ClCompile>
     <ClCompile Include="Scene\AvsProxyScene\src\ResLoginScene.cpp">
       <Filter>Scene\AvsProxyScene\src</Filter>
+    </ClCompile>
+    <ClCompile Include="ToolTip.cpp">
+      <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
