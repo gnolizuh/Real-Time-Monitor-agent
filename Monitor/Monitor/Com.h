@@ -45,6 +45,7 @@ typedef pj_uint32_t order_t;
 #define UDP_HEADER_SIZE            8
 #define MAX_UDP_DATA_SIZE (MAX_TRANSMISSION_UNIT_SIZE - IP_HEADER_SIZE - UDP_HEADER_SIZE)
 enum { AUDIO_INDEX, VIDEO_INDEX };
+extern index_map_t g_av_index_map[2];
 
 typedef enum __enum_screen_mgr_resolution_type__
 {

@@ -1,6 +1,8 @@
 #ifndef __AVS_PROXY_CLIENT_NODE__
 #define __AVS_PROXY_CLIENT_NODE__
 
+#include <stack>
+
 #include "pugixml.hpp"
 #include "Config.h"
 #include "Com.h"
@@ -13,6 +15,8 @@ enum __enum_node_tpye__
 	TITLE_USER
 };
 
+using std::stack;
+
 class Node;
 typedef map<pj_int32_t, Node *> node_map_t;
 typedef set<Node *, order_cmp<Node>> node_set_t;
@@ -24,14 +28,15 @@ public:
 
 	void Update(const pj_str_t &name, order_t order, pj_uint32_t usercount);
 	virtual void OnDestory() {}
-	virtual void OnItemExpanded(CTreeCtrl &tree_ctrl, Node &parent) {}
-	virtual void OnItemShrinked(CTreeCtrl &tree_ctrl, Node &parent) {}
+	virtual void OnWatched(CTreeCtrl &tree_ctrl) {}
+	virtual void OnItemExpanded(CTreeCtrl &tree_ctrl) {}
+	virtual void OnItemShrinked(CTreeCtrl &tree_ctrl) {}
 
 protected:
-	virtual void      AddNull(CTreeCtrl &tree_ctrl, HTREEITEM hParent);
+	virtual void      AddNull(CTreeCtrl &tree_ctrl);
 	virtual pj_bool_t GetNodeOrRoom(pj_int32_t id, Node *&node);
-	virtual void      DelAll(CTreeCtrl &tree_ctrl, Node &parent);
-	virtual void      AddNodeOrRoom(pj_int32_t id, Node *node, CTreeCtrl &tree_ctrl, HTREEITEM hParent);
+	virtual void      DelAll(CTreeCtrl &tree_ctrl);
+	virtual void      AddNodeOrRoom(pj_int32_t id, Node *node, CTreeCtrl &tree_ctrl);
 	virtual void      DelNodeOrRoom(pj_int32_t id, CTreeCtrl &tree_ctrl);
 	virtual void      ParseXML(const vector<pj_uint8_t> &xml) {}
 
@@ -45,5 +50,7 @@ public:
 	node_set_t  nodes_order_;
 	const pj_uint8_t node_type_;
 };
+
+extern stack<Node *> g_traverse_stack;
 
 #endif

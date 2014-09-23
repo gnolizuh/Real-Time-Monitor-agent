@@ -7,11 +7,6 @@
 
 #define __ABS_FILE__ "AvsProxy.cpp"
 
-extern Config g_client_config;
-extern index_map_t g_av_index_map[2];
-extern Screen *g_screens[MAXIMAL_SCREEN_NUM];
-extern RTPSession g_rtp_session;
-
 AvsProxy::AvsProxy(pj_uint16_t id, const pj_str_t &ip, pj_uint16_t tcp_port, pj_uint16_t udp_port, pj_sock_t sock)
 	: pfunction_(nullptr)
 	, tcp_ev_(nullptr)

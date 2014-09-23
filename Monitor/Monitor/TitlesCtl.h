@@ -29,9 +29,6 @@ public:
 	virtual void OnDestory();
 	void         ParseXML(const vector<pj_uint8_t> &xml, pj_uint32_t uid);
 	void         Perform();
-	Title       *AddTitle(pj_int32_t room_id);
-	void         DelTitle(pj_int32_t room_id);
-	Title       *GetTitle(pj_int32_t room_id);
 	void         GetTreeCtrlRect(LPRECT lpRect);
 	void         MoveToRect(const CRect &rect);
 	void         HideWindow();
@@ -40,7 +37,7 @@ protected:
 	afx_msg void OnSelChange(NMHDR* pNMHDR, LRESULT* pResult);
 	DECLARE_MESSAGE_MAP()
 
-private:
+public:
 	pj_uint8_t  selected_index_;
 	title_map_t titles_;              // 用于以node_id检索title
 	title_set_t titles_order_;        // 用于顺序显示各个title

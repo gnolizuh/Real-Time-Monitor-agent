@@ -22,4 +22,6 @@ public:
 	pj_str_t    rrtvms_fcgi_uri;
 };
 
+extern Config g_client_config;
+
 #endif

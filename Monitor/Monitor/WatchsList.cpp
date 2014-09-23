@@ -1,7 +1,19 @@
 #include "stdafx.h"
 #include "WatchsList.h"
 
-void WatchsList::Cleanup()
+WatchsList g_watchs_list;
+
+WatchsList::WatchsList()
+	: watching_(PJ_FALSE)
+{
+}
+
+void WatchsList::Begin()
+{
+	watching_ = PJ_TRUE;
+}
+
+void WatchsList::End()
 {
 	watched_users_list_t::iterator puser = bewatched_users_list_.begin();
 	for(; puser != bewatched_users_list_.end(); ++ puser)
@@ -12,13 +24,11 @@ void WatchsList::Cleanup()
 			TitleRoom *title_room = user->title_room_;
 			if(title_room != nullptr)
 			{
-				User *user = title_room->GetUser(param->user_id_);
-				RETURN_IF_FAIL(user != nullptr);
+				AvsProxy *proxy = title_room->proxy_;
 
-				if (user->GetScreenIndex() != INVALID_SCREEN_INDEX)
+				if (user->GetScreenIndex() >= 0 && user->GetScreenIndex() < MAXIMAL_SCREEN_NUM)
 				{
 					// 如果这个用户已经在屏幕上显示
-					RETURN_IF_FAIL(user->GetScreenIndex() >= 0 && user->screen_idx_ < MAXIMAL_SCREEN_NUM);
 					Screen *screen = g_screens[user->screen_idx_];
 
 					RETURN_IF_FAIL(screen != nullptr);
@@ -31,5 +41,21 @@ void WatchsList::Cleanup()
 			}
 		}
 	}
+
+	watching_ = PJ_FALSE;
 }
 
+void WatchsList::OnAddUser(User *user)
+{
+	RETURN_IF_FAIL(watching_ == PJ_TRUE);
+}
+
+void WatchsList::OnDelUser(User *user)
+{
+	RETURN_IF_FAIL(watching_ == PJ_TRUE);
+}
+
+void WatchsList::OnModUser(User *user, pj_uint32_t audio_ssrc, pj_uint32_t video_ssrc)
+{
+	RETURN_IF_FAIL(watching_ == PJ_TRUE);
+}

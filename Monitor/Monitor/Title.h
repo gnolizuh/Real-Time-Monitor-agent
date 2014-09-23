@@ -1,6 +1,7 @@
 #ifndef __AVS_PROXY_CLIENT_TITLE__
 #define __AVS_PROXY_CLIENT_TITLE__
 
+#include "WatchsList.h"
 #include "TitleNode.h"
 #include "ToolTip.h"
 #include "Node.h"
@@ -21,12 +22,13 @@ public:
 	void         HideWindow();
 
 protected:
-	afx_msg void OnMouseLeave();
-	afx_msg void OnMouseMove(UINT nFlags, CPoint point);
-	afx_msg void OnItemExpanded(NMHDR *pNMHDR, LRESULT *pResult);
-	afx_msg void OnTvnBeginDrag(NMHDR *pNMHDR, LRESULT *pResult);
-	afx_msg void OnRightButtonClick(NMHDR *pNMHDR, LRESULT *pResult);
-	afx_msg void OnLookUpNode(UINT nID);
+	afx_msg void    OnMouseLeave();
+	afx_msg void    OnMouseMove(UINT nFlags, CPoint point);
+	afx_msg void    OnItemExpanded(NMHDR *pNMHDR, LRESULT *pResult);
+	afx_msg void    OnTvnBeginDrag(NMHDR *pNMHDR, LRESULT *pResult);
+	afx_msg void    OnRightButtonClick(NMHDR *pNMHDR, LRESULT *pResult);
+	afx_msg void    OnLookUpNode(UINT nID);
+	afx_msg LRESULT OnContinueTraverse(WPARAM wParam, LPARAM lParam);
 	DECLARE_MESSAGE_MAP()
 
 private:

@@ -163,7 +163,8 @@ void Screen::HideWindow()
 void Screen::UpdateWindow()
 {
 	lock_guard<std::mutex> internal_lock(render_mutex_);
-	CWnd::UpdateWindow();
+	ShowWindow(SW_HIDE);
+	ShowWindow(SW_SHOW);
 }
 
 void Screen::Painting(const void *pixels)

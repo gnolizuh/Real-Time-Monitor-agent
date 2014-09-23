@@ -5,6 +5,7 @@ BEGIN_MESSAGE_MAP(Title, CTreeCtrl)
 	ON_WM_CONTEXTMENU()
 	ON_WM_MOUSEMOVE()
 	ON_WM_MOUSELEAVE()
+	ON_MESSAGE(WM_CONTINUE_TRAVERSE, &Title::OnContinueTraverse)
 	ON_NOTIFY_REFLECT(TVN_ITEMEXPANDED, &Title::OnItemExpanded)
 	ON_NOTIFY_REFLECT(TVN_BEGINDRAG,    &Title::OnTvnBeginDrag)
 	ON_NOTIFY_REFLECT(NM_RCLICK,       &Title::OnRightButtonClick)
@@ -15,6 +16,7 @@ Title::Title(pj_uint32_t id, const pj_str_t &name, order_t order)
 	: CTreeCtrl()
 	, Node(id, name, order, 0, TITLE)
 {
+	tree_item_ = TVI_ROOT;
 }
 
 void Title::PreSubclassWindow()
@@ -49,7 +51,7 @@ void Title::AddNode(pj_uint32_t id, const pj_str_t &name, pj_uint32_t order, pj_
 
 	node_map_t::mapped_type node = new TitleNode(id, name, order, usercount);
 	pj_assert(node);
-	AddNodeOrRoom(id, node, *this, TVI_ROOT);
+	AddNodeOrRoom(id, node, *this);
 }
 
 void Title::MoveToRect(const CRect &rect)
@@ -77,10 +79,10 @@ void Title::OnItemExpanded(NMHDR *pNMHDR, LRESULT *pResult)
 	switch(pNMTreeView->action)
 	{
 		case EXPAND:
-			node->OnItemExpanded(*this, *node);
+			node->OnItemExpanded(*this);
 			break;
 		case SHRINK:
-			node->OnItemShrinked(*this, *node);
+			node->OnItemShrinked(*this);
 			break;
 	}
 }
@@ -100,6 +102,7 @@ void Title::OnTvnBeginDrag(NMHDR *pNMHDR, LRESULT *pResult)
 	}
 }
 
+static Node *g_watched_node = nullptr;
 void Title::OnRightButtonClick(NMHDR *pNMHDR, LRESULT *pResult)
 {
 	CPoint point;
@@ -135,6 +138,8 @@ void Title::OnRightButtonClick(NMHDR *pNMHDR, LRESULT *pResult)
 			{
 				menu.AppendMenu(MF_STRING, IDC_MENU_LOOKUP, menu_str);
 				menu.TrackPopupMenu(TPM_LEFTALIGN, pointInTree.x, pointInTree.y, this);
+
+				g_watched_node = node;
 			}
 		}
 		*pResult = 0;
@@ -225,9 +230,13 @@ void Title::OnMouseLeave()
 
 void Title::OnLookUpNode(UINT nID)
 {
-	// 清空已有的list
-	// 清空已有的screen
+	RETURN_IF_FAIL(g_watched_node != nullptr);
+	// 清空已有的list, 此过程会清空已有的screen
 
+	g_watchs_list.End();
+	g_watchs_list.Begin();
+
+	g_watched_node->OnWatched(*this);
 	// 遍历所有节点
 	// 1. 如果节点不是房间, 则继续往下遍历
 	// 2. 如果节点是房间, 则尝试获取此房间对应的AVS信息. 如果获取失败, 则遍历兄弟节点. 回到1.
@@ -240,4 +249,17 @@ void Title::OnLookUpNode(UINT nID)
 	// 下一页: Unlink所有User. screenLAST中用户在list的MIN(index - 15, 0)
 
 	return;
+}
+
+LRESULT Title::OnContinueTraverse(WPARAM wParam, LPARAM lParam)
+{
+	RETURN_VAL_IF_FAIL(!g_traverse_stack.empty(), (LRESULT)0);
+
+	Node *node = g_traverse_stack.top();
+	if(node != nullptr)
+	{
+		node->OnWatched(*this);
+	}
+
+	return (LRESULT)0;
 }

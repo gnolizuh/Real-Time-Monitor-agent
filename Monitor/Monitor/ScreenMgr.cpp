@@ -1,11 +1,6 @@
 #include "stdafx.h"
 #include "ScreenMgr.h"
 
-extern Config g_client_config;
-extern index_map_t g_av_index_map[2];
-extern Screen *g_screens[MAXIMAL_SCREEN_NUM];
-extern RTPSession g_rtp_session;
-
 #ifdef __ABS_FILE__
 #undef __ABS_FILE__
 #endif
@@ -183,25 +178,26 @@ void ScreenMgr::Destory()
 	pj_sock_close(local_tcp_sock_);
 }
 
-pj_status_t ScreenMgr::OnLinkRoom(TitleRoom *title_room)
+pj_status_t ScreenMgr::OnLinkRoom(TitleRoom *title_room, HWND hHwnd)
 {
 	vector<pj_uint8_t> response;
 	http_proxy_get(g_client_config.rrtvms_fcgi_host, g_client_config.rrtvms_fcgi_port, g_client_config.rrtvms_fcgi_uri,
 		title_room->id_, response);
 
-	pj_status_t           status;
-	proxy_map_t::key_type proxy_id(100);
-	string                proxy_ip("192.168.6.40");
-	pj_uint16_t           proxy_tcp_port(12000);
-	pj_uint16_t           proxy_udp_port(13000);
+	pj_status_t       status;
+	link_room_param_t param = {100, "192.168.6.40", 12000, 13000, title_room, hHwnd};
 
-	status = ParseHttpResponse(proxy_id, proxy_ip, proxy_tcp_port, proxy_udp_port, response);
+	status = ParseHttpResponse(param.proxy_id, param.proxy_ip, param.proxy_tcp_port, param.proxy_udp_port, response);
+	if(status != PJ_SUCCESS && param.hHwnd != nullptr)
+	{
+		::SendMessage(hHwnd, WM_CONTINUE_TRAVERSE, (WPARAM)0, (LPARAM)0);
+	}
 	RETURN_VAL_IF_FAIL(status == PJ_SUCCESS, status);
 
 	vector<pj_uint16_t> ports;
-	ports.push_back(proxy_tcp_port);
-	ports.push_back(proxy_udp_port);
-	std::function<pj_status_t ()> connection = std::bind(&ScreenMgr::LinkRoom, this, proxy_id, proxy_ip, ports, title_room);
+	ports.push_back(param.proxy_tcp_port);
+	ports.push_back(param.proxy_udp_port);
+	std::function<pj_status_t ()> connection = std::bind(&ScreenMgr::LinkRoom, this, param);
 	std::function<pj_status_t ()> *pconnection = new std::function<pj_status_t ()>(connection);
 	pj_assert(pconnection != nullptr);
 
@@ -704,20 +700,24 @@ void ScreenMgr::EventOnPipe(evutil_socket_t fd, short event, void *arg)
 	delete pconnection;
 }
 
-pj_status_t ScreenMgr::LinkRoom(pj_uint16_t id, string ip, vector<pj_uint16_t> ports, TitleRoom *title_room)
+pj_status_t ScreenMgr::LinkRoom(const link_room_param_t &param)
 {
 	proxy_map_t::mapped_type proxy = nullptr;
 	pj_status_t status;
-	status = GetProxy(id, proxy);
-	
-	if(status != PJ_SUCCESS && ports.size() == 2) // Proxy isn't exist!
+	status = GetProxy(param.proxy_id, proxy);
+
+	if(status != PJ_SUCCESS) // Proxy isn't exist!
 	{
 		pj_sock_t sock;
-		pj_str_t pj_ip = pj_str((char *)ip.c_str());
-		status = pj_open_tcp_clientport(&pj_ip, ports[0], sock);
+		pj_str_t pj_ip = pj_str((char *)param.proxy_ip.c_str());
+		status = pj_open_tcp_clientport(&pj_ip, param.proxy_tcp_port, sock);
+		if(status != PJ_SUCCESS && param.hHwnd != nullptr)
+		{
+			::SendMessage(param.hHwnd, WM_CONTINUE_TRAVERSE, (WPARAM)0, (LPARAM)0);
+		}
 		RETURN_VAL_IF_FAIL(status == PJ_SUCCESS, status); // ¡¨≤ª…œproxy
 
-		status = AddProxy(id, pj_ip, ports[0], ports[1], sock, proxy);
+		status = AddProxy(param.proxy_id, pj_ip, param.proxy_tcp_port, param.proxy_udp_port, sock, proxy);
 		RETURN_VAL_IF_FAIL(status == PJ_SUCCESS, status);
 
 		ev_function_t function;
@@ -729,18 +729,18 @@ pj_status_t ScreenMgr::LinkRoom(pj_uint16_t id, string ip, vector<pj_uint16_t> p
 
 		proxy->tcp_ev_ = event_new(evbase_, proxy->sock_, EV_READ | EV_PERSIST, event_func_proxy, pfunction);
 		RETURN_VAL_WITH_STATEMENT_IF_FAIL(proxy->tcp_ev_ != nullptr,
-			(linked_proxys_.erase(id), delete proxy, delete pfunction, pj_sock_close(sock)),
+			(linked_proxys_.erase(param.proxy_id), delete proxy, delete pfunction, pj_sock_close(sock)),
 			PJ_EINVAL);
 
 		RETURN_VAL_WITH_STATEMENT_IF_FAIL(event_add(proxy->tcp_ev_, NULL) == 0,
-			(linked_proxys_.erase(id), delete proxy, delete pfunction, pj_sock_close(sock)),
+			(linked_proxys_.erase(param.proxy_id), delete proxy, delete pfunction, pj_sock_close(sock)),
 			PJ_EINVAL);
 
 		status = proxy->Login();
 		RETURN_VAL_IF_FAIL(status == PJ_SUCCESS, status);
 	}
 
-	status = proxy->LinkRoom(title_room);
+	status = proxy->LinkRoom(param.title_room);
 	RETURN_VAL_IF_FAIL(status == PJ_SUCCESS || status == PJ_EEXISTS, status);
 
 	return PJ_SUCCESS;

@@ -16,10 +16,11 @@ public:
 
 	void KickoutRedundantNodes(const set<node_map_t::key_type> &nodes_id);
 	virtual void OnDestory();
-	virtual void OnItemExpanded(CTreeCtrl &tree_ctrl, Node &parent);
+	virtual void OnWatched(CTreeCtrl &tree_ctrl);
+	virtual void OnItemExpanded(CTreeCtrl &tree_ctrl);
 
 protected:
-	virtual void ParseXML(const vector<pj_uint8_t> &xml, CTreeCtrl &tree_ctrl, Node &parent);
+	virtual void ParseXML(const vector<pj_uint8_t> &xml, CTreeCtrl &tree_ctrl);
 };
 
 #endif

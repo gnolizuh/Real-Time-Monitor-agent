@@ -5,8 +5,6 @@ BEGIN_MESSAGE_MAP(TitlesCtl, CTabCtrl)
 	ON_NOTIFY_REFLECT(TCN_SELCHANGE, OnSelChange)
 END_MESSAGE_MAP()
 
-extern Config g_client_config;
-
 TitlesCtl::TitlesCtl()
 	: selected_index_(0)
 	, titles_()

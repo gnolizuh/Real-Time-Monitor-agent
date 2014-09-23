@@ -22,4 +22,6 @@ private:
 	pjmedia_rtp_session rtp_out_session_;
 };
 
+extern RTPSession g_rtp_session;
+
 #endif

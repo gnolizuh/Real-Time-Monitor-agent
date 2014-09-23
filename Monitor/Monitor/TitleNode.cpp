@@ -7,8 +7,6 @@
 
 #define __ABS_FILE__ "TitleNode.cpp"
 
-extern Config g_client_config;
-
 TitleNode::TitleNode(pj_int32_t id, const pj_str_t &name, order_t order, pj_uint32_t usercount)
 	: Node(id, name, order, usercount, TITLE_NODE)
 {
@@ -36,24 +34,45 @@ void TitleNode::OnDestory()
 	nodes_order_.clear();
 }
 
-void TitleNode::OnItemExpanded(CTreeCtrl &tree_ctrl, Node &parent)
+void TitleNode::OnWatched(CTreeCtrl &tree_ctrl)
+{
+	OnItemExpanded(tree_ctrl);
+
+	node_set_t::reverse_iterator pnode = nodes_order_.rbegin();
+	for(; pnode != nodes_order_.rend(); ++ pnode)
+	{
+		node_set_t::value_type node = *pnode;
+		if(node != nullptr)
+		{
+			g_traverse_stack.push(node);
+		}
+	}
+
+	Node *node = g_traverse_stack.top();
+	if(node != nullptr)
+	{
+		node->OnWatched(tree_ctrl);
+	}
+}
+
+void TitleNode::OnItemExpanded(CTreeCtrl &tree_ctrl)
 {
 	if(nodes_.empty())
 	{
-		DelAll(tree_ctrl, parent);
+		DelAll(tree_ctrl);
 	}
 
 	vector<pj_uint8_t> response;
 	http_tls_get(g_client_config.tls_host, g_client_config.tls_port, g_client_config.tls_uri, id_, response);
-	ParseXML(response, tree_ctrl, parent);
+	ParseXML(response, tree_ctrl);
 
 	if(nodes_.empty())
 	{
-		AddNull(tree_ctrl, parent.tree_item_);
+		AddNull(tree_ctrl);
 	}
 }
 
-void TitleNode::ParseXML(const vector<pj_uint8_t> &xml, CTreeCtrl &tree_ctrl, Node &parent)
+void TitleNode::ParseXML(const vector<pj_uint8_t> &xml, CTreeCtrl &tree_ctrl)
 {
 #define XML_STATIC_NODE  "static_node"
 #define XML_DYNAMIC_NODE "dynamic_node"
@@ -91,7 +110,7 @@ void TitleNode::ParseXML(const vector<pj_uint8_t> &xml, CTreeCtrl &tree_ctrl, No
 			{
 				TitleNode *title_node = new TitleNode(id, name, order, usercount);
 				pj_assert(title_node);
-				AddNodeOrRoom(id, title_node, tree_ctrl, parent.tree_item_);
+				AddNodeOrRoom(id, title_node, tree_ctrl);
 			}
 		}
 	}
@@ -119,7 +138,7 @@ void TitleNode::ParseXML(const vector<pj_uint8_t> &xml, CTreeCtrl &tree_ctrl, No
 			{
 				TitleRoom *title_room = new TitleRoom(&tree_ctrl, id, name, order, usercount);
 				pj_assert(title_room);
-				AddNodeOrRoom(id, title_room, tree_ctrl, parent.tree_item_);
+				AddNodeOrRoom(id, title_room, tree_ctrl);
 			}
 		}
 	}

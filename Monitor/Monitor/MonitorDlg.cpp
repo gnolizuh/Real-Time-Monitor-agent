@@ -18,7 +18,6 @@
 
 #define __ABS_FILE__ "Monitor.cpp"
 
-extern Config g_client_config;
 // 用于应用程序“关于”菜单项的 CAboutDlg 对话框
 
 class CAboutDlg : public CDialogEx
@@ -166,12 +165,20 @@ BOOL CMonitorDlg::OnInitDialog()
 	RETURN_VAL_IF_FAIL(g_screen_mgr != nullptr, TRUE);
 
 	status = g_screen_mgr->Prepare();
-	RETURN_VAL_IF_FAIL(status == PJ_SUCCESS, TRUE);
+	if(status != PJ_SUCCESS)
+	{
+		::AfxMessageBox(L"系统准备失败", MB_YESNO);
+		exit(0);
+	}
 
 	PJ_LOG(5, (__ABS_FILE__, "Monitor prepare ok!"));
 
 	status = g_screen_mgr->Launch();
-	RETURN_VAL_IF_FAIL(status == PJ_SUCCESS, TRUE);
+	if(status != PJ_SUCCESS)
+	{
+		::AfxMessageBox(L"系统启动失败", MB_YESNO);
+		exit(0);
+	}
 
 	PJ_LOG(5, (__ABS_FILE__, "Monitor launch ok!"));
 
@@ -252,6 +259,8 @@ void CMonitorDlg::OnSizing(UINT nSide, LPRECT lpRect)
 
 void CMonitorDlg::OnSize(UINT nType, int cx, int cy)
 {
+	RETURN_WITH_STATEMENT_IF_FAIL(g_screen_mgr != nullptr, CDialogEx::OnSize(nType, cx, cy));
+
 	g_screen_mgr->Adjest( cx, cy );
 
 	CDialogEx::OnSize(nType, cx, cy);
@@ -318,11 +327,12 @@ LRESULT CMonitorDlg::OnUnlinkRoomUser(WPARAM wParam, LPARAM lParam)
 
 LRESULT CMonitorDlg::OnLinkRoom(WPARAM wParam, LPARAM lParam)
 {
+	HWND hHwnd = (HWND)wParam;
 	TitleRoom *title_room = (TitleRoom *)lParam;
 	RETURN_VAL_IF_FAIL(title_room, true);
 
-	pj_status_t status = g_screen_mgr->OnLinkRoom(title_room);
-	if(status != PJ_SUCCESS)
+	pj_status_t status = g_screen_mgr->OnLinkRoom(title_room, hHwnd);
+	if(status != PJ_SUCCESS && hHwnd == nullptr)
 	{
 		::AfxMessageBox(L"获取房间列表失败");
 	}

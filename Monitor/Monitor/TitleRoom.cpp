@@ -1,10 +1,6 @@
 #include "stdafx.h"
 #include "TitleRoom.h"
 
-extern Config g_client_config;
-extern Screen *g_screens[MAXIMAL_SCREEN_NUM];
-extern index_map_t g_av_index_map[2];
-
 #ifdef __ABS_FILE__
 #undef __ABS_FILE__
 #endif
@@ -61,16 +57,27 @@ void TitleRoom::OnDestory()
 	PJ_LOG(5, (__ABS_FILE__, "Room[%d] was destoryed!", id_));
 }
 
-void TitleRoom::OnItemExpanded(CTreeCtrl &tree_ctrl, Node &parent)
+void TitleRoom::OnWatched(CTreeCtrl &tree_ctrl)
+{
+	lock_guard<mutex> lock(room_lock_);
+
+	pj_assert(proxy_ == nullptr);
+
+	g_traverse_stack.pop();
+
+	::SendMessage(AfxGetMainWnd()->m_hWnd, WM_EXPANDEDROOM, (WPARAM)tree_ctrl.m_hWnd, (LPARAM)this);
+}
+
+void TitleRoom::OnItemExpanded(CTreeCtrl &tree_ctrl)
 {
 	lock_guard<mutex> lock(room_lock_);
 
 	RETURN_IF_FAIL(proxy_ == nullptr);
 
-	::SendMessage(AfxGetMainWnd()->m_hWnd, WM_EXPANDEDROOM, 0, (LPARAM)this);
+	::SendMessage(AfxGetMainWnd()->m_hWnd, WM_EXPANDEDROOM, (WPARAM)nullptr, (LPARAM)this);
 }
 
-void TitleRoom::OnItemShrinked(CTreeCtrl &tree_ctrl, Node &parent)
+void TitleRoom::OnItemShrinked(CTreeCtrl &tree_ctrl)
 {
 	lock_guard<mutex> lock(room_lock_);
 	pj_bool_t useless = PJ_FALSE;
@@ -98,7 +105,7 @@ User *TitleRoom::AddUser(pj_int64_t user_id, pj_uint32_t mic_id)
 	lock_guard<mutex> lock(room_lock_);
 	if(users_.empty())
 	{
-		DelAll(*tree_ctrl_, *this);
+		DelAll(*tree_ctrl_);
 	}
 
 	PJ_LOG(5, (__ABS_FILE__, "Room[%d] add a new user[%ld]", id_, user_id));
@@ -113,6 +120,8 @@ User *TitleRoom::AddUser(pj_int64_t user_id, pj_uint32_t mic_id)
 	{
 		user = new User(user_id, mic_id, this);
 		users_[user_id] = user;
+		
+		g_watchs_list.OnAddUser(user);
 
 		wchar_t str_user_id[32];
 		swprintf(str_user_id, sizeof(str_user_id) - 1, L"%u", user_id);
@@ -146,13 +155,14 @@ void TitleRoom::DelUser(pj_int64_t user_id, users_map_t::iterator &puser)
 	if(user != nullptr)
 	{
 		tree_ctrl_->DeleteItem(user->tree_item_);
+		g_watchs_list.OnDelUser(user);
 		delete user;
 		user = nullptr;
 	}
 
 	if(users_.empty())
 	{
-		AddNull(*tree_ctrl_, tree_item_);
+		AddNull(*tree_ctrl_);
 	}
 }
 

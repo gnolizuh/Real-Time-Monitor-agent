@@ -37,6 +37,13 @@
 #define ROUND(num, fraction) (num) /= (fraction), (num) *= (fraction), (num) / (fraction)
 #define GET_FUNC_INDEX(idx) ((idx) < 0 || (idx) >= SCREEN_RES_END ? SCREEN_RES_END : (idx))
 
+using std::string;
+using std::thread;
+using std::mutex;
+using std::lock_guard;
+using std::vector;
+using std::map;
+
 typedef struct
 {
 	pj_uint32_t x;
@@ -49,12 +56,15 @@ typedef struct
 	pj_uint32_t v; // vertical
 } round_t;
 
-using std::string;
-using std::thread;
-using std::mutex;
-using std::lock_guard;
-using std::vector;
-using std::map;
+typedef struct
+{
+	pj_uint16_t proxy_id;
+	string      proxy_ip;
+	pj_uint16_t proxy_tcp_port;
+	pj_uint16_t proxy_udp_port;
+	TitleRoom  *title_room;
+	HWND        hHwnd;
+} link_room_param_t;
 
 class ScreenMgr;
 typedef void (ScreenMgr::*screenmgr_func_t)(pj_uint32_t, pj_uint32_t);
@@ -73,7 +83,7 @@ public:
 	pj_status_t Prepare();
 	pj_status_t Launch();
 	void        Destory();
-	pj_status_t OnLinkRoom(TitleRoom *title_room);
+	pj_status_t OnLinkRoom(TitleRoom *title_room, HWND hHwnd);
 	pj_status_t OnUnlinkRoom(TitleRoom *title_room);
 	void        LinkScreenUser(Screen *screen, User *new_user);
 	void        UnlinkScreenUser(Screen *screen, User *old_user);
@@ -81,7 +91,7 @@ public:
 	void        GetSuitedSize(LPRECT lpRect);
 	void        Adjest(pj_int32_t &cx, pj_int32_t &cy);
 	void        HideAll();
-	pj_status_t LinkRoom(pj_uint16_t id, string ip, vector<pj_uint16_t> ports, TitleRoom *title_room);
+	pj_status_t LinkRoom(const link_room_param_t &param);
 	pj_status_t UnlinkRoom(TitleRoom *title_room);
 	pj_status_t AddProxy(pj_uint16_t id, pj_str_t &ip, pj_uint16_t tcp_port, pj_uint16_t udp_port, pj_sock_t sock, proxy_map_t::mapped_type &proxy);
 	pj_status_t DelProxy(proxy_map_t::mapped_type proxy);

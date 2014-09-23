@@ -7,6 +7,7 @@
 #include "Node.h"
 #include "Screen.h"
 #include "AvsProxy.h"
+#include "WatchsList.h"
 #include "Com.h"
 
 class TitleRoom;
@@ -81,10 +82,11 @@ public:
 	User *GetUser(pj_int64_t user_id);
 	void  ModUser(User *user, pj_uint32_t audio_ssrc, pj_uint32_t video_ssrc);
 	pj_status_t SendTCPPacket(const void *buf, pj_ssize_t *len);
+	void OnWatched(CTreeCtrl &tree_ctrl);
 
 protected:
-	virtual void OnItemExpanded(CTreeCtrl &tree_ctrl, Node &parent);
-	virtual void OnItemShrinked(CTreeCtrl &tree_ctrl, Node &parent);
+	virtual void OnItemExpanded(CTreeCtrl &tree_ctrl);
+	virtual void OnItemShrinked(CTreeCtrl &tree_ctrl);
 
 private:
 	void AddNode(pj_int32_t id, const pj_str_t &name, pj_uint32_t order, pj_uint32_t usercount);

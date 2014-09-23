@@ -1,7 +1,6 @@
 #include "stdafx.h"
 #include "RTPSession.h"
 
-extern Config g_client_config;
 RTPSession g_rtp_session;
 
 pj_status_t RTPSession::Open()

@@ -91,4 +91,6 @@ private:
 	PoolThread<std::function<void ()>> video_thread_pool_;
 };
 
+extern Screen *g_screens[MAXIMAL_SCREEN_NUM];
+
 #endif
