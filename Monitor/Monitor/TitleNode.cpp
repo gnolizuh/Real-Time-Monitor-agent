@@ -34,9 +34,9 @@ void TitleNode::OnDestory()
 	nodes_order_.clear();
 }
 
-void TitleNode::OnWatched(CTreeCtrl &tree_ctrl)
+void TitleNode::OnWatched(void *ctrl)
 {
-	OnItemExpanded(tree_ctrl);
+	OnItemExpanded(*reinterpret_cast<CTreeCtrl *>(ctrl));
 
 	node_set_t::reverse_iterator pnode = nodes_order_.rbegin();
 	for(; pnode != nodes_order_.rend(); ++ pnode)
@@ -44,15 +44,11 @@ void TitleNode::OnWatched(CTreeCtrl &tree_ctrl)
 		node_set_t::value_type node = *pnode;
 		if(node != nullptr)
 		{
-			g_traverse_stack.push(node);
+			g_watchs_list.Push(node);
 		}
 	}
 
-	Node *node = g_traverse_stack.top();
-	if(node != nullptr)
-	{
-		node->OnWatched(tree_ctrl);
-	}
+	g_watchs_list.OnTraverse();
 }
 
 void TitleNode::OnItemExpanded(CTreeCtrl &tree_ctrl)
@@ -146,6 +142,7 @@ void TitleNode::ParseXML(const vector<pj_uint8_t> &xml, CTreeCtrl &tree_ctrl)
 	KickoutRedundantNodes(nodes_id);
 }
 
+// 如果再次点开"某大区"/"某房间", 可能会有下线的房间或者大区.
 void TitleNode::KickoutRedundantNodes(const set<node_map_t::key_type> &nodes_id)
 {
 	node_map_t::iterator pnode = nodes_.begin();
@@ -158,7 +155,7 @@ void TitleNode::KickoutRedundantNodes(const set<node_map_t::key_type> &nodes_id)
 			pnode = nodes_.erase(pnode);
 			if(node != nullptr)
 			{
-				node->OnDestory();
+				node->OnDestory(); // 清除下线房间或者大区
 				delete node;
 				node = nullptr;
 			}

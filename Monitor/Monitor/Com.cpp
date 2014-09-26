@@ -1,7 +1,19 @@
 #include "stdafx.h"
 #include "Com.h"
 
+evutil_socket_t g_mainframe_pipe[2];
 index_map_t g_av_index_map[2];
+
+namespace sinashow
+{
+void SendMessage(pj_uint32_t Msg, WPARAM wParam, LPARAM lParam)
+{
+	param_t param = {Msg, wParam, lParam};
+
+	pj_ssize_t sndlen = sizeof(param_t);
+	pj_sock_send(g_mainframe_pipe[1], &param, &sndlen, 0);
+}
+}
 
 pj_status_t pj_open_tcp_serverport(pj_str_t *ip, pj_uint16_t port, pj_sock_t &sock)
 {
@@ -48,9 +60,6 @@ pj_status_t pj_open_tcp_clientport(pj_str_t *ip, pj_uint16_t port, pj_sock_t &so
 	status = pj_sockaddr_in_init(&addr, ip, port);
 	RETURN_VAL_IF_FAIL( status == PJ_SUCCESS, (pj_sock_close(sock), status) );
 
-	status = pj_sock_connect(sock, &addr, sizeof(addr));
-	RETURN_VAL_IF_FAIL( status == PJ_SUCCESS, (pj_sock_close(sock), status) );
-
 	u_long val = 1;
 #if defined(PJ_WIN32) && PJ_WIN32!=0 || \
     defined(PJ_WIN64) && PJ_WIN64 != 0 || \
@@ -63,7 +72,36 @@ pj_status_t pj_open_tcp_clientport(pj_str_t *ip, pj_uint16_t port, pj_sock_t &so
 		return -1;
     }
 
-	return status;
+	status = pj_sock_connect(sock, &addr, sizeof(addr));
+
+	pj_time_val timeout = {2, 0}; // connect≥¨ ± ±º‰1√Î
+	pj_fd_set_t rset, wset;
+	PJ_FD_ZERO(&rset);
+	PJ_FD_ZERO(&wset);
+	PJ_FD_SET(sock, &rset);
+	PJ_FD_SET(sock, &wset);
+
+	int selret = pj_sock_select(sock + 1, &rset, &wset, nullptr, &timeout);
+	switch(selret)
+	{
+		case -1:
+			return PJ_EINVAL;
+		case 0:
+			return PJ_ETIMEDOUT;
+		default:
+		{
+			if(PJ_FD_ISSET(sock, &rset) || PJ_FD_ISSET(sock, &wset))
+			{
+				return PJ_SUCCESS;
+			}
+			else
+			{
+				return PJ_EINVAL;
+			}
+		}
+	}
+
+	return PJ_EINVAL;
 }
 
 pj_status_t pj_open_udp_transport(pj_str_t *ip, pj_uint16_t port, pj_sock_t &sock)

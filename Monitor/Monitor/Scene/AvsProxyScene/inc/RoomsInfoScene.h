@@ -6,6 +6,7 @@
 #include "Parameter.h"
 #include "Scene.h"
 #include "Config.h"
+#include "WatchsList.h"
 
 using std::vector;
 
@@ -13,9 +14,9 @@ using std::vector;
 typedef struct
 {
 	pj_int64_t  user_id_;
+	pj_uint32_t mic_id_;
 	pj_uint32_t audio_ssrc_;
 	pj_uint32_t video_ssrc_;
-	pj_uint32_t mic_id_;
 } user_info_t;
 
 typedef struct

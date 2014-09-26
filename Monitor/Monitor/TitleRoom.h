@@ -10,6 +10,7 @@
 #include "WatchsList.h"
 #include "Com.h"
 
+class Screen;
 class TitleRoom;
 class User
 	: public Node
@@ -19,26 +20,16 @@ public:
 		: Node(0, pj_str(""), 0, 0, TITLE_USER)
 		, user_id_(user_id)
 		, mic_id_(mic_id)
+		, screen_(nullptr)
 		, screen_idx_(INVALID_SCREEN_INDEX)
 		, title_room_(title_room)
 		, audio_ssrc_(0)
 		, video_ssrc_(0)
 	{}
 
-	inline pj_uint32_t GetScreenIndex() const
-	{
-		return screen_idx_;
-	}
-
-	inline void ConnectScreen(pj_uint32_t screen_idx)
-	{
-		screen_idx_ = screen_idx;
-	}
-
-	inline void DisconnectScreen()
-	{
-		screen_idx_ = INVALID_SCREEN_INDEX;
-	}
+	void ConnectScreen(Screen *screen, pj_uint32_t screen_idx);
+	void DisconnectScreen();
+	void ModMedia(pj_uint32_t audio_ssrc, pj_uint32_t video_ssrc);
 
 	inline bool operator!=(const User &user) const
 	{
@@ -55,6 +46,7 @@ public:
 
 	pj_int64_t  user_id_;
 	pj_uint32_t mic_id_;
+	Screen     *screen_;
 	pj_uint32_t screen_idx_;
 	TitleRoom  *title_room_;
 	pj_uint32_t audio_ssrc_;
@@ -69,11 +61,6 @@ class TitleRoom
 public:
 	TitleRoom(CTreeCtrl *tree_ctrl, pj_int32_t id, const pj_str_t &name, pj_uint32_t order, pj_uint32_t usercount);
 	virtual ~TitleRoom();
-	
-	inline users_map_t &GetUsers()
-	{
-		return users_;
-	}
 
 	void OnCreate(AvsProxy *proxy);
 	virtual void OnDestory();
@@ -82,7 +69,9 @@ public:
 	User *GetUser(pj_int64_t user_id);
 	void  ModUser(User *user, pj_uint32_t audio_ssrc, pj_uint32_t video_ssrc);
 	pj_status_t SendTCPPacket(const void *buf, pj_ssize_t *len);
-	void OnWatched(CTreeCtrl &tree_ctrl);
+	pj_status_t OnShowPage(pj_uint32_t &offset, pj_uint32_t &first);
+	void IncreaseCount(pj_uint32_t &user_count);
+	virtual void OnWatched(void *ctrl);
 
 protected:
 	virtual void OnItemExpanded(CTreeCtrl &tree_ctrl);

@@ -24,11 +24,11 @@ class Node
 {
 public:
 	Node(pj_int32_t id, const pj_str_t &name, pj_uint32_t order, pj_uint32_t usercount, pj_uint8_t node_type);
-	virtual ~Node() {}
+	virtual ~Node();
 
 	void Update(const pj_str_t &name, order_t order, pj_uint32_t usercount);
 	virtual void OnDestory() {}
-	virtual void OnWatched(CTreeCtrl &tree_ctrl) {}
+	virtual void OnWatched(void *ctrl) {}
 	virtual void OnItemExpanded(CTreeCtrl &tree_ctrl) {}
 	virtual void OnItemShrinked(CTreeCtrl &tree_ctrl) {}
 
@@ -50,7 +50,5 @@ public:
 	node_set_t  nodes_order_;
 	const pj_uint8_t node_type_;
 };
-
-extern stack<Node *> g_traverse_stack;
 
 #endif

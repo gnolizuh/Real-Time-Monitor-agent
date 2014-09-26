@@ -141,8 +141,8 @@ pj_status_t ScreenMgr::Prepare()
 
 	for(pj_uint32_t idx = 0; idx < MAXIMAL_SCREEN_NUM; ++ idx)
 	{
-		g_screens[idx] = new Screen(idx);
-		status = g_screens[idx]->Prepare(pool_, CRect(0, 0, width_, height_), wrapper_, IDC_WALL_BASE_INDEX + idx);
+		screens_[idx] = new Screen(idx);
+		status = screens_[idx]->Prepare(pool_, CRect(0, 0, width_, height_), wrapper_, IDC_WALL_BASE_INDEX + idx);
 	}
 
 	PJ_LOG(5, (__ABS_FILE__, "Prepare screenmgr ok!"));
@@ -161,7 +161,7 @@ pj_status_t ScreenMgr::Launch()
 
 	for (pj_uint32_t idx = 0; idx < MAXIMAL_SCREEN_NUM; ++idx)
 	{
-		g_screens[idx]->Launch();
+		screens_[idx]->Launch();
 	}
 
 	PJ_LOG(5, (__ABS_FILE__, "Launch screenmgr ok!"));
@@ -178,62 +178,69 @@ void ScreenMgr::Destory()
 	pj_sock_close(local_tcp_sock_);
 }
 
-pj_status_t ScreenMgr::OnLinkRoom(TitleRoom *title_room, HWND hHwnd)
+pj_status_t ScreenMgr::OnLinkRoom(TitleRoom *title_room, Title *title)
 {
 	vector<pj_uint8_t> response;
 	http_proxy_get(g_client_config.rrtvms_fcgi_host, g_client_config.rrtvms_fcgi_port, g_client_config.rrtvms_fcgi_uri,
 		title_room->id_, response);
 
 	pj_status_t       status;
-	link_room_param_t param = {100, "192.168.6.40", 12000, 13000, title_room, hHwnd};
+	link_room_param_t param = {100, "192.168.6.40", 12000, 13000, title_room};
 
 	status = ParseHttpResponse(param.proxy_id, param.proxy_ip, param.proxy_tcp_port, param.proxy_udp_port, response);
-	if(status != PJ_SUCCESS && param.hHwnd != nullptr)
+	if(status != PJ_SUCCESS && title != nullptr)
 	{
-		::SendMessage(hHwnd, WM_CONTINUE_TRAVERSE, (WPARAM)0, (LPARAM)0);
+		sinashow::SendMessage(WM_CONTINUE_TRAVERSE, (WPARAM)title, (LPARAM)0);
 	}
 	RETURN_VAL_IF_FAIL(status == PJ_SUCCESS, status);
 
-	vector<pj_uint16_t> ports;
-	ports.push_back(param.proxy_tcp_port);
-	ports.push_back(param.proxy_udp_port);
-	std::function<pj_status_t ()> connection = std::bind(&ScreenMgr::LinkRoom, this, param);
-	std::function<pj_status_t ()> *pconnection = new std::function<pj_status_t ()>(connection);
-	pj_assert(pconnection != nullptr);
-
-	pj_ssize_t sndlen = sizeof(pconnection);
-	pj_sock_send(pipe_fds_[1], &pconnection, &sndlen, 0);
+	status = LinkRoom(param);
+	if(status != PJ_SUCCESS && title != nullptr)
+	{
+		sinashow::SendMessage(WM_CONTINUE_TRAVERSE, (WPARAM)title, (LPARAM)0);
+	}
+	RETURN_VAL_IF_FAIL(status == PJ_SUCCESS, status);
 
 	return PJ_SUCCESS;
 }
 
 pj_status_t ScreenMgr::OnUnlinkRoom(TitleRoom *title_room)
 {
-	std::function<pj_status_t()> disconnection = std::bind(&ScreenMgr::UnlinkRoom, this, title_room);
-	std::function<pj_status_t()> *pdisconnection = new std::function<pj_status_t()>(disconnection);
-	pj_assert(pdisconnection != nullptr);
+	RETURN_VAL_IF_FAIL(title_room != nullptr, PJ_EINVAL);
 
-	pj_ssize_t sndlen = sizeof(pdisconnection);
-	pj_sock_send(pipe_fds_[1], &pdisconnection, &sndlen, 0);
+	proxy_map_t::mapped_type proxy = title_room->proxy_;
+	RETURN_VAL_IF_FAIL(proxy != nullptr, PJ_EINVAL);
+
+	pj_status_t status;
+	status = proxy->UnlinkRoom(title_room);
+	RETURN_VAL_IF_FAIL(status == PJ_SUCCESS, status);
+
+	if (proxy->GetRoomSize() == 0) // 当不关注此Proxy的所有房间时, 主动断开连接
+	{
+		DelProxy(proxy);
+	}
 
 	return PJ_SUCCESS;
 }
 
 // old_screen may be exist at new_user.
 // old_user may be exist at new_screen
-void ScreenMgr::LinkScreenUser(Screen *new_screen, User *new_user)
+void ScreenMgr::LinkScreenUser(pj_uint32_t new_screen_idx, User *new_user)
 {
-	RETURN_IF_FAIL(new_screen != nullptr);
+	RETURN_IF_FAIL(new_screen_idx != INVALID_SCREEN_INDEX);
 	RETURN_IF_FAIL(new_user != nullptr);
 	RETURN_IF_FAIL(new_user->title_room_ != nullptr);
 
 	AvsProxy *proxy = new_user->title_room_->proxy_;
 	RETURN_IF_FAIL(proxy != nullptr);
 
-	if(new_user->screen_idx_ != INVALID_SCREEN_INDEX)  // 如果这个被拖拽的用户正在其他屏幕上显示
+	Screen *new_screen = screens_[new_screen_idx];
+
+	if(new_user->screen_ != nullptr)  // 如果这个被拖拽的用户正在其他屏幕上显示
 	{
-		pj_assert(new_user->screen_idx_ >= 0 && new_user->screen_idx_ < MAXIMAL_SCREEN_NUM);
-		Screen *old_screen = g_screens[new_user->screen_idx_];
+		Screen *old_screen = new_user->screen_;
+		RETURN_IF_FAIL(new_screen != old_screen);
+
 		UnlinkScreenUser(old_screen, new_user);
 	}
 
@@ -245,12 +252,8 @@ void ScreenMgr::LinkScreenUser(Screen *new_screen, User *new_user)
 		UnlinkScreenUser(new_screen, old_user);
 	}
 
-	g_av_index_map[AUDIO_INDEX].insert(index_map_t::value_type(new_user->audio_ssrc_, new_screen->GetIndex()));
-	g_av_index_map[VIDEO_INDEX].insert(index_map_t::value_type(new_user->video_ssrc_, new_screen->GetIndex()));
-	
 	proxy->LinkRoomUser(new_user);
 	new_screen->ConnectUser(new_user);
-	new_user->ConnectScreen(new_screen->GetIndex());
 }
 
 void ScreenMgr::UnlinkScreenUser(Screen *screen, User *old_user)
@@ -260,10 +263,6 @@ void ScreenMgr::UnlinkScreenUser(Screen *screen, User *old_user)
 	RETURN_IF_FAIL(old_user->title_room_ != nullptr);
 
 	screen->DisconnectUser();
-	old_user->DisconnectScreen();
-
-	g_av_index_map[AUDIO_INDEX].erase(old_user->audio_ssrc_);
-	g_av_index_map[VIDEO_INDEX].erase(old_user->video_ssrc_);
 
 	AvsProxy *proxy = old_user->title_room_->proxy_;
 	RETURN_IF_FAIL(proxy != nullptr);
@@ -327,7 +326,7 @@ void ScreenMgr::ChangeLayout_1x1(pj_uint32_t width, pj_uint32_t height)
 	CRect rect(0, 0, MININUM_TREE_CTL_WIDTH, height * num_blocks_[0].v);
 	titles_->MoveToRect(rect);
 
-	g_screens[0]->MoveToRect(CRect(MININUM_TREE_CTL_WIDTH, 0, MININUM_TREE_CTL_WIDTH + width, height));
+	screens_[0]->MoveToRect(CRect(MININUM_TREE_CTL_WIDTH, 0, MININUM_TREE_CTL_WIDTH + width, height));
 }
 
 void ScreenMgr::ChangeLayout_2x2(pj_uint32_t width, pj_uint32_t height)
@@ -349,7 +348,7 @@ void ScreenMgr::ChangeLayout_2x2(pj_uint32_t width, pj_uint32_t height)
 			rect.right = rect.left + width;
 			rect.bottom = rect.top + height;
 
-			g_screens[idx ++]->MoveToRect(rect);
+			screens_[idx++]->MoveToRect(rect);
 		}
 	}
 }
@@ -365,30 +364,30 @@ void ScreenMgr::ChangeLayout_1x5(pj_uint32_t width, pj_uint32_t height)
 	pj_int32_t left = lstart, top = 0, right, bottom;
 	right = left + width * 2 + horizontal_padding_;
 	bottom = height * 2 + vertical_padding_;
-	g_screens[idx++]->MoveToRect(CRect(left, top, right, bottom));
+	screens_[idx++]->MoveToRect(CRect(left, top, right, bottom));
 
 	left = right + horizontal_padding_;
 	right = left + width;
 	bottom = height;
-	g_screens[idx++]->MoveToRect(CRect(left, top, right, bottom));
+	screens_[idx++]->MoveToRect(CRect(left, top, right, bottom));
 
 	top = bottom + vertical_padding_;
 	bottom = top + height;
-	g_screens[idx++]->MoveToRect(CRect(left, top, right, bottom));
+	screens_[idx++]->MoveToRect(CRect(left, top, right, bottom));
 
 	left = lstart;
 	right = left + width;
 	top = bottom + vertical_padding_;
 	bottom = top + height;
-	g_screens[idx++]->MoveToRect(CRect(left, top, right, bottom));
+	screens_[idx++]->MoveToRect(CRect(left, top, right, bottom));
 
 	left = right + horizontal_padding_;
 	right = left + width;
-	g_screens[idx++]->MoveToRect(CRect(left, top, right, bottom));
+	screens_[idx++]->MoveToRect(CRect(left, top, right, bottom));
 
 	left = right + horizontal_padding_;
 	right = left + width;
-	g_screens[idx++]->MoveToRect(CRect(left, top, right, bottom));
+	screens_[idx++]->MoveToRect(CRect(left, top, right, bottom));
 }
 
 void ScreenMgr::ChangeLayout_3x3(pj_uint32_t width, pj_uint32_t height)
@@ -410,7 +409,7 @@ void ScreenMgr::ChangeLayout_3x3(pj_uint32_t width, pj_uint32_t height)
 			rect.right = rect.left + width;
 			rect.bottom = rect.top + height;
 
-			g_screens[idx ++]->MoveToRect(rect);
+			screens_[idx++]->MoveToRect(rect);
 		}
 	}
 }
@@ -434,7 +433,7 @@ void ScreenMgr::ChangeLayout_3x5(pj_uint32_t width, pj_uint32_t height)
 			rect.right = rect.left + width;
 			rect.bottom = rect.top + height;
 
-			g_screens[idx ++]->MoveToRect(rect);
+			screens_[idx++]->MoveToRect(rect);
 		}
 	}
 }
@@ -443,7 +442,7 @@ void ScreenMgr::HideAll()
 {
 	for (pj_uint8_t idx = 0; idx < MAXIMAL_SCREEN_NUM; ++idx)
 	{
-		g_screens[idx]->HideWindow();
+		screens_[idx]->HideWindow();
 	}
 }
 
@@ -573,7 +572,7 @@ void ScreenMgr::UdpParamScene(const pjmedia_rtp_hdr *rtp_hdr,
 			index_map_t::mapped_type screen_idx = pscreen_idx->second;
 			if (screen_idx >= 0 && screen_idx < MAXIMAL_SCREEN_NUM)
 			{
-				screen = g_screens[screen_idx];
+				screen = screens_[screen_idx];
 			}
 		}
 
@@ -637,8 +636,11 @@ void ScreenMgr::EventOnTcpRead(evutil_socket_t fd, short event, void *arg)
 	else if (recvlen <= 0)
 	{
 		pj_sock_close(proxy->sock_);
+		proxy->sock_ = INVALID_SOCKET;
+
 		event_del(proxy->tcp_ev_);
 		event_free(proxy->tcp_ev_);
+		proxy->tcp_ev_ = nullptr;
 
 		PJ_LOG(5, (__ABS_FILE__, "EventOnTcpRead() => Proxy was disconnected, code %d", recvlen));
 
@@ -711,30 +713,10 @@ pj_status_t ScreenMgr::LinkRoom(const link_room_param_t &param)
 		pj_sock_t sock;
 		pj_str_t pj_ip = pj_str((char *)param.proxy_ip.c_str());
 		status = pj_open_tcp_clientport(&pj_ip, param.proxy_tcp_port, sock);
-		if(status != PJ_SUCCESS && param.hHwnd != nullptr)
-		{
-			::SendMessage(param.hHwnd, WM_CONTINUE_TRAVERSE, (WPARAM)0, (LPARAM)0);
-		}
 		RETURN_VAL_IF_FAIL(status == PJ_SUCCESS, status); // 连不上proxy
 
 		status = AddProxy(param.proxy_id, pj_ip, param.proxy_tcp_port, param.proxy_udp_port, sock, proxy);
 		RETURN_VAL_IF_FAIL(status == PJ_SUCCESS, status);
-
-		ev_function_t function;
-		ev_function_t *pfunction = nullptr;
-
-		function = std::bind(&ScreenMgr::EventOnTcpRead, this, std::placeholders::_1, std::placeholders::_2, proxy);
-		pfunction = new ev_function_t(function);
-		proxy->pfunction_ = pfunction;
-
-		proxy->tcp_ev_ = event_new(evbase_, proxy->sock_, EV_READ | EV_PERSIST, event_func_proxy, pfunction);
-		RETURN_VAL_WITH_STATEMENT_IF_FAIL(proxy->tcp_ev_ != nullptr,
-			(linked_proxys_.erase(param.proxy_id), delete proxy, delete pfunction, pj_sock_close(sock)),
-			PJ_EINVAL);
-
-		RETURN_VAL_WITH_STATEMENT_IF_FAIL(event_add(proxy->tcp_ev_, NULL) == 0,
-			(linked_proxys_.erase(param.proxy_id), delete proxy, delete pfunction, pj_sock_close(sock)),
-			PJ_EINVAL);
 
 		status = proxy->Login();
 		RETURN_VAL_IF_FAIL(status == PJ_SUCCESS, status);
@@ -746,26 +728,40 @@ pj_status_t ScreenMgr::LinkRoom(const link_room_param_t &param)
 	return PJ_SUCCESS;
 }
 
-pj_status_t ScreenMgr::UnlinkRoom(TitleRoom *title_room)
+pj_status_t ScreenMgr::ConnProxy(AvsProxy *proxy)
 {
-	RETURN_VAL_IF_FAIL(title_room != nullptr, PJ_EINVAL);
-
-	proxy_map_t::mapped_type proxy = title_room->proxy_;
 	RETURN_VAL_IF_FAIL(proxy != nullptr, PJ_EINVAL);
 
-	pj_status_t status;
-	status = proxy->UnlinkRoom(title_room);
-	RETURN_VAL_IF_FAIL(status == PJ_SUCCESS, status);
+	ev_function_t function;
+	ev_function_t *pfunction = nullptr;
 
-	if (proxy->GetRoomSize() == 0)
+	function = std::bind(&ScreenMgr::EventOnTcpRead, this, std::placeholders::_1, std::placeholders::_2, proxy);
+	pfunction = new ev_function_t(function);
+	proxy->pfunction_ = pfunction;
+
+	proxy->tcp_ev_ = event_new(evbase_, proxy->sock_, EV_READ | EV_PERSIST, event_func_proxy, pfunction);
+	RETURN_VAL_IF_FAIL(proxy->tcp_ev_ != nullptr, PJ_EINVAL);
+
+	RETURN_VAL_IF_FAIL(event_add(proxy->tcp_ev_, NULL) == 0, PJ_EINVAL);
+
+	return PJ_SUCCESS;
+}
+
+pj_status_t ScreenMgr::DiscProxy(AvsProxy *proxy)
+{
+	if(proxy->sock_ > 0)
 	{
-		pj_sock_close(proxy->sock_);  // 当不关注此Proxy的所有房间时, 主动断开连接
+		pj_sock_close(proxy->sock_);
+	}
+
+	if(proxy->tcp_ev_ != nullptr)
+	{
 		event_del(proxy->tcp_ev_);
 		event_free(proxy->tcp_ev_);
-
-		status = DelProxy(proxy);
-		RETURN_VAL_IF_FAIL(status == PJ_SUCCESS, status);
 	}
+
+	DiscProxyScene *scene = new DiscProxyScene();
+	sync_thread_pool_.Schedule(std::bind(&DiscProxyScene::Maintain, shared_ptr<DiscProxyScene>(scene), proxy));
 
 	return PJ_SUCCESS;
 }
@@ -780,6 +776,13 @@ pj_status_t ScreenMgr::AddProxy(pj_uint16_t id, pj_str_t &ip, pj_uint16_t tcp_po
 	pj_assert(proxy != nullptr);
 	linked_proxys_.insert(proxy_map_t::value_type(id, proxy));
 
+	std::function<pj_status_t()> connection = std::bind(&ScreenMgr::ConnProxy, this, proxy);
+	std::function<pj_status_t()> *pconnection = new std::function<pj_status_t()>(connection);
+	pj_assert(pconnection != nullptr);
+
+	pj_ssize_t sndlen = sizeof(pconnection);
+	pj_sock_send(pipe_fds_[1], &pconnection, &sndlen, 0);
+
 	return PJ_SUCCESS;
 }
 
@@ -793,9 +796,12 @@ pj_status_t ScreenMgr::DelProxy(proxy_map_t::mapped_type proxy)
 
 	linked_proxys_.erase(pproxy);
 
-	/**< Prevent using termination before delete it.*/
-	DiscProxyScene *scene = new DiscProxyScene();
-	sync_thread_pool_.Schedule(std::bind(&DiscProxyScene::Maintain, shared_ptr<DiscProxyScene>(scene), proxy));
+	std::function<pj_status_t()> disconnection = std::bind(&ScreenMgr::DiscProxy, this, proxy);
+	std::function<pj_status_t()> *pdisconnection = new std::function<pj_status_t()>(disconnection);
+	pj_assert(pdisconnection != nullptr);
+
+	pj_ssize_t sndlen = sizeof(pdisconnection);
+	pj_sock_send(pipe_fds_[1], &pdisconnection, &sndlen, 0);
 
 	return PJ_SUCCESS;
 }
@@ -810,6 +816,36 @@ pj_status_t ScreenMgr::GetProxy(pj_uint16_t id, proxy_map_t::mapped_type &proxy)
 	RETURN_VAL_IF_FAIL(proxy != nullptr, PJ_EINVAL);
 
 	return PJ_SUCCESS;
+}
+
+// 断开所有的proxy, 包括proxy
+void ScreenMgr::DelAllProxys()
+{
+	lock_guard<mutex> lock(linked_proxys_lock_);
+	proxy_map_t::iterator pproxy = linked_proxys_.begin();
+	for(; pproxy != linked_proxys_.end(); ++ pproxy)
+	{
+		proxy_map_t::mapped_type proxy = pproxy->second;
+		if(proxy != nullptr)
+		{
+			std::function<pj_status_t()> disconnection = std::bind(&ScreenMgr::DiscProxy, this, proxy);
+			std::function<pj_status_t()> *pdisconnection = new std::function<pj_status_t()>(disconnection);
+			pj_assert(pdisconnection != nullptr);
+
+			pj_ssize_t sndlen = sizeof(pdisconnection);
+			pj_sock_send(pipe_fds_[1], &pdisconnection, &sndlen, 0);
+		}
+	}
+
+	linked_proxys_.clear();
+}
+
+void ScreenMgr::CleanScreens()
+{
+	for(pj_uint32_t idx = 0; idx < MAXIMAL_SCREEN_NUM; ++ idx)
+	{
+		screens_[idx]->DisconnectUser();
+	}
 }
 
 void ScreenMgr::EventThread()

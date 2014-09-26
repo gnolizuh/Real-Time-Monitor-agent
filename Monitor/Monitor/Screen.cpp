@@ -15,8 +15,6 @@ BEGIN_MESSAGE_MAP(Screen, CWnd)
 	ON_WM_LBUTTONDBLCLK()
 END_MESSAGE_MAP()
 
-Screen *g_screens[MAXIMAL_SCREEN_NUM];
-
 Screen::Screen(pj_uint32_t index)
 	: CWnd()
 	, user_(nullptr)
@@ -203,12 +201,16 @@ void Screen::VideoScene(const pj_uint8_t *rtp_frame, pj_uint16_t framelen)
 	}
 	RETURN_IF_FAIL(rtp_frame && framelen > 0);
 
-	video_thread_pool_.Schedule(std::bind(&Screen::OnRxVideo, this, vector<pj_uint8_t>(rtp_frame, rtp_frame + framelen)));
+	/*vector<pj_uint8_t>(rtp_frame, rtp_frame + framelen) 用这个会崩溃*/
+	pj_uint8_t *frame = new pj_uint8_t[framelen];
+	memcpy(frame, rtp_frame, framelen);
+
+	video_thread_pool_.Schedule(std::bind(&Screen::OnRxVideo, this, shared_ptr<pj_uint8_t>(frame), framelen));
 }
 
-void Screen::OnRxVideo(const vector<pj_uint8_t> &video_frame)
+void Screen::OnRxVideo(shared_ptr<pj_uint8_t> video_frame, pj_uint16_t framelen)
 {
-	RETURN_IF_FAIL(video_frame.size() > 0);
+	RETURN_IF_FAIL(framelen > 0);
 
 	pj_status_t status;
 	const pjmedia_rtp_hdr *hdr;
@@ -216,7 +218,7 @@ void Screen::OnRxVideo(const vector<pj_uint8_t> &video_frame)
 	unsigned payloadlen;
 	pjmedia_rtp_status seq_st;
 
-	status = pjmedia_rtp_decode_rtp(&stream_->dec->rtp, &video_frame[0], (int)video_frame.size(),
+	status = pjmedia_rtp_decode_rtp(&stream_->dec->rtp, video_frame.get(), framelen,
 				&hdr, &payload, &payloadlen);
 	if(status == PJ_SUCCESS)
 	{
@@ -383,6 +385,7 @@ pj_status_t Screen::ConnectUser(User *user)
 		media_active_ = PJ_TRUE;
 	}
 	user_ = user;
+	user_->ConnectScreen(this, index_);
 
 	PJ_LOG(5, (__ABS_FILE__, "screen[%u] was connected to new user[%ld]", index_, user->user_id_));
 
@@ -399,6 +402,8 @@ pj_status_t Screen::DisconnectUser()
 		lock_guard<mutex> lock(media_active_lock_);
 		media_active_ = PJ_FALSE;
 	}
+
+	user_->DisconnectScreen();
 	user_ = nullptr;
 	this->UpdateWindow();
 
@@ -408,6 +413,7 @@ pj_status_t Screen::DisconnectUser()
 static Screen *old_screen = nullptr;
 void Screen::OnMouseMove(UINT nFlags, CPoint point)
 {
+	lock_guard<mutex> lock(g_hwnd_lock);
 	if(user_ != nullptr)
 	{
 		if (!g_TrackingMouse)
@@ -454,6 +460,7 @@ void Screen::OnMouseMove(UINT nFlags, CPoint point)
 
 void Screen::OnMouseLeave()
 {
+	lock_guard<mutex> lock(g_hwnd_lock);
 	if(g_TrackingMouse)
 	{
 		::SendMessage(g_hwndTrackingTT, TTM_TRACKACTIVATE, (WPARAM)FALSE, (LPARAM)&g_toolItem);
@@ -466,10 +473,10 @@ void Screen::OnMouseLeave()
 
 void Screen::OnLButtonUp(UINT nFlags, CPoint point)
 {
-	::SendMessage(AfxGetMainWnd()->m_hWnd, WM_LINK_ROOM_USER, 0, (LPARAM)this); // let Mainframe knowns.
+	sinashow::SendMessage(WM_LINK_ROOM_USER, (WPARAM)0, (LPARAM)index_);
 }
 
 void Screen::OnLButtonDblClk(UINT nFlags, CPoint point)
 {
-	::SendMessage(AfxGetMainWnd()->m_hWnd, WM_UNLINK_ROOM_USER, (WPARAM)user_, (LPARAM)this);
+	sinashow::SendMessage(WM_UNLINK_ROOM_USER, (WPARAM)user_, (LPARAM)this);
 }

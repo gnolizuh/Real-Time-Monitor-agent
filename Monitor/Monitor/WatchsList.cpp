@@ -4,58 +4,146 @@
 WatchsList g_watchs_list;
 
 WatchsList::WatchsList()
-	: watching_(PJ_FALSE)
+	: node_(nullptr)
+	, title_(nullptr)
+	, watching_(PJ_FALSE)
+	, page_(0)
 {
 }
 
-void WatchsList::Begin()
+void WatchsList::Begin(Node *node, Title *title)
 {
+	End();
+
+	node_ = node;
+	title_ = title;
 	watching_ = PJ_TRUE;
+
+	node_->OnWatched(title);
 }
 
 void WatchsList::End()
 {
-	watched_users_list_t::iterator puser = bewatched_users_list_.begin();
-	for(; puser != bewatched_users_list_.end(); ++ puser)
+	sinashow::SendMessage(WM_CLEAN_SCREENS, (WPARAM)0, (LPARAM)0);
+
+	watching_ = PJ_FALSE;
+	node_ = nullptr;
+	title_ = nullptr;
+	rooms_.clear();
+	page_ = 0;
+
+	while(!traverse_stack_.empty())
 	{
-		watched_users_list_t::value_type user = *puser;
-		if(user != nullptr)
+		Pop();
+	}
+}
+
+pj_status_t WatchsList::OnConfig(Node *node, CString &tips, pj_uint32_t &idc)
+{
+	RETURN_VAL_IF_FAIL(node != nullptr && (node->node_type_ == TITLE_NODE || node->node_type_ == TITLE_ROOM), PJ_EINVAL);
+
+	idc = (watching_ && node == node_) ? IDC_MENU_UNLOOKUP : IDC_MENU_LOOKUP;
+	tips.Format(L"%s%s",
+		((watching_ && node == node_) ? L"取消查看" : L"查看"),
+		node->node_type_ == TITLE_NODE ? L"大区" : L"房间");
+
+	return PJ_SUCCESS;
+}
+
+Node *WatchsList::Top()
+{
+	return traverse_stack_.top();
+}
+
+void WatchsList::Push(Node *node)
+{
+	traverse_stack_.push(node);
+}
+
+void WatchsList::Pop()
+{
+	traverse_stack_.pop();
+}
+
+void WatchsList::OnTraverse()
+{
+	if(!traverse_stack_.empty())
+	{
+		Node *node = Top();
+		Pop();
+		if(node != nullptr)
 		{
-			TitleRoom *title_room = user->title_room_;
-			if(title_room != nullptr)
-			{
-				AvsProxy *proxy = title_room->proxy_;
+			node->OnWatched(title_);
+		}
+	}
+	else
+	{
+		g_watchs_list.NextPage();
+	}
+}
 
-				if (user->GetScreenIndex() >= 0 && user->GetScreenIndex() < MAXIMAL_SCREEN_NUM)
-				{
-					// 如果这个用户已经在屏幕上显示
-					Screen *screen = g_screens[user->screen_idx_];
+void WatchsList::AddRoom(TitleRoom *room)
+{
+	RETURN_IF_FAIL(watching_ == PJ_TRUE);
+	RETURN_IF_FAIL(room != nullptr);
+	RETURN_IF_FAIL(title_ != nullptr && title_->BelowWatchedNode(room, node_));
 
-					RETURN_IF_FAIL(screen != nullptr);
-					screen->DisconnectUser();
-					user->DisconnectScreen();
+	sinashow::SendMessage(WM_CONTINUE_TRAVERSE, (WPARAM)title_, (LPARAM)0);
 
-					g_av_index_map[AUDIO_INDEX].erase(user->audio_ssrc_);
-					g_av_index_map[VIDEO_INDEX].erase(user->video_ssrc_);
-				}
-			}
+	rooms_.insert(room);
+}
+
+pj_uint32_t WatchsList::Page()
+{
+	pj_uint32_t user_count = 0;
+	room_set_t::iterator proom = rooms_.begin();
+	for (; proom != rooms_.end(); ++proom)
+	{
+		room_set_t::value_type room = *proom;
+		if (room != nullptr)
+		{
+			room->IncreaseCount(user_count);
 		}
 	}
 
-	watching_ = PJ_FALSE;
+	return (user_count % MAXIMAL_SCREEN_NUM == 0) ?
+		(user_count / MAXIMAL_SCREEN_NUM) :
+		(user_count / MAXIMAL_SCREEN_NUM) + 1;
 }
 
-void WatchsList::OnAddUser(User *user)
+void WatchsList::NextPage()
 {
 	RETURN_IF_FAIL(watching_ == PJ_TRUE);
+
+	page_ = MIN(Page(), page_ + 1);
+	OnShowPage();
 }
 
-void WatchsList::OnDelUser(User *user)
+void WatchsList::PrevPage()
 {
 	RETURN_IF_FAIL(watching_ == PJ_TRUE);
+
+	page_ = MAX(1, page_ - 1);
+	OnShowPage();
 }
 
-void WatchsList::OnModUser(User *user, pj_uint32_t audio_ssrc, pj_uint32_t video_ssrc)
+void WatchsList::OnShowPage()
 {
-	RETURN_IF_FAIL(watching_ == PJ_TRUE);
+	sinashow::SendMessage(WM_CLEAN_SCREENS, (WPARAM)0, (LPARAM)0);
+
+	pj_uint32_t first = (page_ - 1) * MAXIMAL_SCREEN_NUM;
+
+	pj_uint32_t offset = 0;
+	room_set_t::iterator proom = rooms_.begin();
+	for (; proom != rooms_.end(); ++proom)
+	{
+		room_set_t::value_type room = *proom;
+		if (room != nullptr)
+		{
+			if (room->OnShowPage(offset, first) != PJ_SUCCESS)
+			{
+				return;
+			}
+		}
+	}
 }

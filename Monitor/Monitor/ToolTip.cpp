@@ -1,7 +1,9 @@
 #include "stdafx.h"
+#include <mutex>
 #include "ToolTip.h"
 
 BOOL g_TrackingMouse = FALSE;
+std::mutex g_hwnd_lock;
 HWND g_hwndTrackingTT;
 TOOLINFO g_toolItem;
 

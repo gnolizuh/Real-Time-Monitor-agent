@@ -2,11 +2,13 @@
 #define __AVS_PROXY_CLIENT_TITLE__
 
 #include "WatchsList.h"
+#include "TitleRoom.h"
 #include "TitleNode.h"
 #include "ToolTip.h"
 #include "Node.h"
 #include "Com.h"
 
+class TitleRoom;
 class Title
 	: public CTreeCtrl
 	, public Node
@@ -20,19 +22,22 @@ public:
 	void         Perform();
 	void         MoveToRect(const CRect &rect);
 	void         HideWindow();
+	pj_bool_t    BelowWatchedNode(TitleRoom *room, Node *node);
+	LRESULT      OnContinueTraverse();
 
 protected:
-	afx_msg void    OnMouseLeave();
-	afx_msg void    OnMouseMove(UINT nFlags, CPoint point);
-	afx_msg void    OnItemExpanded(NMHDR *pNMHDR, LRESULT *pResult);
-	afx_msg void    OnTvnBeginDrag(NMHDR *pNMHDR, LRESULT *pResult);
-	afx_msg void    OnRightButtonClick(NMHDR *pNMHDR, LRESULT *pResult);
-	afx_msg void    OnLookUpNode(UINT nID);
-	afx_msg LRESULT OnContinueTraverse(WPARAM wParam, LPARAM lParam);
+	afx_msg BOOL PreTranslateMessage(MSG* pMsg);
+	afx_msg void OnMouseLeave();
+	afx_msg void OnMouseMove(UINT nFlags, CPoint point);
+	afx_msg void OnItemExpanded(NMHDR *pNMHDR, LRESULT *pResult);
+	afx_msg void OnTvnBeginDrag(NMHDR *pNMHDR, LRESULT *pResult);
+	afx_msg void OnRightButtonClick(NMHDR *pNMHDR, LRESULT *pResult);
+	afx_msg void OnLookUpNode(UINT nID);
+	afx_msg void OnUnlookUpNode(UINT nID);
 	DECLARE_MESSAGE_MAP()
 
 private:
-	virtual void PreSubclassWindow();
+	Node *selected_node_;
 };
 
 #endif

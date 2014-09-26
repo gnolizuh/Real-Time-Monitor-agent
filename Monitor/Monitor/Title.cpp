@@ -5,11 +5,11 @@ BEGIN_MESSAGE_MAP(Title, CTreeCtrl)
 	ON_WM_CONTEXTMENU()
 	ON_WM_MOUSEMOVE()
 	ON_WM_MOUSELEAVE()
-	ON_MESSAGE(WM_CONTINUE_TRAVERSE, &Title::OnContinueTraverse)
 	ON_NOTIFY_REFLECT(TVN_ITEMEXPANDED, &Title::OnItemExpanded)
 	ON_NOTIFY_REFLECT(TVN_BEGINDRAG,    &Title::OnTvnBeginDrag)
 	ON_NOTIFY_REFLECT(NM_RCLICK,       &Title::OnRightButtonClick)
 	ON_COMMAND_RANGE(IDC_MENU_LOOKUP, IDC_MENU_LOOKUP, &Title::OnLookUpNode)
+	ON_COMMAND_RANGE(IDC_MENU_UNLOOKUP, IDC_MENU_UNLOOKUP, &Title::OnUnlookUpNode)
 END_MESSAGE_MAP()
 
 Title::Title(pj_uint32_t id, const pj_str_t &name, order_t order)
@@ -17,12 +17,6 @@ Title::Title(pj_uint32_t id, const pj_str_t &name, order_t order)
 	, Node(id, name, order, 0, TITLE)
 {
 	tree_item_ = TVI_ROOT;
-}
-
-void Title::PreSubclassWindow()
-{
-   CTreeCtrl::PreSubclassWindow();
-   EnableToolTips(TRUE);
 }
 
 pj_status_t Title::Prepare(const CWnd *wrapper, pj_uint32_t uid)
@@ -65,6 +59,23 @@ void Title::HideWindow()
 	ShowWindow(SW_HIDE);
 }
 
+BOOL Title::PreTranslateMessage(MSG *pMsg)
+{
+	if(WM_KEYFIRST <= pMsg->message && pMsg->message <= WM_KEYLAST)
+	{
+		if(pMsg->wParam == VK_LEFT)
+		{
+			g_watchs_list.PrevPage();
+		}
+		else if(pMsg->wParam == VK_RIGHT)
+		{
+			g_watchs_list.NextPage();
+		}
+		return TRUE;
+	}
+	return CTreeCtrl::PreTranslateMessage(pMsg);
+}
+
 void Title::OnItemExpanded(NMHDR *pNMHDR, LRESULT *pResult)
 {
 	LPNMTREEVIEW pNMTreeView = reinterpret_cast<LPNMTREEVIEW>(pNMHDR);
@@ -98,11 +109,10 @@ void Title::OnTvnBeginDrag(NMHDR *pNMHDR, LRESULT *pResult)
 		User *user = reinterpret_cast<User *>(GetItemData(pTreeItem));
 		RETURN_IF_FAIL(user != nullptr);
 
-		::SendMessage(AfxGetMainWnd()->m_hWnd, WM_SELECT_USER, 0, (LPARAM)user);
+		sinashow::SendMessage(WM_SELECT_USER, (WPARAM)0, (LPARAM)user);
 	}
 }
 
-static Node *g_watched_node = nullptr;
 void Title::OnRightButtonClick(NMHDR *pNMHDR, LRESULT *pResult)
 {
 	CPoint point;
@@ -121,25 +131,16 @@ void Title::OnRightButtonClick(NMHDR *pNMHDR, LRESULT *pResult)
 		if(node != nullptr)
 		{
 			CString menu_str;
-			switch(node->node_type_)
+			pj_uint32_t menu_idc;
+			selected_node_ = node;
+			if(g_watchs_list.OnConfig(node, menu_str, menu_idc) == PJ_SUCCESS)
 			{
-				case TITLE_NODE:
-					menu_str.Format(L"查看大区");
-					break;
-				case TITLE_ROOM:
-					menu_str.Format(L"查看房间");
-					break;
-				default:
-					return;
-			}
-
-			CMenu menu;
-			if(menu.CreatePopupMenu())
-			{
-				menu.AppendMenu(MF_STRING, IDC_MENU_LOOKUP, menu_str);
-				menu.TrackPopupMenu(TPM_LEFTALIGN, pointInTree.x, pointInTree.y, this);
-
-				g_watched_node = node;
+				CMenu menu;
+				if(menu.CreatePopupMenu())
+				{
+					menu.AppendMenu(MF_STRING, menu_idc, menu_str);
+					menu.TrackPopupMenu(TPM_LEFTALIGN, pointInTree.x, pointInTree.y, this);
+				}
 			}
 		}
 		*pResult = 0;
@@ -149,6 +150,7 @@ void Title::OnRightButtonClick(NMHDR *pNMHDR, LRESULT *pResult)
 static Node *old_node = nullptr;
 void Title::OnMouseMove(UINT nFlags, CPoint point)
 {
+	lock_guard<mutex> lock(g_hwnd_lock);
 	static int oldX, oldY;
     int newX = point.x, newY = point.y;
 
@@ -219,6 +221,7 @@ void Title::OnMouseMove(UINT nFlags, CPoint point)
 
 void Title::OnMouseLeave()
 {
+	lock_guard<mutex> lock(g_hwnd_lock);
 	if(g_TrackingMouse)
 	{
 		::SendMessage(g_hwndTrackingTT, TTM_TRACKACTIVATE, (WPARAM)FALSE, (LPARAM)&g_toolItem);
@@ -228,38 +231,47 @@ void Title::OnMouseLeave()
 	CTreeCtrl::OnMouseLeave();
 }
 
+pj_bool_t Title::BelowWatchedNode(TitleRoom *room, Node *node)
+{
+	RETURN_VAL_IF_FAIL(room != nullptr, PJ_FALSE);
+
+	HTREEITEM hParent = GetParentItem(room->tree_item_);
+	while(hParent != nullptr)
+	{
+		Node *hNode = reinterpret_cast<Node *>(GetItemData(hParent));
+		if(hNode == node)
+		{
+			return PJ_TRUE;
+		}
+		else
+		{
+			hParent = GetParentItem(hNode->tree_item_);
+		}
+	}
+
+	return PJ_FALSE;
+}
+
+// 遍历所有节点
+// 1. 如果节点不是房间, 则继续往下遍历
+// 2. 如果节点是房间, 则尝试获取此房间对应的AVS信息. 如果获取失败, 则遍历兄弟节点. 回到1.
 void Title::OnLookUpNode(UINT nID)
 {
-	RETURN_IF_FAIL(g_watched_node != nullptr);
-	// 清空已有的list, 此过程会清空已有的screen
-
-	g_watchs_list.End();
-	g_watchs_list.Begin();
-
-	g_watched_node->OnWatched(*this);
-	// 遍历所有节点
-	// 1. 如果节点不是房间, 则继续往下遍历
-	// 2. 如果节点是房间, 则尝试获取此房间对应的AVS信息. 如果获取失败, 则遍历兄弟节点. 回到1.
-	// 3. 如果获取AVS信息成功, Link此Room. 退出并等待UsersInfo返回.
-	// 4. 当UsersInfo返回时, insert到list中, 如果list.size() >= 15就停止遍历
-
-	// ** 当用户上麦下麦时, 更新窗口对应的用户, 并更新list
-
-	// 上一页: Unlink所有User. screen0中用户在list的MIN(index - 15, 0)
-	// 下一页: Unlink所有User. screenLAST中用户在list的MIN(index - 15, 0)
+	g_watchs_list.Begin(selected_node_, this); // 清空已有的list, 此过程会清空已有的screen
 
 	return;
 }
 
-LRESULT Title::OnContinueTraverse(WPARAM wParam, LPARAM lParam)
+void Title::OnUnlookUpNode(UINT nID)
 {
-	RETURN_VAL_IF_FAIL(!g_traverse_stack.empty(), (LRESULT)0);
+	g_watchs_list.End();
 
-	Node *node = g_traverse_stack.top();
-	if(node != nullptr)
-	{
-		node->OnWatched(*this);
-	}
+	return;
+}
+
+LRESULT Title::OnContinueTraverse()
+{
+	g_watchs_list.OnTraverse();
 
 	return (LRESULT)0;
 }

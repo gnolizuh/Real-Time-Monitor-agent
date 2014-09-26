@@ -6,6 +6,7 @@ AddUserParameter::AddUserParameter(const pj_uint8_t *storage, pj_uint16_t storag
 {
 	pj_ntoh_assign(storage, storage_len, room_id_);
 	pj_ntoh_assign(storage, storage_len, user_id_);
+	pj_ntoh_assign(storage, storage_len, mic_id_);
 }
 
 void AddUserScene::Maintain(shared_ptr<TcpParameter> ptr_tcp_param, AvsProxy *avs_proxy)
@@ -19,5 +20,5 @@ void AddUserScene::Maintain(shared_ptr<TcpParameter> ptr_tcp_param, AvsProxy *av
 	status = avs_proxy->GetRoom(param->room_id_, title_room);
 	RETURN_IF_FAIL(status == PJ_SUCCESS);
 
-	title_room->AddUser(param->user_id_);
+	title_room->AddUser(param->user_id_, param->mic_id_);
 }

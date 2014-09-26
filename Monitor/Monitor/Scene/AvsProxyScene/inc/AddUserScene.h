@@ -12,6 +12,7 @@ public:
 
 	pj_int32_t  room_id_;
 	pj_int64_t  user_id_;
+	pj_uint32_t mic_id_;
 };
 
 class AddUserScene

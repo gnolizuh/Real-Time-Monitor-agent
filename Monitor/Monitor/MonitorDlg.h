@@ -30,6 +30,7 @@ protected:
 
 	// 生成的消息映射函数
 	virtual BOOL OnInitDialog();
+	afx_msg BOOL PreTranslateMessage(MSG* pMsg);
 	afx_msg void OnSysCommand(UINT nID, LPARAM lParam);
 	afx_msg void OnPaint();
 	afx_msg void OnSizing(UINT nSide, LPRECT lpRect);
@@ -38,14 +39,27 @@ protected:
 	afx_msg void OnChangeLayout();
 	afx_msg LRESULT OnSelectUser(WPARAM wParam, LPARAM lParam);
 	afx_msg void    OnLButtonUp(UINT nFlags, CPoint point);
-	afx_msg LRESULT OnLinkRoomUser(WPARAM wParam, LPARAM lParam);
-	afx_msg LRESULT OnUnlinkRoomUser(WPARAM wParam, LPARAM lParam);
+	afx_msg LRESULT OnLinkScreenUser(WPARAM wParam, LPARAM lParam);
+	afx_msg LRESULT OnWatchRoomUser(WPARAM wParam, LPARAM lParam);
+	afx_msg LRESULT OnUnlinkScreenUser(WPARAM wParam, LPARAM lParam);
 	afx_msg LRESULT OnLinkRoom(WPARAM wParam, LPARAM lParam);
 	afx_msg LRESULT OnUnlinkRoom(WPARAM wParam, LPARAM lParam);
+	afx_msg LRESULT OnDisconnectAllProxys(WPARAM wParam, LPARAM lParam);
+	afx_msg LRESULT OnCleanScreens(WPARAM wParam, LPARAM lParam);
 	afx_msg HCURSOR OnQueryDragIcon();
 	DECLARE_MESSAGE_MAP()
 
 private:
+	pj_status_t Prepare();
+	pj_status_t Launch();
+	static void event_func_proxy(evutil_socket_t fd, short event, void *arg);
+	void EventOnPipe(evutil_socket_t fd, short event, void *arg);
+	void EventThread();
+
+private:
+	thread event_thread_;
+	struct event *event_;
+	struct event_base *event_base_;
 	pj_bool_t is_draging_;
 	User      *draging_user_;
 };

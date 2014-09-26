@@ -94,12 +94,8 @@ BEGIN_MESSAGE_MAP(CMonitorDlg, CDialogEx)
 	ON_WM_GETMINMAXINFO()
 	ON_WM_LBUTTONUP()
 	ON_WM_MOUSEMOVE()
-	ON_BN_CLICKED(IDC_BUTTON1, &CMonitorDlg::OnChangeLayout)
-	ON_MESSAGE(WM_SELECT_USER, &CMonitorDlg::OnSelectUser)
-	ON_MESSAGE(WM_LINK_ROOM_USER, &CMonitorDlg::OnLinkRoomUser)
-	ON_MESSAGE(WM_UNLINK_ROOM_USER, &CMonitorDlg::OnUnlinkRoomUser)
-	ON_MESSAGE(WM_EXPANDEDROOM, &CMonitorDlg::OnLinkRoom)
-	ON_MESSAGE(WM_SHRINKEDROOM, &CMonitorDlg::OnUnlinkRoom)
+	ON_BN_CLICKED(IDC_LAYOUT_BUTTON, &CMonitorDlg::OnChangeLayout)
+	ON_MESSAGE(WM_WATCH_ROOM_USER, &CMonitorDlg::OnWatchRoomUser)
 END_MESSAGE_MAP()
 
 void GetDesktopResolution(int& horizontal, int& vertical)
@@ -114,6 +110,12 @@ void GetDesktopResolution(int& horizontal, int& vertical)
    // (horizontal, vertical)
    horizontal = desktop.right;
    vertical = desktop.bottom;
+}
+
+void CMonitorDlg::event_func_proxy(evutil_socket_t fd, short event, void *arg)
+{
+	ev_function_t *pfunction = reinterpret_cast<ev_function_t *>(arg);
+	(*pfunction)(fd, event, arg);
 }
 
 // CMonitorDlg 消息处理程序
@@ -171,9 +173,23 @@ BOOL CMonitorDlg::OnInitDialog()
 		exit(0);
 	}
 
+	status = Prepare();
+	if(status != PJ_SUCCESS)
+	{
+		::AfxMessageBox(L"系统准备失败", MB_YESNO);
+		exit(0);
+	}
+
 	PJ_LOG(5, (__ABS_FILE__, "Monitor prepare ok!"));
 
 	status = g_screen_mgr->Launch();
+	if(status != PJ_SUCCESS)
+	{
+		::AfxMessageBox(L"系统启动失败", MB_YESNO);
+		exit(0);
+	}
+
+	status = Launch();
 	if(status != PJ_SUCCESS)
 	{
 		::AfxMessageBox(L"系统启动失败", MB_YESNO);
@@ -186,9 +202,55 @@ BOOL CMonitorDlg::OnInitDialog()
 
 	ShowWindow(SW_MAXIMIZE);
 
-	GetDlgItem(IDC_BUTTON1)->ShowWindow(SW_HIDE);
+	GetDlgItem(IDC_LAYOUT_BUTTON)->ShowWindow(SW_HIDE);
 
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
+}
+
+pj_status_t CMonitorDlg::Prepare()
+{
+	int ret;
+	ret = evutil_socketpair(AF_INET, SOCK_STREAM, 0, g_mainframe_pipe);
+
+	event_base_ = event_base_new();
+	RETURN_VAL_IF_FAIL(event_base_ != nullptr, PJ_EINVAL);
+
+	ev_function_t function;
+	ev_function_t *pfunction = nullptr;
+
+	function = std::bind(&CMonitorDlg::EventOnPipe, this, std::placeholders::_1, std::placeholders::_2, nullptr);
+	pfunction = new ev_function_t(function);
+	event_ = event_new(event_base_, g_mainframe_pipe[0], EV_READ | EV_PERSIST, event_func_proxy, pfunction);
+	RETURN_VAL_IF_FAIL(event_ != nullptr, PJ_EINVAL);
+
+	ret = event_add(event_, NULL);
+	RETURN_VAL_IF_FAIL(ret == 0, PJ_EINVAL);
+
+	return PJ_SUCCESS;
+}
+
+pj_status_t CMonitorDlg::Launch()
+{
+	event_thread_ = thread(std::bind(&CMonitorDlg::EventThread, this));
+
+	return PJ_SUCCESS;
+}
+
+BOOL CMonitorDlg::PreTranslateMessage(MSG *pMsg)
+{
+	if(WM_KEYFIRST <= pMsg->message && pMsg->message <= WM_KEYLAST)
+	{
+		if(pMsg->wParam == VK_LEFT)
+		{
+			g_watchs_list.PrevPage();
+		}
+		else if(pMsg->wParam == VK_RIGHT)
+		{
+			g_watchs_list.NextPage();
+		}
+		return TRUE;
+	}
+	return CDialogEx::PreTranslateMessage(pMsg);
 }
 
 void CMonitorDlg::OnSysCommand(UINT nID, LPARAM lParam)
@@ -288,8 +350,6 @@ LRESULT CMonitorDlg::OnSelectUser(WPARAM wParam, LPARAM lParam)
 	is_draging_ = PJ_TRUE;
 	draging_user_ = user;
 
-	TRACE("Select user %ld\n", user->user_id_);
-
 	return true;
 }
 
@@ -301,12 +361,12 @@ void CMonitorDlg::OnLButtonUp(UINT nFlags, CPoint point)
 	draging_user_ = nullptr;
 }
 
-LRESULT CMonitorDlg::OnLinkRoomUser(WPARAM wParam, LPARAM lParam)
+LRESULT CMonitorDlg::OnLinkScreenUser(WPARAM wParam, LPARAM lParam)
 {
-	Screen *screen = reinterpret_cast<Screen *>(lParam);
-	RETURN_VAL_IF_FAIL((screen && draging_user_ && is_draging_), true);
+	pj_uint32_t screen_idx = (pj_uint32_t)lParam;
+	RETURN_VAL_IF_FAIL((screen_idx != INVALID_SCREEN_INDEX && draging_user_ && is_draging_), true);
 
-	g_screen_mgr->LinkScreenUser(screen, draging_user_);
+	g_screen_mgr->LinkScreenUser(screen_idx, draging_user_);
 
 	is_draging_ = PJ_FALSE;
 	draging_user_ = nullptr;
@@ -314,7 +374,18 @@ LRESULT CMonitorDlg::OnLinkRoomUser(WPARAM wParam, LPARAM lParam)
 	return true;
 }
 
-LRESULT CMonitorDlg::OnUnlinkRoomUser(WPARAM wParam, LPARAM lParam)
+LRESULT CMonitorDlg::OnWatchRoomUser(WPARAM wParam, LPARAM lParam)
+{
+	User *user = reinterpret_cast<User *>(wParam);
+	pj_uint32_t screen_idx = (pj_uint32_t)lParam;
+	RETURN_VAL_IF_FAIL(user && screen_idx != INVALID_SCREEN_INDEX, true);
+
+	g_screen_mgr->LinkScreenUser(screen_idx, user);
+
+	return true;
+}
+
+LRESULT CMonitorDlg::OnUnlinkScreenUser(WPARAM wParam, LPARAM lParam)
 {
 	User   *user   = reinterpret_cast<User *>(wParam);
 	Screen *screen = reinterpret_cast<Screen *>(lParam);
@@ -327,12 +398,12 @@ LRESULT CMonitorDlg::OnUnlinkRoomUser(WPARAM wParam, LPARAM lParam)
 
 LRESULT CMonitorDlg::OnLinkRoom(WPARAM wParam, LPARAM lParam)
 {
-	HWND hHwnd = (HWND)wParam;
+	Title *title = reinterpret_cast<Title *>(wParam);
 	TitleRoom *title_room = (TitleRoom *)lParam;
 	RETURN_VAL_IF_FAIL(title_room, true);
 
-	pj_status_t status = g_screen_mgr->OnLinkRoom(title_room, hHwnd);
-	if(status != PJ_SUCCESS && hHwnd == nullptr)
+	pj_status_t status = g_screen_mgr->OnLinkRoom(title_room, title);
+	if(status != PJ_SUCCESS && title == nullptr)
 	{
 		::AfxMessageBox(L"获取房间列表失败");
 	}
@@ -348,4 +419,81 @@ LRESULT CMonitorDlg::OnUnlinkRoom(WPARAM wParam, LPARAM lParam)
 	pj_status_t status = g_screen_mgr->OnUnlinkRoom(title_room);
 
 	return true;
+}
+
+LRESULT CMonitorDlg::OnDisconnectAllProxys(WPARAM wParam, LPARAM lParam)
+{
+	g_screen_mgr->DelAllProxys();
+
+	return true;
+}
+
+LRESULT CMonitorDlg::OnCleanScreens(WPARAM wParam, LPARAM lParam)
+{
+	g_screen_mgr->CleanScreens();
+
+	return true;
+}
+
+
+void CMonitorDlg::EventOnPipe(evutil_socket_t fd, short event, void *arg)
+{
+	RETURN_IF_FAIL(event & EV_READ);
+
+	param_t param;
+	pj_ssize_t recvlen = sizeof(param_t);
+	pj_status_t status;
+	status = pj_sock_recv(g_mainframe_pipe[0], &param, &recvlen, 0);
+
+	pj_assert(recvlen == sizeof(param_t));
+
+	switch(param.Msg)
+	{
+		case WM_SELECT_USER:
+			OnSelectUser(param.wParam, param.lParam);
+			break;
+		case WM_WATCH_ROOM_USER:
+			OnWatchRoomUser(param.wParam, param.lParam);
+			break;
+		case WM_LINK_ROOM_USER:
+			OnLinkScreenUser(param.wParam, param.lParam);
+			break;
+		case WM_UNLINK_ROOM_USER:
+			OnUnlinkScreenUser(param.wParam, param.lParam);
+			break;
+		case WM_EXPANDEDROOM:
+			OnLinkRoom(param.wParam, param.lParam);
+			break;
+		case WM_SHRINKEDROOM:
+			OnUnlinkRoom(param.wParam, param.lParam);
+			break;
+		case WM_DISCONNECT_ALL_PROXYS:
+			OnDisconnectAllProxys(param.wParam, param.lParam);
+			break;
+		case WM_CLEAN_SCREENS:
+			OnCleanScreens(param.wParam, param.lParam);
+			break;
+		case WM_CONTINUE_TRAVERSE:
+			reinterpret_cast<Title *>(param.wParam)->OnContinueTraverse();
+			break;
+		default:
+			break;
+	}
+}
+
+void CMonitorDlg::EventThread()
+{
+	pj_thread_desc rtpdesc;
+	pj_thread_t *thread = 0;
+	
+	if ( !pj_thread_is_registered() )
+	{
+		if ( pj_thread_register(NULL, rtpdesc, &thread) == PJ_SUCCESS )
+		{
+			while(PJ_TRUE)
+			{
+				event_base_loop(event_base_, EVLOOP_ONCE);
+			}
+		}
+	}
 }

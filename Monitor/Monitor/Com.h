@@ -44,7 +44,11 @@ typedef pj_uint32_t order_t;
 #define IP_HEADER_SIZE             20
 #define UDP_HEADER_SIZE            8
 #define MAX_UDP_DATA_SIZE (MAX_TRANSMISSION_UNIT_SIZE - IP_HEADER_SIZE - UDP_HEADER_SIZE)
+#define MIN(m1, m2) ((m1) < (m2) ? (m1) : (m2))
+#define MAX(m1, m2) ((m1) > (m2) ? (m1) : (m2))
 enum { AUDIO_INDEX, VIDEO_INDEX };
+
+extern evutil_socket_t g_mainframe_pipe[2];
 extern index_map_t g_av_index_map[2];
 
 typedef enum __enum_screen_mgr_resolution_type__
@@ -56,6 +60,13 @@ typedef enum __enum_screen_mgr_resolution_type__
 	SCREEN_RES_3x5,
 	SCREEN_RES_END,            // useless
 } enum_screen_mgr_resolution_t;
+
+typedef struct
+{
+	pj_uint32_t Msg;
+	WPARAM      wParam;
+	LPARAM      lParam;
+} param_t;
 
 #define RETURN_VAL_IF_FAIL(_macro_exp_, _macro_ret_) do { \
 	if ( !(_macro_exp_) ) return (_macro_ret_); \
@@ -185,5 +196,10 @@ void        http_tls_get(const pj_str_t &host, pj_uint16_t port, const pj_str_t 
 void        http_proxy_get(const pj_str_t &host, pj_uint16_t port, const pj_str_t &url, pj_uint32_t room_id, std::vector<pj_uint8_t> &response);
 
 pj_status_t UTF8_to_GB2312(wchar_t *gb_dst, int gb_len, const pj_str_t &utf_src);
+
+namespace sinashow
+{
+void SendMessage(pj_uint32_t Msg, WPARAM wParam, LPARAM lParam);
+}
 
 #endif

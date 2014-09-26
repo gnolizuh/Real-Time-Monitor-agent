@@ -63,7 +63,6 @@ typedef struct
 	pj_uint16_t proxy_tcp_port;
 	pj_uint16_t proxy_udp_port;
 	TitleRoom  *title_room;
-	HWND        hHwnd;
 } link_room_param_t;
 
 class ScreenMgr;
@@ -83,16 +82,17 @@ public:
 	pj_status_t Prepare();
 	pj_status_t Launch();
 	void        Destory();
-	pj_status_t OnLinkRoom(TitleRoom *title_room, HWND hHwnd);
+	pj_status_t OnLinkRoom(TitleRoom *title_room, Title *title);
 	pj_status_t OnUnlinkRoom(TitleRoom *title_room);
-	void        LinkScreenUser(Screen *screen, User *new_user);
+	void        LinkScreenUser(pj_uint32_t new_screen_idx, User *new_user);
 	void        UnlinkScreenUser(Screen *screen, User *old_user);
 	void        ChangeLayout(enum_screen_mgr_resolution_t resolution);
 	void        GetSuitedSize(LPRECT lpRect);
 	void        Adjest(pj_int32_t &cx, pj_int32_t &cy);
 	void        HideAll();
 	pj_status_t LinkRoom(const link_room_param_t &param);
-	pj_status_t UnlinkRoom(TitleRoom *title_room);
+	void        DelAllProxys();
+	void        CleanScreens();
 	pj_status_t AddProxy(pj_uint16_t id, pj_str_t &ip, pj_uint16_t tcp_port, pj_uint16_t udp_port, pj_sock_t sock, proxy_map_t::mapped_type &proxy);
 	pj_status_t DelProxy(proxy_map_t::mapped_type proxy);
 	pj_status_t GetProxy(pj_uint16_t id, proxy_map_t::mapped_type &proxy);
@@ -107,6 +107,11 @@ protected:
 	void EventThread();
 
 private:
+	pj_status_t ConnProxy(AvsProxy *proxy);
+	/*
+	 * @desc 为了兼容libevent断开连接, 此函数会在libevent线程中执行
+	 */
+	pj_status_t DiscProxy(AvsProxy *proxy);
 	pj_status_t SendTCPPacket(const void *buf, pj_ssize_t *len);
 
 public:
@@ -143,6 +148,7 @@ private:
 	proxy_map_t         linked_proxys_;
 	vector<screenmgr_func_t> screenmgr_func_array_;
 	vector<round_t>     num_blocks_;
+	Screen             *screens_[MAXIMAL_SCREEN_NUM];
 	enum_screen_mgr_resolution_t screen_mgr_res_;
 	PoolThread<std::function<void ()>> sync_thread_pool_;
 

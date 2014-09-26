@@ -1,6 +1,7 @@
 #ifndef __AVS_PROXY_CLIENT_SCREEN__
 #define __AVS_PROXY_CLIENT_SCREEN__
 
+#include <memory>
 #include <vector>
 #include <thread>
 #include <mutex>
@@ -12,6 +13,7 @@
 #include "TitleRoom.h"
 #include "ToolTip.h"
 
+using std::shared_ptr;
 using std::lock_guard;
 using std::mutex;
 using std::thread;
@@ -53,7 +55,7 @@ public:
 	pj_status_t GetUser(User *&user);
 	pj_status_t ConnectUser(User *user);
 	pj_status_t DisconnectUser();
-	inline pj_bool_t HasLinkedUser() { return user_ != nullptr; }
+	inline pj_bool_t IsIdle() const { return user_ == nullptr; }
 	inline pj_uint32_t GetIndex() const { return index_; }
 	void MoveToRect(const CRect &);
 	void HideWindow();
@@ -62,14 +64,13 @@ public:
 	void AudioScene(const pj_uint8_t *rtp_frame, pj_uint16_t framelen);
 	void OnRxAudio(const vector<pj_uint8_t> &audio_frame);
 	void VideoScene(const pj_uint8_t *rtp_frame, pj_uint16_t framelen);
-	void OnRxVideo(const vector<pj_uint8_t> &video_frame);
+	void OnRxVideo(shared_ptr<pj_uint8_t> video_frame, pj_uint16_t framelen);
 
 protected:
 	afx_msg void OnMouseMove(UINT nFlags, CPoint point);
 	afx_msg void OnMouseLeave();
 	afx_msg void OnLButtonUp(UINT nFlags, CPoint point);
 	afx_msg void OnLButtonDblClk(UINT nFlags, CPoint point);
-	afx_msg BOOL OnToolTipText(UINT id, NMHDR *pNMHDR, LRESULT *pResult);
 	DECLARE_MESSAGE_MAP()
 
 private:
@@ -77,20 +78,18 @@ private:
 	pj_status_t decode_vid_frame();
 
 private:
-	const pj_uint32_t index_;
-	mutex             render_mutex_;
-	const User       *user_;
-	SDL_Window       *window_;
-	SDL_Renderer     *render_;
-	SDL_Texture      *texture_;
-	mutex             media_active_lock_;
-	pj_bool_t         media_active_;
-	pj_uint32_t       call_status_;
-	vid_stream_t     *stream_;
+	pj_uint32_t   index_;
+	mutex         render_mutex_;
+	User         *user_;
+	SDL_Window   *window_;
+	SDL_Renderer *render_;
+	SDL_Texture  *texture_;
+	mutex         media_active_lock_;
+	pj_bool_t     media_active_;
+	pj_uint32_t   call_status_;
+	vid_stream_t *stream_;
 	PoolThread<std::function<void ()>> audio_thread_pool_;
 	PoolThread<std::function<void ()>> video_thread_pool_;
 };
-
-extern Screen *g_screens[MAXIMAL_SCREEN_NUM];
 
 #endif

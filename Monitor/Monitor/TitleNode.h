@@ -16,7 +16,7 @@ public:
 
 	void KickoutRedundantNodes(const set<node_map_t::key_type> &nodes_id);
 	virtual void OnDestory();
-	virtual void OnWatched(CTreeCtrl &tree_ctrl);
+	virtual void OnWatched(void *ctrl);
 	virtual void OnItemExpanded(CTreeCtrl &tree_ctrl);
 
 protected:

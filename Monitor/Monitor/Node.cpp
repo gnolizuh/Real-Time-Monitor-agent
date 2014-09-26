@@ -1,8 +1,6 @@
 #include "stdafx.h"
 #include "Node.h"
 
-stack<Node *> g_traverse_stack;
-
 Node::Node(pj_int32_t id, const pj_str_t &name, pj_uint32_t order, pj_uint32_t usercount, pj_uint8_t node_type)
 	: tree_item_(nullptr)
 	, id_(id)
@@ -13,6 +11,15 @@ Node::Node(pj_int32_t id, const pj_str_t &name, pj_uint32_t order, pj_uint32_t u
 	, nodes_order_()
 	, node_type_(node_type)
 {
+}
+
+Node::~Node()
+{
+	if(name_.ptr != nullptr)
+	{
+		free(name_.ptr);
+		name_.ptr = nullptr;
+	}
 }
 
 void Node::Update(const pj_str_t &name, order_t order, pj_uint32_t usercount)

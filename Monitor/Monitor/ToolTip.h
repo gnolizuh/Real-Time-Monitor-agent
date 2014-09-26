@@ -5,6 +5,8 @@
 
 HWND CreateTrackingToolTip(int toolID, HWND hDlg, WCHAR *pText) ;
 
+extern std::mutex g_hwnd_lock;
+
 extern BOOL g_TrackingMouse;
 
 extern HWND g_hwndTrackingTT;
