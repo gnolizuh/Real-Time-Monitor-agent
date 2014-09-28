@@ -36,9 +36,9 @@ protected:
 	afx_msg void OnSizing(UINT nSide, LPRECT lpRect);
 	afx_msg void OnSize(UINT nType, int cx, int cy);
 	afx_msg void OnGetMinMaxInfo(MINMAXINFO* lpMMI);
-	afx_msg void OnChangeLayout();
-	afx_msg LRESULT OnSelectUser(WPARAM wParam, LPARAM lParam);
 	afx_msg void    OnLButtonUp(UINT nFlags, CPoint point);
+	afx_msg LRESULT OnChangeLayout(WPARAM wParam, LPARAM lParam);
+	afx_msg LRESULT OnSelectUser(WPARAM wParam, LPARAM lParam);
 	afx_msg LRESULT OnLinkScreenUser(WPARAM wParam, LPARAM lParam);
 	afx_msg LRESULT OnWatchRoomUser(WPARAM wParam, LPARAM lParam);
 	afx_msg LRESULT OnUnlinkScreenUser(WPARAM wParam, LPARAM lParam);

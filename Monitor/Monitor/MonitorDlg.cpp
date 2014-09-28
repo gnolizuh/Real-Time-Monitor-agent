@@ -94,8 +94,6 @@ BEGIN_MESSAGE_MAP(CMonitorDlg, CDialogEx)
 	ON_WM_GETMINMAXINFO()
 	ON_WM_LBUTTONUP()
 	ON_WM_MOUSEMOVE()
-	ON_BN_CLICKED(IDC_LAYOUT_BUTTON, &CMonitorDlg::OnChangeLayout)
-	ON_MESSAGE(WM_WATCH_ROOM_USER, &CMonitorDlg::OnWatchRoomUser)
 END_MESSAGE_MAP()
 
 void GetDesktopResolution(int& horizontal, int& vertical)
@@ -161,7 +159,11 @@ BOOL CMonitorDlg::OnInitDialog()
 
 	pj_status_t status;
 	status = init_param();
-	RETURN_VAL_IF_FAIL(status == PJ_SUCCESS, TRUE);
+	if(status != PJ_SUCCESS)
+	{
+		::AfxMessageBox(L"∂¡»°≈‰÷√Œƒº˛client.xml ß∞‹", MB_YESNO);
+		exit(0);
+	}
 
 	g_screen_mgr = new ScreenMgr(this, 10, g_client_config.local_ip, g_client_config.local_media_port);
 	RETURN_VAL_IF_FAIL(g_screen_mgr != nullptr, TRUE);
@@ -240,13 +242,20 @@ BOOL CMonitorDlg::PreTranslateMessage(MSG *pMsg)
 {
 	if(WM_KEYFIRST <= pMsg->message && pMsg->message <= WM_KEYLAST)
 	{
-		if(pMsg->wParam == VK_LEFT)
+		if(pMsg->message == WM_KEYUP)
 		{
-			g_watchs_list.PrevPage();
-		}
-		else if(pMsg->wParam == VK_RIGHT)
-		{
-			g_watchs_list.NextPage();
+			if(pMsg->wParam == VK_LEFT)
+			{
+				g_watchs_list.PrevPage();
+			}
+			else if(pMsg->wParam == VK_RIGHT)
+			{
+				g_watchs_list.NextPage();
+			}
+			else if(pMsg->wParam == VK_RETURN)
+			{
+				sinashow::SendMessage(WM_CHANGE_LAYOUT, (WPARAM)0, (LPARAM)0);
+			}
 		}
 		return TRUE;
 	}
@@ -328,7 +337,13 @@ void CMonitorDlg::OnSize(UINT nType, int cx, int cy)
 	CDialogEx::OnSize(nType, cx, cy);
 }
 
-void CMonitorDlg::OnChangeLayout()
+void CMonitorDlg::OnLButtonUp(UINT nFlags, CPoint point)
+{
+	is_draging_ = PJ_FALSE;
+	draging_user_ = nullptr;
+}
+
+LRESULT CMonitorDlg::OnChangeLayout(WPARAM wParam, LPARAM lParam)
 {
 	struct resolution
 	{
@@ -340,6 +355,8 @@ void CMonitorDlg::OnChangeLayout()
 	g_screen_mgr->ChangeLayout(ress[g_res_type].res);
 
 	g_res_type = (enum_screen_mgr_resolution_t)(( g_res_type + 1 ) % SCREEN_RES_END);
+
+	return TRUE;
 }
 
 LRESULT CMonitorDlg::OnSelectUser(WPARAM wParam, LPARAM lParam)
@@ -351,14 +368,6 @@ LRESULT CMonitorDlg::OnSelectUser(WPARAM wParam, LPARAM lParam)
 	draging_user_ = user;
 
 	return true;
-}
-
-void CMonitorDlg::OnLButtonUp(UINT nFlags, CPoint point)
-{
-	TRACE("Drop user\n");
-
-	is_draging_ = PJ_FALSE;
-	draging_user_ = nullptr;
 }
 
 LRESULT CMonitorDlg::OnLinkScreenUser(WPARAM wParam, LPARAM lParam)
@@ -475,6 +484,9 @@ void CMonitorDlg::EventOnPipe(evutil_socket_t fd, short event, void *arg)
 			break;
 		case WM_CONTINUE_TRAVERSE:
 			reinterpret_cast<Title *>(param.wParam)->OnContinueTraverse();
+			break;
+		case WM_CHANGE_LAYOUT:
+			OnChangeLayout(param.wParam, param.lParam);
 			break;
 		default:
 			break;

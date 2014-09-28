@@ -63,13 +63,20 @@ BOOL Title::PreTranslateMessage(MSG *pMsg)
 {
 	if(WM_KEYFIRST <= pMsg->message && pMsg->message <= WM_KEYLAST)
 	{
-		if(pMsg->wParam == VK_LEFT)
+		if(pMsg->message == WM_KEYUP)
 		{
-			g_watchs_list.PrevPage();
-		}
-		else if(pMsg->wParam == VK_RIGHT)
-		{
-			g_watchs_list.NextPage();
+			if(pMsg->wParam == VK_LEFT)
+			{
+				g_watchs_list.PrevPage();
+			}
+			else if(pMsg->wParam == VK_RIGHT)
+			{
+				g_watchs_list.NextPage();
+			}
+			else if(pMsg->wParam == VK_RETURN)
+			{
+				sinashow::SendMessage(WM_CHANGE_LAYOUT, (WPARAM)0, (LPARAM)0);
+			}
 		}
 		return TRUE;
 	}
@@ -139,7 +146,7 @@ void Title::OnRightButtonClick(NMHDR *pNMHDR, LRESULT *pResult)
 				if(menu.CreatePopupMenu())
 				{
 					menu.AppendMenu(MF_STRING, menu_idc, menu_str);
-					menu.TrackPopupMenu(TPM_LEFTALIGN, pointInTree.x, pointInTree.y, this);
+					menu.TrackPopupMenu(TPM_LEFTALIGN, point.x, point.y, this);
 				}
 			}
 		}
