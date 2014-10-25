@@ -12,5 +12,5 @@
 * [Pjsip](http://www.pjsip.org/) ([GPL v2 License](http://www.pjsip.org/licensing.htm))
 * [ffmpeg](https://github.com/FFmpeg/FFmpeg) ([GPL v2 License](https://github.com/FFmpeg/FFmpeg/blob/master/LICENSE.md))
 
-
+## 软件截图
 ![alt tag](https://github.com/gnolizuh/multi-media-monitor-client/blob/master/sinashow-monitor.jpg)
