@@ -2,8 +2,8 @@ Real-Time Monitor agent
 ==========================
 
 ### 功能简介
-> 接收的媒体流为RTP协议封装
-> 每个窗口分别包含一个音频和视频处理线程
+> 接收的媒体流由RTP协议封装<br/>
+> 每个窗口分别包含一个音频和视频处理线程<br/>
 > 每路RTP流都包含一个抖动延迟buffer
 
 ### 高性能
@@ -12,7 +12,7 @@ Real-Time Monitor agent
 
 ## 扩展性
 
-c++11特性  XML配置文件  日志打印
+c++11特性<br/>XML配置文件<br/>日志打印
 
 ## 参考、使用的开源项目
 * [Libevent](https://github.com/nmathewson/Libevent) ([BSD License](https://github.com/nmathewson/Libevent/blob/master/LICENSE))
