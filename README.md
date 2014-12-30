@@ -23,4 +23,4 @@ Real-Time Monitor agent
 * [SDL](http://libsdl.org/) ([zlib license](http://libsdl.org/license.php))
 
 ## 软件截图
-![alt tag](https://github.com/gnolizuh/multi-media-monitor-client/blob/master/sinashow-monitor.jpg)
+![alt tag](https://github.com/gnolizuh/Real-Time-Monitor-agent/blob/master/sinashow-monitor.jpg)
